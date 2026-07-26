@@ -1,0 +1,11 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "orch-extras-mgmt",
+  "compatibility_date": "2026-07-25",
+  "compatibility_flags": ["nodejs_compat"],
+  // scheduled ハンドラを公開するため、既定のエントリではなく自前の server.ts を使う
+  "main": "src/server.ts",
+  "observability": {
+    "enabled": true
+  }
+}
