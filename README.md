@@ -2,7 +2,7 @@
 
 オーケストラのエキストラ（客演奏者）向け情報ポータル。練習日程と出欠の回答先、ボウイング、練習の録音を1か所にまとめて公開し、管理者がブラウザから更新できるようにする。
 
-現在の状態: **Phase 1 完了（データ基盤）**。9テーブルのスキーマと初期投入までできている。画面はまだプレースホルダのみ。
+現在の状態: **Phase 2 完了（認証）**。ログインするとロールに応じた空の画面が出るところまで。閲覧・管理の中身はこれから。
 
 本番: <https://orch-extras-mgmt.atsu-dq9.workers.dev>
 
@@ -25,6 +25,8 @@
 ## 技術構成
 
 TanStack Start (React + TypeScript) を SPA モードでビルドし、Cloudflare Workers 1つとしてデプロイする。データは Cloudflare D1 (SQLite) に置き、定期実行は Cloudflare Cron Triggers を使う。いずれも無料プランの範囲内で運用する。
+
+画面は事前生成した SPA シェル（`dist/client/index.html`）を Cloudflare の assets binding が返し、Worker が受けるのは `/_serverFn/*` と Cron だけ。この振り分けは `wrangler.jsonc` の `assets` にある。**外すと document ごとに Worker が描画してしまい、無料プランの CPU 制限に効いてくる**（[ADR-0008](docs/adr/0008-serve-spa-shell-from-assets-binding.md)）。
 
 詳細と選定理由は[設計書](docs/design.md)の5章および14章を参照。
 
@@ -52,7 +54,7 @@ pnpm exec playwright install chromium
 | コマンド | 内容 |
 | --- | --- |
 | `pnpm dev` | 開発サーバを起動する（Workers ランタイム上で動く） |
-| `pnpm build` | 本番ビルド。`dist/client` と `dist/server` を出力する |
+| `pnpm build` | 本番ビルド。`dist/client`（SPA シェルと静的資産）と `dist/server`（Worker）を出力する |
 | `pnpm preview` | ビルド結果を Workers ランタイムで確認する |
 | `pnpm lint` | Biome による Lint と書式チェック |
 | `pnpm lint:fix` | Lint と書式の自動修正 |
@@ -66,6 +68,12 @@ pnpm exec playwright install chromium
 | `pnpm deploy` | ビルドして本番へデプロイする |
 
 `wrangler.jsonc` を変更したら `pnpm cf-typegen` を実行して `worker-configuration.d.ts` を更新する。
+
+E2E のうちログインを伴うものは、パスワードを環境変数で渡したときだけ動く。渡さなければその分は飛ばされる。
+
+```bash
+E2E_ADMIN_PASSWORD=<.dev.vars の値> E2E_EXTRA_PASSWORD=<.dev.vars の値> pnpm test:e2e
+```
 
 デプロイ先を E2E で確認したい場合は接続先を指定する。
 
@@ -92,6 +100,18 @@ pnpm exec wrangler d1 execute DB --local --command "SELECT 1"  # 中身を見る
 ### 初期データ
 
 `pnpm db:seed` が `.dev.vars` の値から両ロールのパスワードを投入する。何度実行してもよく、2回目以降はパスワードだけを更新する。確認用の演奏会・練習・曲は、データベースが空のときだけ入る。
+
+## 認証
+
+ロールごとの共有パスワード2本で入る。仕様は[設計書](docs/design.md)の8章が正。
+
+- `src/auth/` — パスワードのハッシュ、セッション、Cookie、認可 middleware、レート制限
+- `src/routes/_authed/` — ログイン必須の画面。`_authed/admin/` はさらに管理者のみ
+- `src/start.ts` — 全サーバ関数への CSRF 対策と、Worker が返すレスポンスへのセキュリティヘッダ
+- `public/_headers` — 静的ファイルへのセキュリティヘッダ（assets binding は Worker を通らない）
+
+**新しくサーバ関数を書くときは必ず `requireAuth` か `requireAdmin` を通すこと**。SPA モードなので
+画面側のガードには強制力がない。CSRF 対策は `src/start.ts` で全体に掛かっているので個別の対応は要らない。
 
 ## 環境変数
 
