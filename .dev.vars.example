@@ -1,0 +1,12 @@
+# ローカル開発用の secret。.dev.vars にコピーして使う（.dev.vars は git 管理外）。
+# 本番へは wrangler secret put で設定する。詳細は docs/design.md の10章。
+
+# パスワードハッシュ用の pepper。変更すると既存のパスワードが検証できなくなる
+PASSWORD_PEPPER=local-development-pepper
+
+# pnpm db:seed が投入する初期パスワード
+ADMIN_INITIAL_PASSWORD=local-admin-password
+EXTRA_INITIAL_PASSWORD=local-extra-password
+
+# リンク切れ通知の送り先。未設定なら通知しない（Phase 5 で使う）
+# SLACK_WEBHOOK_URL=
