@@ -6,10 +6,13 @@
 
 ## 最初に読むもの
 
-- `docs/design.md` — 機能仕様、データモデル、認証設計、リンク切れ検知の仕様。**実装の判断はここが正**
+- `docs/design.md` — 機能仕様、データモデル、認証設計、リンク切れ検知の仕様。**実装の判断はここが正**。決定の一覧は14章
 - `docs/tasks.md` — フェーズとタスク、受け入れ条件、現在の進捗
+- `docs/adr/` — 実装中に行った設計判断の記録
 
 設計と違う実装が必要になったら、黙って逸脱せず先に相談する。合意して設計を変えたなら `docs/design.md` も更新する。
+
+実装中に設計書に書かれていないことを決めたら、`docs/adr/adr-template.md` を写して ADR を追加し、`docs/design.md` の14章に索引の1行を足す。運用は `docs/adr/0000-use-markdown-architectural-decision-records.md` が正。
 
 ## 技術構成
 
@@ -41,7 +44,7 @@ TanStack Start (React + TypeScript) を SPA モードでビルドし、Cloudflar
 1. 着手前にタスク分析と実装方針を示し、合意を得てから実装する
 2. タスク単位（T1-1、T1-2 のような粒度）でこまめにコミットする
 3. コミット前に `pnpm lint` / `pnpm typecheck` / `pnpm test` を通す
-4. ブランチを切って作業し、最後に PR を作る。main への直接 push は本番デプロイが走るため、ドキュメントのみの変更に限る
+4. ブランチを切って作業し、最後に PR を作る。本文は `.github/pull_request_template.md` の見出しに沿って書く（`gh pr create --body` はテンプレートを読まないので自分で埋める）。main への直接 push は本番デプロイが走るため、ドキュメントのみの変更に限る
 5. 構成が変わったら `README.md` を更新する
 6. タスクが終わったら `docs/tasks.md` の進捗セクションを更新する
 
