@@ -1,0 +1,5 @@
+# workerd は Workers ランタイムの実行に、esbuild はバンドルにネイティブ
+# バイナリを必要とするため、インストール時のスクリプト実行を許可する
+allowBuilds:
+  esbuild: true
+  workerd: true

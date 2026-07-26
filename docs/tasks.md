@@ -16,7 +16,7 @@ Phase 0 (土台) → Phase 1 (データ) → Phase 2 (認証) → ┬→ Phase 3
 
 コードでは片付かない、アカウント側の作業をここにまとめる。着手順に並べてある。
 
-- [ ] **A-1** Cloudflare アカウントを用意する（無料プランで可）
+- [x] **A-1** Cloudflare アカウントを用意する（無料プランで可）
 - [ ] **A-2** Cloudflare の API トークンを発行する（権限: Workers Scripts 編集、D1 編集、Workers KV 読み取り）。CI のデプロイに使う
 - [ ] **A-3** Slack の Incoming Webhook を作成し、通知を送るチャンネルを決める
 - [ ] **A-4** GitHub リポジトリの Secrets に `CLOUDFLARE_API_TOKEN` と `CLOUDFLARE_ACCOUNT_ID` を登録する
@@ -31,7 +31,7 @@ Phase 0 (土台) → Phase 1 (データ) → Phase 2 (認証) → ┬→ Phase 3
 | T0-2 | TanStack Start プロジェクトを作成し、SPAモードを有効にする | `pnpm dev` でトップページが表示される | S |
 | T0-3 | Biome（Lint + フォーマット）と TypeScript の厳格設定を入れる | `pnpm lint` と `pnpm typecheck` が通る | S |
 | T0-4 | Vitest と Playwright を導入する | 疎通用のテストがそれぞれ実行できる | S |
-| T0-5 | Cloudflare 向け設定（`wrangler.jsonc`、Vite の Cloudflare プラグイン、自前の `src/server.ts`）を用意する | `wrangler dev` でローカル起動できる | M |
+| T0-5 | Cloudflare 向け設定（`wrangler.jsonc`、Vite の Cloudflare プラグイン、自前の `src/server.ts`）を用意する | `pnpm dev` と `pnpm preview` が Workers ランタイム上で起動できる | M |
 | T0-6 | D1 データベースを作成し binding を設定する | ローカルとリモート両方の D1 に接続できる | S |
 | T0-7 | GitHub の公開リポジトリを作り、CI（Lint・型チェック・Vitest）を設定する | PR で CI が緑になる | S |
 | T0-8 | CD（main マージで マイグレーション適用 → `wrangler deploy`）を設定する | 本番URLで初期ページが表示される | M |
