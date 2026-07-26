@@ -44,6 +44,9 @@ const pepper = env.PASSWORD_PEPPER
 })
 ```
 
-## 更新系は Origin を検証する
+## CSRF 対策は `src/start.ts` に集約されている
 
-Cookie は `SameSite=Lax` だが、加えて `Origin` ヘッダが自サイトと一致することを確認する。
+全サーバ関数が `Sec-Fetch-Site` / `Origin` の検証を通る。個々のサーバ関数に足す必要はない。
+
+ただし `src/start.ts` の `requestMiddleware` を編集するときは注意する。ここを空にしたり
+CSRF の middleware を外したりすると、**エラーも警告も出ないまま**防御が消える。

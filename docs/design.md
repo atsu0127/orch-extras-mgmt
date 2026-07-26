@@ -302,14 +302,14 @@ venues ─┬─(本番会場)─ concerts ─┬─ practices ─ practice_medi
 SPAモードのため画面側のガードは強制力を持たない。したがって次の二層で守る。
 
 1. **サーバ関数の middleware**（実体）: `requireAuth`（セッション必須）と `requireAdmin`（さらに `role = 'admin'` 必須）を用意し、**すべてのサーバ関数がどちらかを必ず通る**ようにする。読み取り系も例外にしない
-2. **ルートの `beforeLoad`**（体験）: 未ログインならログイン画面へ、`extra` が管理画面を開いたらダッシュボードへ、クライアント側で誘導する
+2. **ルートの `beforeLoad`**（体験）: 未ログインならログイン画面へ、`extra` が管理画面を開いたらダッシュボードへ、クライアント側で誘導する。判定に使うセッション照会はクライアントで1回だけ行い、以降は使い回す（[ADR-0005](./adr/0005-cache-session-lookup-on-client.md)）
 
 ### 8.5 その他の防御
 
 - **ログインのレート制限**: 同一 IP（`CF-Connecting-IP`）で直近5分の失敗が10回に達したら、以後の試行を一定時間拒否する。`login_attempts` の古い行は Cron で掃除する
-- **CSRF**: Cookie が `SameSite=Lax` なので他サイトからの POST では送信されない。加えて更新系サーバ関数では `Origin` ヘッダが自サイトと一致することを確認する
+- **CSRF**: Cookie が `SameSite=Lax` なので他サイトからの POST では送信されない。加えて `Sec-Fetch-Site`（無ければ `Origin`）が自サイトと一致しないサーバ関数呼び出しを 403 で落とす。更新系に限らず全サーバ関数に掛ける（[ADR-0006](./adr/0006-apply-csrf-middleware-to-all-server-functions.md)）
 - **秘密情報の扱い**: 環境変数は `cloudflare:workers` の binding からリクエストごとに読む（モジュール読み込み時に読むとクライアントバンドルへ混入する恐れがあるため）
-- **レスポンスヘッダ**: `X-Content-Type-Options: nosniff`、`Referrer-Policy: strict-origin-when-cross-origin`、外部リンクは `rel="noopener noreferrer"`
+- **レスポンスヘッダ**: `X-Content-Type-Options: nosniff`、`Referrer-Policy: strict-origin-when-cross-origin`、外部リンクは `rel="noopener noreferrer"`。ヘッダは Worker が返す分を `src/start.ts` で、assets binding が Worker を通さず返す静的ファイル分を `public/_headers` で付ける
 
 ## 9. リンク切れ検知
 
@@ -426,3 +426,6 @@ E2E はローカルの D1（wrangler のローカルモード）に対して実�
 | TypeScript 7（ネイティブ実装）を採用 | 型チェックが速い。新規プロジェクトなので 5.x への差し戻しが容易 | [ADR-0002](./adr/0002-adopt-typescript-7.md) |
 | Worker のエントリで Start の `fetch` をラップする | Workers の `env` が Start のオプション引数として渡るのを防ぐ | [ADR-0003](./adr/0003-wrap-start-fetch-in-worker-entry.md) |
 | 列挙値は CHECK 制約ではなくアプリ層で担保する | 13章の `target_type` 追加を、テーブル再作成なしで行えるようにする | [ADR-0004](./adr/0004-enforce-enums-in-app-layer.md) |
+| ルートガード用のセッション照会はクライアントで1回だけ行う | 画面遷移のたびに D1 クエリを足さない。認可の実体はサーバ関数側にある | [ADR-0005](./adr/0005-cache-session-lookup-on-client.md) |
+| CSRF 対策は更新系に限らず全サーバ関数に掛ける | 「更新系だけ」を人手で維持すると付け忘れに気づけない | [ADR-0006](./adr/0006-apply-csrf-middleware-to-all-server-functions.md) |
+| DB を伴うロジックの単体テストは `node:sqlite` で行う | 検証したいのは SQL の意味論。マイグレーションを流すのでスキーマとずれない | [ADR-0007](./adr/0007-test-db-logic-on-in-memory-sqlite.md) |
