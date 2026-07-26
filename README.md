@@ -2,7 +2,7 @@
 
 オーケストラのエキストラ（客演奏者）向け情報ポータル。練習日程と出欠の回答先、ボウイング、練習の録音を1か所にまとめて公開し、管理者がブラウザから更新できるようにする。
 
-現在の状態: **Phase 0 完了（土台と自動デプロイ）**。画面はまだプレースホルダのみ。
+現在の状態: **Phase 1 完了（データ基盤）**。9テーブルのスキーマと初期投入までできている。画面はまだプレースホルダのみ。
 
 本番: <https://orch-extras-mgmt.atsu-dq9.workers.dev>
 
@@ -33,9 +33,12 @@ TanStack Start (React + TypeScript) を SPA モードでビルドし、Cloudflar
 Node と pnpm のバージョンは [mise](https://mise.jdx.dev/) で固定している。
 
 ```bash
-mise install          # mise.toml のとおりに Node と pnpm を用意する
+mise install                # mise.toml のとおりに Node と pnpm を用意する
 pnpm install
-pnpm dev              # http://localhost:3000
+cp .dev.vars.example .dev.vars   # ローカル用の secret（git 管理外）
+pnpm db:migrate             # ローカル D1 にテーブルを作る
+pnpm db:seed                # 両ロールのパスワードと確認用データを入れる
+pnpm dev                    # http://localhost:3000
 ```
 
 E2E テストを動かす場合は、初回だけブラウザを取得する。
@@ -56,6 +59,9 @@ pnpm exec playwright install chromium
 | `pnpm typecheck` | TypeScript の型チェック |
 | `pnpm test` | Vitest による単体テスト |
 | `pnpm test:e2e` | Playwright による E2E テスト |
+| `pnpm db:generate` | スキーマの変更からマイグレーション SQL を生成する |
+| `pnpm db:migrate` | ローカル D1 にマイグレーションを適用する |
+| `pnpm db:seed` | ローカル D1 に初期データを投入する（何度でも実行できる） |
 | `pnpm cf-typegen` | `wrangler.jsonc` から binding の型を再生成する |
 | `pnpm deploy` | ビルドして本番へデプロイする |
 
@@ -69,12 +75,27 @@ E2E_BASE_URL=https://orch-extras-mgmt.atsu-dq9.workers.dev pnpm test:e2e
 
 ## データベース
 
-Cloudflare D1 を binding 名 `DB` で使う。マイグレーションは `migrations/` に置き、`wrangler d1 migrations apply` で適用する（スキーマ定義は Phase 1 で追加）。
+Cloudflare D1 を binding 名 `DB` で使う。テーブル定義は[設計書](docs/design.md)の6章が正。
+
+- スキーマは `src/db/schema.ts`（Drizzle ORM）
+- `pnpm db:generate` が `migrations/` に SQL を生成し、適用は `wrangler d1 migrations apply` が行う
+- サーバ関数からは `src/db/client.ts` の `getDb()` を使う。binding は呼び出しごとに読む
+
+本番への適用は main へのマージ時に CD が行う。手元から流す場合は影響が及ぶので事前に確認を取ること。
 
 ```bash
-pnpm exec wrangler d1 execute DB --local  --command "SELECT 1"   # ローカル
-pnpm exec wrangler d1 execute DB --remote --command "SELECT 1"   # 本番
+pnpm db:migrate                                                # ローカル
+pnpm exec wrangler d1 migrations apply DB --remote             # 本番
+pnpm exec wrangler d1 execute DB --local --command "SELECT 1"  # 中身を見る
 ```
+
+### 初期データ
+
+`pnpm db:seed` が `.dev.vars` の値から両ロールのパスワードを投入する。何度実行してもよく、2回目以降はパスワードだけを更新する。確認用の演奏会・練習・曲は、データベースが空のときだけ入る。
+
+## 環境変数
+
+ローカルでは `.dev.vars`（git 管理外）、本番では `wrangler secret put` で設定する。必要な項目は `.dev.vars.example` と[設計書](docs/design.md)の10章を参照。`PASSWORD_PEPPER` を変えると既存のパスワードが検証できなくなるため、変更したら `pnpm db:seed` で入れ直す。
 
 ## CI/CD
 
