@@ -1,9 +1,16 @@
-import { createFileRoute, useRouter } from '@tanstack/react-router'
+import { createFileRoute, redirect, useRouter } from '@tanstack/react-router'
 import { useServerFn } from '@tanstack/react-start'
 import { type FormEvent, useState } from 'react'
 import { login } from '../auth/functions'
+import { forgetCurrentSession, loadCurrentSession } from '../auth/session-cache'
 
 export const Route = createFileRoute('/login')({
+  beforeLoad: async () => {
+    // 期限切れで飛ばされてきた場合にキャッシュを信じるとログイン画面へ入れず
+    // 往復し続けるため、ここだけは必ずサーバに確かめる
+    forgetCurrentSession()
+    if (await loadCurrentSession()) throw redirect({ to: '/' })
+  },
   component: LoginPage,
 })
 
@@ -31,6 +38,7 @@ function LoginPage() {
         setError(FAILURE_MESSAGES[result.reason])
         return
       }
+      forgetCurrentSession()
       await router.navigate({ to: '/' })
     } catch {
       setError('通信に失敗しました。しばらくおいてから試してください。')

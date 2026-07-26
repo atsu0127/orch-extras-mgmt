@@ -5,6 +5,8 @@ describe('getRouter', () => {
   it('生成されたルートツリーを読み込める', () => {
     const router = getRouter()
 
-    expect(Object.keys(router.routesById)).toContain('/')
+    expect(Object.keys(router.routesById)).toEqual(
+      expect.arrayContaining(['/login', '/_authed/', '/_authed/admin/']),
+    )
   })
 })

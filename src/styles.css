@@ -50,6 +50,29 @@ p {
   color: var(--color-muted);
 }
 
+.app-header {
+  display: flex;
+  gap: 1rem;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--color-border);
+  font-size: 0.875rem;
+  color: var(--color-muted);
+}
+
+.link-button {
+  width: auto;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--color-accent);
+  font-size: inherit;
+  font-weight: normal;
+  text-decoration: underline;
+}
+
 .centered {
   display: flex;
   justify-content: center;
