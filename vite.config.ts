@@ -15,6 +15,11 @@ export default defineConfig({
     tanstackStart({
       spa: {
         enabled: true,
+        // Cloudflare の not_found_handling が返すのは index.html なので、
+        // シェルの出力先を既定の /_shell からそこへ移す
+        prerender: {
+          outputPath: '/index',
+        },
       },
     }),
     // react の plugin は start の plugin より後に置く必要がある

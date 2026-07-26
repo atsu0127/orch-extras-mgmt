@@ -1,9 +1,4 @@
-import {
-  createRootRoute,
-  HeadContent,
-  Outlet,
-  Scripts,
-} from '@tanstack/react-router'
+import { createRootRoute, HeadContent, Scripts } from '@tanstack/react-router'
 import type { ReactNode } from 'react'
 import appCss from '../styles.css?url'
 
@@ -18,16 +13,10 @@ export const Route = createRootRoute({
     ],
     links: [{ rel: 'stylesheet', href: appCss }],
   }),
-  component: RootComponent,
+  // component ではなく shellComponent に置く。SPA シェルの事前生成では
+  // これだけが描画されるので、特定の画面の中身がシェルに焼き付かない
+  shellComponent: RootDocument,
 })
-
-function RootComponent() {
-  return (
-    <RootDocument>
-      <Outlet />
-    </RootDocument>
-  )
-}
 
 function RootDocument({ children }: Readonly<{ children: ReactNode }>) {
   return (

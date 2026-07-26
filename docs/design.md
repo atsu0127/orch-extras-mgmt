@@ -92,7 +92,9 @@ export default defineConfig({
 
 ### 5.2 SPAモードを選ぶ理由と影響
 
-全ページがログイン必須で SEO が不要、利用者も数名という条件下では、サーバサイドレンダリングの利点がほぼない。一方で無料プランの CPU 制限（後述）に対して SSR は最も重い処理になる。よってビルド時にアプリのシェル（`/_shell.html`）だけを事前生成し、Worker の仕事をサーバ関数の実行と静的資産の配信に絞る。
+全ページがログイン必須で SEO が不要、利用者も数名という条件下では、サーバサイドレンダリングの利点がほぼない。一方で無料プランの CPU 制限（後述）に対して SSR は最も重い処理になる。よってビルド時にアプリのシェル（`dist/client/index.html`）だけを事前生成し、Worker の仕事をサーバ関数の実行に絞る。
+
+シェルの配信は Cloudflare の assets binding が行い、Worker には `/_serverFn/*` だけを回す。この振り分けは `wrangler.jsonc` の `assets` で設定する（[ADR-0008](./adr/0008-serve-spa-shell-from-assets-binding.md)）。設定を外すと document ごとに Worker が描画してしまい、以下の前提が崩れる。
 
 **重要な帰結**: SPAモードではルートの `beforeLoad` と `loader` がサーバで実行されない。つまり**ルート側の認証ガードは体験を整えるためのものにすぎず、権限の強制力を持たない**。認証と認可の実体は必ずサーバ関数側の middleware で行う（8章）。
 
@@ -429,3 +431,4 @@ E2E はローカルの D1（wrangler のローカルモード）に対して実�
 | ルートガード用のセッション照会はクライアントで1回だけ行う | 画面遷移のたびに D1 クエリを足さない。認可の実体はサーバ関数側にある | [ADR-0005](./adr/0005-cache-session-lookup-on-client.md) |
 | CSRF 対策は更新系に限らず全サーバ関数に掛ける | 「更新系だけ」を人手で維持すると付け忘れに気づけない | [ADR-0006](./adr/0006-apply-csrf-middleware-to-all-server-functions.md) |
 | DB を伴うロジックの単体テストは `node:sqlite` で行う | 検証したいのは SQL の意味論。マイグレーションを流すのでスキーマとずれない | [ADR-0007](./adr/0007-test-db-logic-on-in-memory-sqlite.md) |
+| SPA シェルは assets binding から返し、Worker はサーバ関数だけを受ける | document ごとに Worker が描画していた。5.2・5.3の前提が実態と食い違っていた | [ADR-0008](./adr/0008-serve-spa-shell-from-assets-binding.md) |

@@ -8,6 +8,13 @@
   "observability": {
     "enabled": true
   },
+  // directory はビルド時に Vite プラグインが入れるのでここには書かない。
+  // 画面は SPA シェルを assets から返し、Worker はサーバ関数だけを受ける。
+  // こうしないと document ごとに Worker が描画してしまう（設計書5章）
+  "assets": {
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/_serverFn/*"]
+  },
   "d1_databases": [
     {
       "binding": "DB",
