@@ -29,6 +29,8 @@
   "include": [
     "src",
     "e2e",
+    "scripts",
+    "drizzle.config.ts",
     "worker-configuration.d.ts",
     "vite.config.ts",
     "vitest.config.ts",
