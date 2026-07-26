@@ -4,6 +4,7 @@ import { z } from 'zod'
 import type { Db } from '../db/client'
 import { getDb } from '../db/client'
 import { credentials, ROLES, type Role } from '../db/schema'
+import { getClientIp } from './client-ip'
 import {
   clearSessionCookie,
   readSessionCookie,
@@ -11,6 +12,7 @@ import {
 } from './cookie'
 import { requireAuth } from './middleware'
 import { verifyPassword } from './password'
+import { isLoginBlocked, recordLoginAttempt } from './rate-limit'
 import { issueSession, resolveSession, revokeSession } from './session'
 
 /**
@@ -25,7 +27,7 @@ const loginInput = z.object({
 
 export type LoginResult =
   | { ok: true; role: Role }
-  | { ok: false; reason: 'invalid' }
+  | { ok: false; reason: 'invalid' | 'rate_limited' }
 
 export type CurrentSession = { role: Role }
 
@@ -47,11 +49,18 @@ export const login = createServerFn({ method: 'POST' })
   .validator(loginInput)
   .handler(async ({ data }): Promise<LoginResult> => {
     const db = getDb()
+    const ip = getClientIp()
+    const now = new Date()
+
+    if (await isLoginBlocked(db, ip, now)) {
+      return { ok: false, reason: 'rate_limited' }
+    }
 
     const role = await identifyRole(db, data.password)
+    await recordLoginAttempt(db, ip, role !== null, now)
     if (!role) return { ok: false, reason: 'invalid' }
 
-    writeSessionCookie(await issueSession(db, role, new Date()))
+    writeSessionCookie(await issueSession(db, role, now))
     return { ok: true, role }
   })
 

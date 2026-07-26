@@ -7,6 +7,12 @@ export const Route = createFileRoute('/login')({
   component: LoginPage,
 })
 
+const FAILURE_MESSAGES = {
+  invalid: 'パスワードが違います。',
+  rate_limited:
+    '試行が続いたため、しばらく受け付けません。5分ほどおいてからやり直してください。',
+} as const
+
 function LoginPage() {
   const submitLogin = useServerFn(login)
   const router = useRouter()
@@ -22,7 +28,7 @@ function LoginPage() {
     try {
       const result = await submitLogin({ data: { password } })
       if (!result.ok) {
-        setError('パスワードが違います。')
+        setError(FAILURE_MESSAGES[result.reason])
         return
       }
       await router.navigate({ to: '/' })
