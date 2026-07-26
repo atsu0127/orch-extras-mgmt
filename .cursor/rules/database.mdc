@@ -1,0 +1,38 @@
+---
+description: D1 のスキーマ・マイグレーション・クエリの方針
+globs: src/db/**/*.ts,migrations/**,drizzle.config.ts
+alwaysApply: false
+---
+
+# D1 とマイグレーション
+
+テーブル定義は `docs/design.md` の6章が正。9テーブルの列・制約・索引はそこに合わせる。
+
+## クエリ本数を意識する
+
+無料プランでは1リクエストあたりのサブリクエストが50件までで、**D1 クエリも1件として数える**。
+一覧取得で N+1 を作らないこと。関連を引くなら join か、`in` による一括取得にまとめる。
+
+```ts
+// ❌ BAD: 練習の件数だけクエリが増える
+for (const practice of practices) {
+  practice.media = await db.select().from(practiceMedia).where(eq(practiceMedia.practiceId, practice.id))
+}
+
+// ✅ GOOD: 1クエリでまとめて引き、メモリ上で束ねる
+const media = await db.select().from(practiceMedia)
+  .where(inArray(practiceMedia.practiceId, practices.map((p) => p.id)))
+```
+
+## 削除の意味づけを守る
+
+- `concerts` の削除は配下の `practices` / `practice_media` / `pieces` も削除する（CASCADE）
+- `venues` の削除では練習を残し、会場を未設定にする（SET NULL）。過去の練習記録を失わないため
+- `link_checks` は対象が消えると孤児になるので、Cron 実行時にまとめて掃除する
+
+## マイグレーションは前方互換を保つ
+
+列の削除やリネームは「追加 → 移行 → 削除」の順に分ける。1つのマイグレーションでまとめて壊さない。
+`drizzle-kit` で生成し、`wrangler d1 migrations apply` で適用する。
+
+本番（`--remote`）への適用は影響が及ぶので、実行前に確認を取る。
