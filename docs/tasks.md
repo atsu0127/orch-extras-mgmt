@@ -2,6 +2,11 @@
 
 設計は [design.md](./design.md) を参照。サイズは相対見積り（S: 1時間以内 / M: 半日 / L: 1日以上）。
 
+## 進捗
+
+- **Phase 0 完了**（2026-07-26）— T0-1〜T0-8 を実施。main へのマージで本番 <https://orch-extras-mgmt.atsu-dq9.workers.dev> へ自動デプロイされる状態になった。次は Phase 1（T1-1 から）
+- 次に着手できるもの: T1-1（Drizzle でのスキーマ定義）。T1-4 は T2-1 に依存するため Phase 2 の後になる
+
 ## 進め方
 
 フェーズ0〜2（土台・データ・認証）は順に進める必要がある。フェーズ3（閲覧）とフェーズ4（管理）は認証ができれば並行可能で、フェーズ5（リンクチェック）はデータ基盤だけあれば着手できる。機能単位でこまめにコミットし、フェーズごとに動作を確認する。
@@ -17,13 +22,13 @@ Phase 0 (土台) → Phase 1 (データ) → Phase 2 (認証) → ┬→ Phase 3
 コードでは片付かない、アカウント側の作業をここにまとめる。着手順に並べてある。
 
 - [x] **A-1** Cloudflare アカウントを用意する（無料プランで可）
-- [ ] **A-2** Cloudflare の API トークンを発行する（権限: Workers Scripts 編集、D1 編集、Workers KV 読み取り）。CI のデプロイに使う
-- [ ] **A-3** Slack の Incoming Webhook を作成し、通知を送るチャンネルを決める
-- [ ] **A-4** GitHub リポジトリの Secrets に `CLOUDFLARE_API_TOKEN` と `CLOUDFLARE_ACCOUNT_ID` を登録する
-- [ ] **A-5** 管理者用・エキストラ用の初期パスワードを決める（後から管理画面で変更できる）
+- [x] **A-2** Cloudflare の API トークンを発行する（権限: Workers Scripts 編集、D1 編集、Workers KV 読み取り）。CI のデプロイに使う
+- [ ] **A-3** Slack の Incoming Webhook を作成し、通知を送るチャンネルを決める（Phase 5 で必要）
+- [x] **A-4** GitHub リポジトリの Secrets に `CLOUDFLARE_API_TOKEN` と `CLOUDFLARE_ACCOUNT_ID` を登録する
+- [ ] **A-5** 管理者用・エキストラ用の初期パスワードを決める（後から管理画面で変更できる。Phase 2 で必要）
 - [ ] **A-6**（任意）独自ドメインを使うか決める。使わない場合は `*.workers.dev` のURLで運用する
 
-## Phase 0: 土台づくり
+## Phase 0: 土台づくり（完了）
 
 | ID | 内容 | 完了条件 | サイズ |
 | --- | --- | --- | --- |
