@@ -1,0 +1,34 @@
+---
+description: 日付・時刻とタイムゾーンの扱い
+globs: src/**/*.ts,src/**/*.tsx
+alwaysApply: false
+---
+
+# 日付・時刻の扱い
+
+仕様は `docs/design.md` の5.4が正。
+
+## 練習の日付・時刻は日本時間の文字列として保持する
+
+`date` は `YYYY-MM-DD`、`start_time` / `end_time` は `HH:MM`。**タイムゾーン変換は行わない**。
+`Date` に通すと環境依存で日付がずれるため、比較や並び替えは文字列のまま行う。
+
+```ts
+// ❌ BAD: UTC に変換され、日付が前日にずれることがある
+new Date(practice.date).toISOString().slice(0, 10)
+
+// ✅ GOOD: 文字列のまま扱う。辞書順が日付順と一致する
+practices.filter((p) => p.date >= todayInJst()).sort((a, b) => a.date.localeCompare(b.date))
+```
+
+## レコードの作成・更新時刻は UTC で保持する
+
+`created_at` / `updated_at` は UTC の ISO 8601 文字列。練習日程とは扱いが違うので混同しない。
+
+## 「今日」は日本時間で判定する
+
+一覧の「今後」と「過去」の切り分けに使う。実行環境のタイムゾーンに依存させない。
+
+## Cron は UTC 指定
+
+`0 0 * * *`（UTC）= 日本時間 9:00。

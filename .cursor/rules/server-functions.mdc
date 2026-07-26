@@ -1,0 +1,49 @@
+---
+description: サーバ関数の認可・入力検証・秘密情報の扱い
+globs: src/**/*.ts,src/**/*.tsx
+alwaysApply: false
+---
+
+# サーバ関数の作法
+
+仕様は `docs/design.md` の8章と6.3が正。
+
+## 認可はサーバ関数側で強制する
+
+SPA モードのためルートの `beforeLoad` は**強制力を持たない**（体験を整えるだけ）。
+**すべてのサーバ関数が `requireAuth` か `requireAdmin` のどちらかを必ず通る**こと。読み取り系も例外にしない。
+
+```ts
+// ❌ BAD: middleware を通していない。誰でも呼べる
+export const listPractices = createServerFn().handler(async () => { /* ... */ })
+
+// ✅ GOOD
+export const listPractices = createServerFn()
+  .middleware([requireAuth])
+  .handler(async () => { /* ... */ })
+```
+
+## 入力は必ず zod で検証する
+
+URL は `http://` または `https://` で始まるものだけ許可し（`javascript:` などを排除）、2000文字以内。
+文字列の長さ上限は `docs/design.md` 6.1 の表に従う。
+
+## binding と秘密情報はリクエストごとに読む
+
+モジュール読み込み時に読むとクライアントバンドルへ混入する恐れがある。
+
+```ts
+import { env } from 'cloudflare:workers'
+
+// ❌ BAD: モジュールのトップレベルで読んでいる
+const pepper = env.PASSWORD_PEPPER
+
+// ✅ GOOD: ハンドラの中で読む
+.handler(async () => {
+  const pepper = env.PASSWORD_PEPPER
+})
+```
+
+## 更新系は Origin を検証する
+
+Cookie は `SameSite=Lax` だが、加えて `Origin` ヘッダが自サイトと一致することを確認する。
