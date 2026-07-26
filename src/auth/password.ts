@@ -1,3 +1,4 @@
+import { toHex } from './hex'
 import { timingSafeEqual } from './timing-safe-equal'
 
 const ALGORITHM = 'hmac-sha256'
@@ -49,7 +50,5 @@ async function hmacSha256Hex(message: string, pepper: string): Promise<string> {
     encoder.encode(message),
   )
 
-  return Array.from(new Uint8Array(signature), (byte) =>
-    byte.toString(16).padStart(2, '0'),
-  ).join('')
+  return toHex(new Uint8Array(signature))
 }
