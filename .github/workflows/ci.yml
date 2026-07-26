@@ -1,11 +1,10 @@
 name: CI
 
+# main への push は Deploy 側で同じ検査を行うため、ここでは PR だけを見る
 on:
   pull_request:
-  push:
-    branches: [main]
 
-# 同じ参照に新しい push があれば古い実行を打ち切る
+# 同じ PR に新しい push があれば古い実行を打ち切る
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true

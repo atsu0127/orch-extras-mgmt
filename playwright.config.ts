@@ -1,6 +1,9 @@
 import { defineConfig, devices } from '@playwright/test'
 
-const baseURL = 'http://localhost:3000'
+// 既定はローカルの dev サーバ。デプロイ先を検証したいときは
+// E2E_BASE_URL を指定すると、サーバを起動せずそこへ接続する
+const deployedBaseURL = process.env.E2E_BASE_URL
+const baseURL = deployedBaseURL ?? 'http://localhost:3000'
 
 export default defineConfig({
   testDir: './e2e',
@@ -19,10 +22,14 @@ export default defineConfig({
       use: { ...devices['Pixel 7'] },
     },
   ],
-  webServer: {
-    command: 'pnpm dev',
-    url: baseURL,
-    reuseExistingServer: !process.env.CI,
-    timeout: 120_000,
-  },
+  ...(deployedBaseURL
+    ? {}
+    : {
+        webServer: {
+          command: 'pnpm dev',
+          url: baseURL,
+          reuseExistingServer: !process.env.CI,
+          timeout: 120_000,
+        },
+      }),
 })
