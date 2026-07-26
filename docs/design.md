@@ -425,3 +425,4 @@ E2E はローカルの D1（wrangler のローカルモード）に対して実�
 | CI は PR だけで動かし、main への push は Deploy が検査も兼ねる | 検査を通っていないコードが本番に出ないことを、ワークフローをまたがずに保証する | [ADR-0001](./adr/0001-split-ci-and-deploy-workflows.md) |
 | TypeScript 7（ネイティブ実装）を採用 | 型チェックが速い。新規プロジェクトなので 5.x への差し戻しが容易 | [ADR-0002](./adr/0002-adopt-typescript-7.md) |
 | Worker のエントリで Start の `fetch` をラップする | Workers の `env` が Start のオプション引数として渡るのを防ぐ | [ADR-0003](./adr/0003-wrap-start-fetch-in-worker-entry.md) |
+| 列挙値は CHECK 制約ではなくアプリ層で担保する | 13章の `target_type` 追加を、テーブル再作成なしで行えるようにする | [ADR-0004](./adr/0004-enforce-enums-in-app-layer.md) |
