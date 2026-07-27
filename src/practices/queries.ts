@@ -95,6 +95,7 @@ export type PracticeAdminItem = {
   endTime: string | null
   venueId: number | null
   detail: string | null
+  media: Array<PracticeMediaLink>
 }
 
 /**
@@ -105,7 +106,7 @@ export async function listPracticesForAdmin(
   db: Db,
   concertId: number,
 ): Promise<Array<PracticeAdminItem>> {
-  return db
+  const rows = await db
     .select({
       id: practices.id,
       date: practices.date,
@@ -117,6 +118,14 @@ export async function listPracticesForAdmin(
     .from(practices)
     .where(eq(practices.concertId, concertId))
     .orderBy(asc(practices.date), asc(practices.startTime), asc(practices.id))
+
+  if (rows.length === 0) return []
+
+  const media = await listMediaByPractice(
+    db,
+    rows.map((row) => row.id),
+  )
+  return rows.map((row) => ({ ...row, media: media.get(row.id) ?? [] }))
 }
 
 async function listMediaByPractice(

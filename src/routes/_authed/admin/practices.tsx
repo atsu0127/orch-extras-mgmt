@@ -11,14 +11,25 @@ import {
   useAdminForm,
 } from '../../../components/admin-form'
 import { ConfirmButton } from '../../../components/confirm-button'
+import { ExternalLink } from '../../../components/external-link'
 import { EmptyState, NoConcertState } from '../../../components/states'
 import { getDb } from '../../../db/client'
 import { formatDate, formatTimeRange } from '../../../lib/date'
-import { idValue, toOptionalId } from '../../../lib/validation'
+import { MAX_LENGTH } from '../../../lib/limits'
+import { DIRECTIONS } from '../../../lib/ordering'
+import {
+  idValue,
+  requiredText,
+  requiredUrl,
+  toOptionalId,
+} from '../../../lib/validation'
 import { practiceInput } from '../../../practices/input'
 import {
   createPractice,
+  createPracticeMedia,
   deletePractice,
+  deletePracticeMedia,
+  movePracticeMedia,
   updatePractice,
 } from '../../../practices/mutations'
 import {
@@ -54,6 +65,28 @@ const removePractice = createServerFn({ method: 'POST' })
   .middleware([requireAdmin])
   .validator(z.object({ id: idValue }))
   .handler(({ data }) => deletePractice(getDb(), data.id))
+
+const mediaInput = z.object({
+  title: requiredText(MAX_LENGTH.mediaTitle),
+  url: requiredUrl,
+})
+
+const addMedia = createServerFn({ method: 'POST' })
+  .middleware([requireAdmin])
+  .validator(mediaInput.extend({ practiceId: idValue }))
+  .handler(({ data: { practiceId, ...fields } }) =>
+    createPracticeMedia(getDb(), practiceId, fields),
+  )
+
+const moveMedia = createServerFn({ method: 'POST' })
+  .middleware([requireAdmin])
+  .validator(z.object({ id: idValue, direction: z.enum(DIRECTIONS) }))
+  .handler(({ data }) => movePracticeMedia(getDb(), data.id, data.direction))
+
+const removeMedia = createServerFn({ method: 'POST' })
+  .middleware([requireAdmin])
+  .validator(z.object({ id: idValue }))
+  .handler(({ data }) => deletePracticeMedia(getDb(), data.id))
 
 export const Route = createFileRoute('/_authed/admin/practices')({
   loaderDeps: ({ search }) => ({ concert: search.concert }),
@@ -138,6 +171,8 @@ function AdminPracticeItem({
       <p className="item-note">{venue ? venue.name : '会場は未設定'}</p>
       {practice.detail && <p className="item-note">{practice.detail}</p>}
 
+      <MediaSection practice={practice} />
+
       <div className="controls">
         <button
           type="button"
@@ -149,9 +184,7 @@ function AdminPracticeItem({
         <ConfirmButton
           label="削除"
           title={`${formatDate(practice.date)}の練習を削除しますか？`}
-          description={
-            <p>付いている録音・録画リンクも一緒に消えます。元に戻せません。</p>
-          }
+          description={<p>{deleteWarning(practice)}</p>}
           disabled={action.running}
           onConfirm={() =>
             action.run(() => remove({ data: { id: practice.id } }))
@@ -160,6 +193,142 @@ function AdminPracticeItem({
       </div>
       <FormError message={action.failure} />
     </div>
+  )
+}
+
+function MediaSection({ practice }: { practice: PracticeAdminItem }) {
+  const [adding, setAdding] = useState(false)
+  const move = useServerFn(moveMedia)
+  const remove = useServerFn(removeMedia)
+  const action = useAdminAction()
+  const last = practice.media.length - 1
+
+  return (
+    <>
+      {practice.media.length > 0 && (
+        <div>
+          <p className="item-note">録音・録画</p>
+          <ul className="media-list">
+            {practice.media.map((link, index) => (
+              <li key={link.id}>
+                <ExternalLink href={link.url}>{link.title}</ExternalLink>
+                <div className="controls">
+                  <button
+                    type="button"
+                    className="secondary"
+                    aria-label={`「${link.title}」を上へ`}
+                    disabled={index === 0 || action.running}
+                    onClick={() =>
+                      void action.run(() =>
+                        move({ data: { id: link.id, direction: 'up' } }),
+                      )
+                    }
+                  >
+                    ↑
+                  </button>
+                  <button
+                    type="button"
+                    className="secondary"
+                    aria-label={`「${link.title}」を下へ`}
+                    disabled={index === last || action.running}
+                    onClick={() =>
+                      void action.run(() =>
+                        move({ data: { id: link.id, direction: 'down' } }),
+                      )
+                    }
+                  >
+                    ↓
+                  </button>
+                  <ConfirmButton
+                    label="削除"
+                    title={`「${link.title}」を削除しますか？`}
+                    description={
+                      <p>リンクだけを消します。録音そのものは残ります。</p>
+                    }
+                    disabled={action.running}
+                    onConfirm={() =>
+                      action.run(() => remove({ data: { id: link.id } }))
+                    }
+                  />
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+      <FormError message={action.failure} />
+
+      {adding ? (
+        <MediaForm practiceId={practice.id} onDone={() => setAdding(false)} />
+      ) : (
+        <div className="controls">
+          <button
+            type="button"
+            className="secondary"
+            onClick={() => setAdding(true)}
+          >
+            録音・録画リンクを追加
+          </button>
+        </div>
+      )}
+    </>
+  )
+}
+
+type MediaFormProps = {
+  practiceId: number
+  onDone: () => void
+}
+
+function MediaForm({ practiceId, onDone }: MediaFormProps) {
+  const id = useId()
+  const add = useServerFn(addMedia)
+  const [title, setTitle] = useState('')
+  const [url, setUrl] = useState('')
+
+  const form = useAdminForm({
+    schema: mediaInput,
+    action: (data) => add({ data: { ...data, practiceId } }),
+    onSaved: onDone,
+  })
+
+  return (
+    <AdminForm
+      title="録音・録画リンクを追加"
+      titleLevel={3}
+      onSubmit={form.onSubmit(() => ({ title, url }))}
+      failure={form.failure}
+      submitting={form.submitting}
+      onCancel={onDone}
+    >
+      <Field
+        id={`${id}-title`}
+        label="表示名"
+        hint="例: 1楽章 通し"
+        error={form.errors.title}
+      >
+        <input
+          id={`${id}-title`}
+          value={title}
+          onChange={(event) => setTitle(event.target.value)}
+        />
+      </Field>
+
+      <Field
+        id={`${id}-url`}
+        label="URL"
+        hint="Google ドライブや YouTube など"
+        error={form.errors.url}
+      >
+        <input
+          id={`${id}-url`}
+          type="url"
+          inputMode="url"
+          value={url}
+          onChange={(event) => setUrl(event.target.value)}
+        />
+      </Field>
+    </AdminForm>
   )
 }
 
@@ -289,4 +458,12 @@ function PracticeForm({
       </Field>
     </AdminForm>
   )
+}
+
+function deleteWarning(practice: PracticeAdminItem): string {
+  if (practice.media.length === 0) {
+    return 'この練習に録音・録画リンクは付いていません。元に戻せません。'
+  }
+
+  return `付いている録音・録画リンク ${practice.media.length} 件も一緒に消えます。元に戻せません。`
 }

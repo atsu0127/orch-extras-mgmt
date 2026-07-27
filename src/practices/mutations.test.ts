@@ -2,7 +2,14 @@ import { beforeEach, describe, expect, it } from 'vitest'
 import type { Db } from '../db/client'
 import { concerts, practiceMedia, practices, venues } from '../db/schema'
 import { createTestDb } from '../test/db'
-import { createPractice, deletePractice, updatePractice } from './mutations'
+import {
+  createPractice,
+  createPracticeMedia,
+  deletePractice,
+  deletePracticeMedia,
+  movePracticeMedia,
+  updatePractice,
+} from './mutations'
 import { listPracticesForAdmin } from './queries'
 
 let db: Db
@@ -101,5 +108,98 @@ describe('deletePractice', () => {
 
     expect(await listPracticesForAdmin(db, 1)).toMatchObject([{ id: 2 }])
     expect(await db.select().from(practiceMedia)).toMatchObject([{ id: 2 }])
+  })
+})
+
+describe('練習の録音リンク', () => {
+  beforeEach(async () => {
+    await db.insert(practices).values([
+      { id: 1, concertId: 1, date: '2026-08-01' },
+      { id: 2, concertId: 1, date: '2026-08-08' },
+    ])
+  })
+
+  /** 対象の練習に付いているリンクを、表示と同じ並びで取り出す */
+  async function titles(practiceId = 1): Promise<Array<string>> {
+    const items = await listPracticesForAdmin(db, 1)
+    const practice = items.find(({ id }) => id === practiceId)
+    return (practice?.media ?? []).map(({ title }) => title)
+  }
+
+  it('追加した順に並ぶ', async () => {
+    await createPracticeMedia(db, 1, {
+      title: '1楽章',
+      url: 'https://example.com/1',
+    })
+    await createPracticeMedia(db, 1, {
+      title: '2楽章',
+      url: 'https://example.com/2',
+    })
+
+    expect(await titles()).toEqual(['1楽章', '2楽章'])
+  })
+
+  it('並びは練習ごとに独立している', async () => {
+    await createPracticeMedia(db, 1, {
+      title: '1楽章',
+      url: 'https://example.com/1',
+    })
+    await createPracticeMedia(db, 2, {
+      title: '別の練習の録音',
+      url: 'https://example.com/2',
+    })
+
+    expect(await titles(1)).toEqual(['1楽章'])
+    expect(await titles(2)).toEqual(['別の練習の録音'])
+  })
+
+  it('上下に動かすと並びが変わる', async () => {
+    for (const title of ['1楽章', '2楽章', '3楽章']) {
+      await createPracticeMedia(db, 1, {
+        title,
+        url: `https://example.com/${title}`,
+      })
+    }
+    const [first, , third] =
+      (await listPracticesForAdmin(db, 1))[0]?.media ?? []
+    if (!first || !third) throw new Error('録音リンクが登録できていない')
+
+    await movePracticeMedia(db, third.id, 'up')
+    expect(await titles()).toEqual(['1楽章', '3楽章', '2楽章'])
+
+    await movePracticeMedia(db, first.id, 'down')
+    expect(await titles()).toEqual(['3楽章', '1楽章', '2楽章'])
+  })
+
+  it('端を越えては動かせない', async () => {
+    await createPracticeMedia(db, 1, {
+      title: '1楽章',
+      url: 'https://example.com/1',
+    })
+    await createPracticeMedia(db, 1, {
+      title: '2楽章',
+      url: 'https://example.com/2',
+    })
+    const [first] = (await listPracticesForAdmin(db, 1))[0]?.media ?? []
+    if (!first) throw new Error('録音リンクが登録できていない')
+
+    await movePracticeMedia(db, first.id, 'up')
+
+    expect(await titles()).toEqual(['1楽章', '2楽章'])
+  })
+
+  it('消しても残りの並びは崩れない', async () => {
+    for (const title of ['1楽章', '2楽章', '3楽章']) {
+      await createPracticeMedia(db, 1, {
+        title,
+        url: `https://example.com/${title}`,
+      })
+    }
+    const [, second] = (await listPracticesForAdmin(db, 1))[0]?.media ?? []
+    if (!second) throw new Error('録音リンクが登録できていない')
+
+    await deletePracticeMedia(db, second.id)
+
+    expect(await titles()).toEqual(['1楽章', '3楽章'])
   })
 })

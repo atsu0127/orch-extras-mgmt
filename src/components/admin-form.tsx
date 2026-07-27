@@ -9,6 +9,8 @@ const FAILURE_MESSAGE =
 
 type AdminFormProps = {
   title: string
+  /** 一覧の項目の中に置くときは3にする。見出しの階層を飛ばさないため */
+  titleLevel?: 2 | 3
   onSubmit: (event: FormEvent<HTMLFormElement>) => void
   failure: string | null
   submitting: boolean
@@ -24,15 +26,18 @@ type AdminFormProps = {
  */
 export function AdminForm({
   title,
+  titleLevel = 2,
   onSubmit,
   failure,
   submitting,
   onCancel,
   children,
 }: AdminFormProps) {
+  const Title = titleLevel === 3 ? 'h3' : 'h2'
+
   return (
     <form className="admin-form" noValidate onSubmit={onSubmit}>
-      <h2>{title}</h2>
+      <Title>{title}</Title>
       {children}
       <FormError message={failure} />
 
