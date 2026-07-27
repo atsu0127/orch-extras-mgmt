@@ -20,6 +20,7 @@ import { readRememberedConcert, rememberConcert } from '../../concerts/cookie'
 import type { ConcertOption } from '../../concerts/queries'
 import { resolveConcertId } from '../../concerts/selection'
 import { formatFullDate, todayInJst } from '../../lib/date'
+import { ROLE_LABELS } from '../../lib/roles'
 
 export const Route = createFileRoute('/_authed')({
   validateSearch: z.object({
@@ -55,11 +56,6 @@ export const Route = createFileRoute('/_authed')({
   },
   component: AuthedLayout,
 })
-
-const ROLE_LABELS = {
-  admin: '管理者',
-  extra: 'エキストラ',
-} as const
 
 function AuthedLayout() {
   const { session, concerts, concert } = Route.useRouteContext()

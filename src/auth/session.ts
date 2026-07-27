@@ -1,6 +1,7 @@
 import { and, eq, gt } from 'drizzle-orm'
 import type { Db } from '../db/client'
-import { type Role, sessions } from '../db/schema'
+import { sessions } from '../db/schema'
+import type { Role } from '../lib/roles'
 import { toHex } from './hex'
 
 export const SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000

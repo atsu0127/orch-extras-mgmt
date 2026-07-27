@@ -18,6 +18,7 @@ function AdminLayout() {
         <Link to="/admin/practices">練習</Link>
         <Link to="/admin/pieces">曲</Link>
         <Link to="/admin/venues">会場</Link>
+        <Link to="/admin/settings">設定</Link>
       </nav>
       <Outlet />
     </>

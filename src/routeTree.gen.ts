@@ -19,6 +19,7 @@ import { Route as AuthedAdminIndexRouteImport } from './routes/_authed/admin/ind
 import { Route as AuthedAdminConcertsRouteImport } from './routes/_authed/admin/concerts'
 import { Route as AuthedAdminPiecesRouteImport } from './routes/_authed/admin/pieces'
 import { Route as AuthedAdminPracticesRouteImport } from './routes/_authed/admin/practices'
+import { Route as AuthedAdminSettingsRouteImport } from './routes/_authed/admin/settings'
 import { Route as AuthedAdminVenuesRouteImport } from './routes/_authed/admin/venues'
 
 const AuthedRouteRoute = AuthedRouteRouteImport.update({
@@ -70,6 +71,11 @@ const AuthedAdminPracticesRoute = AuthedAdminPracticesRouteImport.update({
   path: '/practices',
   getParentRoute: () => AuthedAdminRouteRoute,
 } as any)
+const AuthedAdminSettingsRoute = AuthedAdminSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AuthedAdminRouteRoute,
+} as any)
 const AuthedAdminVenuesRoute = AuthedAdminVenuesRouteImport.update({
   id: '/venues',
   path: '/venues',
@@ -85,6 +91,7 @@ export interface FileRoutesByFullPath {
   '/admin/concerts': typeof AuthedAdminConcertsRoute
   '/admin/pieces': typeof AuthedAdminPiecesRoute
   '/admin/practices': typeof AuthedAdminPracticesRoute
+  '/admin/settings': typeof AuthedAdminSettingsRoute
   '/admin/venues': typeof AuthedAdminVenuesRoute
   '/admin/': typeof AuthedAdminIndexRoute
 }
@@ -96,6 +103,7 @@ export interface FileRoutesByTo {
   '/admin/concerts': typeof AuthedAdminConcertsRoute
   '/admin/pieces': typeof AuthedAdminPiecesRoute
   '/admin/practices': typeof AuthedAdminPracticesRoute
+  '/admin/settings': typeof AuthedAdminSettingsRoute
   '/admin/venues': typeof AuthedAdminVenuesRoute
   '/admin': typeof AuthedAdminIndexRoute
 }
@@ -110,6 +118,7 @@ export interface FileRoutesById {
   '/_authed/admin/concerts': typeof AuthedAdminConcertsRoute
   '/_authed/admin/pieces': typeof AuthedAdminPiecesRoute
   '/_authed/admin/practices': typeof AuthedAdminPracticesRoute
+  '/_authed/admin/settings': typeof AuthedAdminSettingsRoute
   '/_authed/admin/venues': typeof AuthedAdminVenuesRoute
   '/_authed/admin/': typeof AuthedAdminIndexRoute
 }
@@ -124,6 +133,7 @@ export interface FileRouteTypes {
     | '/admin/concerts'
     | '/admin/pieces'
     | '/admin/practices'
+    | '/admin/settings'
     | '/admin/venues'
     | '/admin/'
   fileRoutesByTo: FileRoutesByTo
@@ -135,6 +145,7 @@ export interface FileRouteTypes {
     | '/admin/concerts'
     | '/admin/pieces'
     | '/admin/practices'
+    | '/admin/settings'
     | '/admin/venues'
     | '/admin'
   id:
@@ -148,6 +159,7 @@ export interface FileRouteTypes {
     | '/_authed/admin/concerts'
     | '/_authed/admin/pieces'
     | '/_authed/admin/practices'
+    | '/_authed/admin/settings'
     | '/_authed/admin/venues'
     | '/_authed/admin/'
   fileRoutesById: FileRoutesById
@@ -229,6 +241,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedAdminPracticesRouteImport
       parentRoute: typeof AuthedAdminRouteRoute
     }
+    '/_authed/admin/settings': {
+      id: '/_authed/admin/settings'
+      path: '/settings'
+      fullPath: '/admin/settings'
+      preLoaderRoute: typeof AuthedAdminSettingsRouteImport
+      parentRoute: typeof AuthedAdminRouteRoute
+    }
     '/_authed/admin/venues': {
       id: '/_authed/admin/venues'
       path: '/venues'
@@ -243,6 +262,7 @@ interface AuthedAdminRouteRouteChildren {
   AuthedAdminConcertsRoute: typeof AuthedAdminConcertsRoute
   AuthedAdminPiecesRoute: typeof AuthedAdminPiecesRoute
   AuthedAdminPracticesRoute: typeof AuthedAdminPracticesRoute
+  AuthedAdminSettingsRoute: typeof AuthedAdminSettingsRoute
   AuthedAdminVenuesRoute: typeof AuthedAdminVenuesRoute
   AuthedAdminIndexRoute: typeof AuthedAdminIndexRoute
 }
@@ -251,6 +271,7 @@ const AuthedAdminRouteRouteChildren: AuthedAdminRouteRouteChildren = {
   AuthedAdminConcertsRoute: AuthedAdminConcertsRoute,
   AuthedAdminPiecesRoute: AuthedAdminPiecesRoute,
   AuthedAdminPracticesRoute: AuthedAdminPracticesRoute,
+  AuthedAdminSettingsRoute: AuthedAdminSettingsRoute,
   AuthedAdminVenuesRoute: AuthedAdminVenuesRoute,
   AuthedAdminIndexRoute: AuthedAdminIndexRoute,
 }

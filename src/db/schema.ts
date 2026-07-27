@@ -6,9 +6,7 @@ import {
   uniqueIndex,
 } from 'drizzle-orm/sqlite-core'
 import { MAX_LENGTH } from '../lib/limits'
-
-export const ROLES = ['admin', 'extra'] as const
-export type Role = (typeof ROLES)[number]
+import { ROLES } from '../lib/roles'
 
 export const CONCERT_STATUSES = ['active', 'archived'] as const
 export type ConcertStatus = (typeof CONCERT_STATUSES)[number]

@@ -362,6 +362,11 @@ button:disabled {
   color: var(--color-danger);
 }
 
+.notice {
+  color: var(--color-accent);
+  font-size: 0.875rem;
+}
+
 /* 管理画面 */
 
 .subnav a {

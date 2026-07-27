@@ -1,7 +1,7 @@
 import type { ErrorComponentProps } from '@tanstack/react-router'
 import { Link, useRouter } from '@tanstack/react-router'
 import type { ReactNode } from 'react'
-import type { Role } from '../db/schema'
+import type { Role } from '../lib/roles'
 
 type EmptyStateProps = {
   title: string
