@@ -198,9 +198,17 @@ main {
   font-weight: 600;
 }
 
+.link-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin: 0.25rem 0 0;
+  padding-left: 1.25rem;
+}
+
 /* 練習の詳細。改行をそのまま見せる（設計書6.1） */
 .detail {
-  margin: 0;
+  margin: 0.375rem 0 0;
   white-space: pre-wrap;
   font: inherit;
   color: var(--color-fg);
@@ -311,6 +319,7 @@ button:disabled {
   background-color: var(--color-accent);
   color: var(--color-accent-fg);
   font-weight: 600;
+  text-align: center;
   text-decoration: none;
 }
 
