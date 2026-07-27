@@ -4,6 +4,9 @@ import { expect, type Page, test } from '@playwright/test'
 const adminPassword = process.env.E2E_ADMIN_PASSWORD
 const extraPassword = process.env.E2E_EXTRA_PASSWORD
 
+// 演奏会が登録されていると `?concert=<id>` が付く（設計書7.1）
+const TOP_URL = /\/(\?concert=\d+)?$/
+
 test('未ログインでトップを開くとログイン画面へ誘導される', async ({ page }) => {
   await page.goto('/')
 
@@ -37,7 +40,7 @@ test.describe('extra としてログインする', () => {
     await expect(page.getByText('エキストラとしてログイン中')).toBeVisible()
 
     await page.goto('/admin')
-    await expect(page).toHaveURL(/\/$/)
+    await expect(page).toHaveURL(TOP_URL)
   })
 })
 
