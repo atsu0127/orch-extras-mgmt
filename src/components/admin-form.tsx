@@ -45,7 +45,7 @@ export function FormError({ message }: { message: string | null }) {
 type AdminFormOptions<Input, Output> = {
   /** サーバ関数と同じスキーマを渡す。入力の可否とエラー文を両側で一致させる */
   schema: z.ZodType<Output, Input>
-  action: (value: Output) => Promise<unknown>
+  action: (value: Input) => Promise<unknown>
   /** 保存できたときだけ呼ぶ。編集フォームを閉じる、入力欄を空に戻すなど */
   onSaved?: () => void
 }
@@ -76,7 +76,9 @@ export function useAdminForm<Input, Output>({
     setErrors({})
     setSubmitting(true)
     try {
-      await action(parsed.data)
+      // 検証を通った値ではなく入力そのものを送る。空欄を null に寄せるといった
+      // 正規化はサーバ側の検証で行い、そこを唯一の正とする
+      await action(input)
       await refresh()
       onSaved?.()
     } catch {

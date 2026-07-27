@@ -16,6 +16,7 @@ import { Route as AuthedAdminRouteRouteImport } from './routes/_authed/admin/rou
 import { Route as AuthedPiecesRouteImport } from './routes/_authed/pieces'
 import { Route as AuthedPracticesRouteImport } from './routes/_authed/practices'
 import { Route as AuthedAdminIndexRouteImport } from './routes/_authed/admin/index'
+import { Route as AuthedAdminVenuesRouteImport } from './routes/_authed/admin/venues'
 
 const AuthedRouteRoute = AuthedRouteRouteImport.update({
   id: '/_authed',
@@ -51,6 +52,11 @@ const AuthedAdminIndexRoute = AuthedAdminIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AuthedAdminRouteRoute,
 } as any)
+const AuthedAdminVenuesRoute = AuthedAdminVenuesRouteImport.update({
+  id: '/venues',
+  path: '/venues',
+  getParentRoute: () => AuthedAdminRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AuthedIndexRoute
@@ -58,6 +64,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AuthedAdminRouteRouteWithChildren
   '/pieces': typeof AuthedPiecesRoute
   '/practices': typeof AuthedPracticesRoute
+  '/admin/venues': typeof AuthedAdminVenuesRoute
   '/admin/': typeof AuthedAdminIndexRoute
 }
 export interface FileRoutesByTo {
@@ -65,6 +72,7 @@ export interface FileRoutesByTo {
   '/pieces': typeof AuthedPiecesRoute
   '/practices': typeof AuthedPracticesRoute
   '/': typeof AuthedIndexRoute
+  '/admin/venues': typeof AuthedAdminVenuesRoute
   '/admin': typeof AuthedAdminIndexRoute
 }
 export interface FileRoutesById {
@@ -75,13 +83,21 @@ export interface FileRoutesById {
   '/_authed/pieces': typeof AuthedPiecesRoute
   '/_authed/practices': typeof AuthedPracticesRoute
   '/_authed/': typeof AuthedIndexRoute
+  '/_authed/admin/venues': typeof AuthedAdminVenuesRoute
   '/_authed/admin/': typeof AuthedAdminIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/login' | '/admin' | '/pieces' | '/practices' | '/admin/'
+  fullPaths:
+    | '/'
+    | '/login'
+    | '/admin'
+    | '/pieces'
+    | '/practices'
+    | '/admin/venues'
+    | '/admin/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/login' | '/pieces' | '/practices' | '/' | '/admin'
+  to: '/login' | '/pieces' | '/practices' | '/' | '/admin/venues' | '/admin'
   id:
     | '__root__'
     | '/_authed'
@@ -90,6 +106,7 @@ export interface FileRouteTypes {
     | '/_authed/pieces'
     | '/_authed/practices'
     | '/_authed/'
+    | '/_authed/admin/venues'
     | '/_authed/admin/'
   fileRoutesById: FileRoutesById
 }
@@ -149,14 +166,23 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedAdminIndexRouteImport
       parentRoute: typeof AuthedAdminRouteRoute
     }
+    '/_authed/admin/venues': {
+      id: '/_authed/admin/venues'
+      path: '/venues'
+      fullPath: '/admin/venues'
+      preLoaderRoute: typeof AuthedAdminVenuesRouteImport
+      parentRoute: typeof AuthedAdminRouteRoute
+    }
   }
 }
 
 interface AuthedAdminRouteRouteChildren {
+  AuthedAdminVenuesRoute: typeof AuthedAdminVenuesRoute
   AuthedAdminIndexRoute: typeof AuthedAdminIndexRoute
 }
 
 const AuthedAdminRouteRouteChildren: AuthedAdminRouteRouteChildren = {
+  AuthedAdminVenuesRoute: AuthedAdminVenuesRoute,
   AuthedAdminIndexRoute: AuthedAdminIndexRoute,
 }
 

@@ -24,6 +24,27 @@ const media = await db.select().from(practiceMedia)
   .where(inArray(practiceMedia.practiceId, practices.map((p) => p.id)))
 ```
 
+## `sql` テンプレートの中で相関副問い合わせを書かない
+
+drizzle は from 句が1テーブルだけのとき、select 句の列参照を**テーブル修飾なしで**出力する。
+そのため `sql` テンプレートに書いた副問い合わせでは、外側の列が内側のテーブルの列に
+解決されてしまう。エラーにならず件数が静かに狂うので気づけない。
+
+```ts
+// ❌ BAD: `(select count(*) from "practices" where "venue_id" = "id")` になり、
+//         `"id"` が practices.id に解決される
+sql<number>`(select count(*) from ${practices} where ${practices.venueId} = ${venues.id})`
+
+// ✅ GOOD: join なら drizzle が列を修飾する。join を重ねると行が掛け算になるので distinct で数える
+db.select({ practiceCount: countDistinct(practices.id) })
+  .from(venues)
+  .leftJoin(practices, eq(practices.venueId, venues.id))
+  .groupBy(venues.id)
+```
+
+集計の結果を確かめるテストは、**件数が対象ごとに違う**データで書く。どの対象も1件のような
+データだと、相関していないクエリでも通ってしまう。
+
 ## 削除の意味づけを守る
 
 - `concerts` の削除は配下の `practices` / `practice_media` / `pieces` も削除する（CASCADE）

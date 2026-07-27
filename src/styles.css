@@ -364,8 +364,14 @@ button:disabled {
   margin: 0.75rem 0 0;
 }
 
-.admin-form button[type="submit"] {
+.form-actions {
+  display: flex;
+  gap: 0.5rem;
   margin-top: 1rem;
+}
+
+.form-actions button {
+  flex: 1;
 }
 
 /* 一覧の行に並べる操作。誤って押さないよう幅を内容に合わせる */
