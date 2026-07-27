@@ -43,10 +43,11 @@ export const Route = createFileRoute('/_authed')({
     if (!concert) return { session, concerts, concert }
 
     rememberConcert(concert.id)
-    // 選択の正は URL のクエリ（ADR-0009）。解決した結果と食い違うなら書き戻す
+    // 選択の正は URL のクエリ（ADR-0009）。解決した結果と食い違うなら書き戻す。
+    // 子ルートが持つクエリ（練習一覧のタブなど）を落とさないよう、既存の値に足す形にする
     if (search.concert !== concert.id) {
       throw redirect({
-        search: { ...search, concert: concert.id },
+        search: (prev) => ({ ...prev, concert: concert.id }),
         replace: true,
       })
     }
