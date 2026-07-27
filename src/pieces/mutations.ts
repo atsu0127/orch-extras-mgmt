@@ -35,7 +35,7 @@ export async function updatePiece(
   await db.update(pieces).set(fields).where(eq(pieces.id, id))
 
   // 別の URL に差し替えたなら、前の URL に対する検知結果は何も説明していないので捨てる。
-  // 残すと直したリンクが管理トップに要確認として出続ける（ADR-0011）
+  // 残すと直したリンクが管理トップに要確認として出続ける（ADR-0012）
   await db
     .delete(linkChecks)
     .where(

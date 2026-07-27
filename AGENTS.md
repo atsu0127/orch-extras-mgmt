@@ -36,6 +36,7 @@ TanStack Start (React + TypeScript) を SPA モードでビルドし、Cloudflar
 - 書式は Biome に従う。手で整えず `pnpm lint:fix` を使う
 - `tsconfig.json` は strict に加えて `noUncheckedIndexedAccess` と `exactOptionalPropertyTypes` を有効にしている。緩めたくなったら相談する
 - `verbatimModuleSyntax` は有効にしない。サーバ側のバンドルがクライアントへ混入する恐れがあるため TanStack Start が非推奨としている
+- 画面（コンポーネント本体）から `src/db/schema.ts` を import しない。読むだけで drizzle がクライアントのバンドルに載る。画面にも出す定数は `src/lib/` に置き、スキーマ側がそれを読む（`src/lib/limits.ts`、`src/lib/roles.ts`）。サーバ関数の `.validator()` の中だけで使うぶんは、ビルド時に落ちるので構わない
 - `src/routeTree.gen.ts` と `worker-configuration.d.ts` は生成物。手で編集しない
 - コードコメントは、読めば分かることを書かない。設計上の制約や、そう書かなければならない理由だけを書く
 

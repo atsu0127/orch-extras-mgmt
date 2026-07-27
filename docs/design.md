@@ -315,6 +315,12 @@ SPAモードのため画面側のガードは強制力を持たない。した�
 - **秘密情報の扱い**: 環境変数は `cloudflare:workers` の binding からリクエストごとに読む（モジュール読み込み時に読むとクライアントバンドルへ混入する恐れがあるため）
 - **レスポンスヘッダ**: `X-Content-Type-Options: nosniff`、`Referrer-Policy: strict-origin-when-cross-origin`、外部リンクは `rel="noopener noreferrer"`。ヘッダは Worker が返す分を `src/start.ts` で、assets binding が Worker を通さず返す静的ファイル分を `public/_headers` で付ける
 
+### 8.6 パスワードの変更
+
+`/admin/settings` から両ロールのパスワードを変更する。どちらのロールを変える場合も、管理者の現在のパスワードを入力させて照合する（[ADR-0013](./adr/0013-require-admin-password-to-change-passwords.md)）。新しいパスワードは12文字以上で、確認用の再入力と一致することを求める。
+
+変更したロールのセッションは 8.3 のとおり全件失効させる。管理者のパスワードを変えたときは操作中のセッションも落ちるため、画面にログインし直す導線を出す。
+
 ## 9. リンク切れ検知
 
 ### 9.1 対象と頻度
@@ -385,12 +391,15 @@ secret は `wrangler secret put` で設定する。ローカル開発では `.de
 - 演奏会の選択解決順序
 - 入力検証（URL スキーム、文字数上限）
 
-**Playwright（E2E）** — 主要導線を2本に絞る。
+**Playwright（E2E）** — 主要導線を3本に絞る。
 
 1. エキストラのパスワードでログインし、練習日程と曲・ボウイングリンクが見えることを確認する
 2. 管理者のパスワードでログインし、会場・演奏会・練習を作成し、閲覧側の一覧に反映されることを確認する
+3. パスワード変更（8.6）を確認する。現在のパスワードが違えば変わらないこと、変えたロールの開いているセッションが落ちること
 
-E2E はローカルの D1（wrangler のローカルモード）に対して実行する。
+E2E はローカルの D1（wrangler のローカルモード）に対して実行する。パスワードは `E2E_ADMIN_PASSWORD` / `E2E_EXTRA_PASSWORD` で渡し、未設定のテストは飛ばす。
+
+3のうちパスワードを実際に書き換えるものは `E2E_PASSWORD_CHANGE=1` を付けたときだけ動かす。`E2E_BASE_URL` で本番を向いている場合は動かさない。ロールごとにパスワードは1本しかないため、この検証を含めるときは直列に実行する。
 
 ## 12. CI/CD と環境
 
@@ -435,3 +444,7 @@ E2E はローカルの D1（wrangler のローカルモード）に対して実�
 | DB を伴うロジックの単体テストは `node:sqlite` で行う | 検証したいのは SQL の意味論。マイグレーションを流すのでスキーマとずれない | [ADR-0007](./adr/0007-test-db-logic-on-in-memory-sqlite.md) |
 | SPA シェルは assets binding から返し、Worker はサーバ関数だけを受ける | document ごとに Worker が描画していた。5.2・5.3の前提が実態と食い違っていた | [ADR-0008](./adr/0008-serve-spa-shell-from-assets-binding.md) |
 | 選択中の演奏会は URL のクエリを正とし、`beforeLoad` で書き戻す | `loaderDeps` が受け取れるのは search だけ。コンテキストに置くと切り替えが `loader` の再実行につながらない | [ADR-0009](./adr/0009-canonicalize-selected-concert-in-url.md) |
+| 削除の確認はネイティブの `<dialog>` で行う | 連鎖して消えるものを対象ごとの文言で出せる。`window.confirm` では書式が揃わない | [ADR-0010](./adr/0010-confirm-deletions-with-native-dialog.md) |
+| `sort_order` は 0 からの連番で保ち、並べ替えは2行だけ書き換える | 書き込み件数を一覧の長さに比例させない（5.3のサブリクエスト上限） | [ADR-0011](./adr/0011-keep-sort-order-dense.md) |
+| ボウイングURLを差し替えたら前のURLの検知結果を捨てる | 直したリンクが翌日のチェックまで要確認として出続けるのを防ぐ | [ADR-0012](./adr/0012-drop-link-check-on-url-change.md) |
+| パスワード変更には管理者の現在のパスワードを要求する | ログインしたままの端末を他人が触っても書き換えられないようにする | [ADR-0013](./adr/0013-require-admin-password-to-change-passwords.md) |
