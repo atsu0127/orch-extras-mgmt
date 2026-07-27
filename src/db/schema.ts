@@ -5,23 +5,7 @@ import {
   text,
   uniqueIndex,
 } from 'drizzle-orm/sqlite-core'
-
-/**
- * 文字数の上限。SQLite は text の長さを強制しないので、実際に効くのは
- * サーバ関数側の zod 検証（設計書6.3）。両者が食い違わないようここを唯一の出所にする。
- */
-export const MAX_LENGTH = {
-  venueName: 100,
-  venueAddress: 200,
-  venueNote: 500,
-  concertName: 100,
-  attendanceNote: 500,
-  practiceDetail: 2000,
-  mediaTitle: 100,
-  pieceTitle: 100,
-  pieceComposer: 100,
-  url: 2000,
-} as const
+import { MAX_LENGTH } from '../lib/limits'
 
 export const ROLES = ['admin', 'extra'] as const
 export type Role = (typeof ROLES)[number]

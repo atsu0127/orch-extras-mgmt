@@ -4,7 +4,7 @@ import { z } from 'zod'
 import { requireAuth } from '../../auth/middleware'
 import { ExternalLink } from '../../components/external-link'
 import { PracticeItem } from '../../components/practice-item'
-import { EmptyState } from '../../components/states'
+import { EmptyState, NoConcertState } from '../../components/states'
 import { getConcertOverview } from '../../concerts/queries'
 import { getDb } from '../../db/client'
 import { formatFullDate, todayInJst } from '../../lib/date'
@@ -33,9 +33,9 @@ export const Route = createFileRoute('/_authed/')({
 })
 
 function Dashboard() {
+  const { session } = Route.useRouteContext()
   const data = Route.useLoaderData()
-  // 演奏会が1件も無い場合はレイアウトが空状態を出すので、ここは描画されない
-  if (!data?.concert) return null
+  if (!data?.concert) return <NoConcertState role={session.role} />
 
   const { concert, nextPractice } = data
 

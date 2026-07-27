@@ -3,7 +3,7 @@ import { createServerFn } from '@tanstack/react-start'
 import { z } from 'zod'
 import { requireAuth } from '../../auth/middleware'
 import { ExternalLink } from '../../components/external-link'
-import { EmptyState } from '../../components/states'
+import { EmptyState, NoConcertState } from '../../components/states'
 import { getDb } from '../../db/client'
 import { listPiecesForConcert } from '../../pieces/queries'
 
@@ -22,8 +22,9 @@ export const Route = createFileRoute('/_authed/pieces')({
 })
 
 function PiecesPage() {
+  const { session } = Route.useRouteContext()
   const pieces = Route.useLoaderData()
-  if (!pieces) return null
+  if (!pieces) return <NoConcertState role={session.role} />
 
   return (
     <section className="section">
