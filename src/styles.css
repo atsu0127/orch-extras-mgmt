@@ -364,6 +364,17 @@ button:disabled {
   margin: 0.75rem 0 0;
 }
 
+/* 開始と終了のように対で入れる欄。横に並べて対であることを見せる */
+.field-row {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.field-row > .field {
+  flex: 1;
+  min-width: 0;
+}
+
 .form-actions {
   display: flex;
   gap: 0.5rem;
