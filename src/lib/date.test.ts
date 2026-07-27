@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { formatDate, formatTimeRange, todayInJst, weekdayOf } from './date'
+import {
+  formatDate,
+  formatFullDate,
+  formatTimeRange,
+  todayInJst,
+  weekdayOf,
+} from './date'
 
 describe('todayInJst', () => {
   it('UTC の日付が変わる前でも日本時間の日付を返す', () => {
@@ -34,6 +40,16 @@ describe('formatDate', () => {
 
   it('想定外の形式はそのまま返す', () => {
     expect(formatDate('2026/08/01')).toBe('2026/08/01')
+  })
+})
+
+describe('formatFullDate', () => {
+  it('年を含めて整える', () => {
+    expect(formatFullDate('2026-08-01')).toBe('2026年8月1日')
+  })
+
+  it('想定外の形式はそのまま返す', () => {
+    expect(formatFullDate('')).toBe('')
   })
 })
 

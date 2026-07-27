@@ -18,9 +18,18 @@ export function todayInJst(now: Date = new Date()): string {
 export function formatDate(date: string): string {
   if (!DATE_PATTERN.test(date)) return date
 
-  const month = Number(date.slice(5, 7))
-  const day = Number(date.slice(8, 10))
-  return `${month}月${day}日(${weekdayOf(date)})`
+  return `${formatMonthDay(date)}(${weekdayOf(date)})`
+}
+
+/** `2026-08-01` → `2026年8月1日`。年をまたぐ演奏会を見分けるのに使う */
+export function formatFullDate(date: string): string {
+  if (!DATE_PATTERN.test(date)) return date
+
+  return `${date.slice(0, 4)}年${formatMonthDay(date)}`
+}
+
+function formatMonthDay(date: string): string {
+  return `${Number(date.slice(5, 7))}月${Number(date.slice(8, 10))}日`
 }
 
 /** `2026-08-01` → `土`。UTC 固定で解釈するので実行環境で曜日がずれない */

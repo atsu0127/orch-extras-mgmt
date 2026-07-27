@@ -21,10 +21,10 @@ function AdminHome() {
   const { concertCount } = Route.useLoaderData()
 
   return (
-    <main>
+    <>
       <h1>管理画面</h1>
       <p>登録済みの演奏会は {concertCount} 件です。</p>
       <Link to="/">閲覧画面へ戻る</Link>
-    </main>
+    </>
   )
 }
