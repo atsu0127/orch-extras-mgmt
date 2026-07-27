@@ -11,6 +11,7 @@ import {
   requiredDate,
   requiredText,
   requiredUrl,
+  toOptionalId,
 } from './validation'
 
 describe('requiredText', () => {
@@ -117,18 +118,19 @@ describe('時刻の検証', () => {
 })
 
 describe('optionalId', () => {
-  it('選択された id をそのまま通す', () => {
+  it('選択された id と未選択の null を通す', () => {
     expect(optionalId.parse(3)).toBe(3)
-  })
-
-  it('未選択を null にする', () => {
-    expect(optionalId.parse('')).toBeNull()
     expect(optionalId.parse(null)).toBeNull()
   })
 
   it('0 や負の値を弾く', () => {
     expect(optionalId.safeParse(0).success).toBe(false)
     expect(optionalId.safeParse(-1).success).toBe(false)
+  })
+
+  it('セレクタの空文字を null に読み替える', () => {
+    expect(toOptionalId('')).toBeNull()
+    expect(toOptionalId('12')).toBe(12)
   })
 })
 

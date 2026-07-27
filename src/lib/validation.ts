@@ -65,12 +65,13 @@ export const optionalTime = z
   .refine((value) => value === '' || TIME_PATTERN.test(value), MESSAGES.time)
   .transform(blankToNull)
 
-/** 会場の選択欄は「未設定」を選べる。`<select>` の空値をそのまま受ける */
-export const optionalId = z.union([
-  idValue,
-  z.literal('').transform(() => null),
-  z.null(),
-])
+/** 会場のように「未設定」を選べる参照 */
+export const optionalId = idValue.nullable()
+
+/** `<select>` の値は文字列なので、未選択の空文字を null に読み替える */
+export function toOptionalId(value: string): number | null {
+  return value === '' ? null : Number(value)
+}
 
 export type FieldErrors = Record<string, string>
 

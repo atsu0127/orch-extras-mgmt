@@ -29,7 +29,8 @@ export function NoConcertState({ role }: { role: Role }) {
     <EmptyState title="まだ公開された演奏会がありません">
       {role === 'admin' ? (
         <p>
-          <Link to="/admin">管理画面</Link>から演奏会を登録してください。
+          <Link to="/admin/concerts">管理画面</Link>
+          から演奏会を登録してください。
         </p>
       ) : (
         <p>管理者が登録するまでお待ちください。</p>

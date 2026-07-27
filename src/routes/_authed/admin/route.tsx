@@ -14,6 +14,7 @@ function AdminLayout() {
         <Link to="/admin" activeOptions={{ exact: true }}>
           管理トップ
         </Link>
+        <Link to="/admin/concerts">演奏会</Link>
         <Link to="/admin/venues">会場</Link>
       </nav>
       <Outlet />

@@ -7,6 +7,49 @@ import { type FieldErrors, fieldErrors } from '../lib/validation'
 const FAILURE_MESSAGE =
   '保存できませんでした。通信を確かめて、時間をおいてやり直してください。'
 
+type AdminFormProps = {
+  title: string
+  onSubmit: (event: FormEvent<HTMLFormElement>) => void
+  failure: string | null
+  submitting: boolean
+  /** 渡すとキャンセルボタンが出る。編集フォームを閉じるのに使う */
+  onCancel?: (() => void) | undefined
+  children: ReactNode
+}
+
+/**
+ * フォームの外枠。`noValidate` でブラウザ標準の検証を止める。標準の検証は
+ * スキーマと許す範囲が違い（`ftp://` を通すなど）文言も揃わないので、
+ * 何が悪いかを伝えるのはスキーマ側だけに任せる。
+ */
+export function AdminForm({
+  title,
+  onSubmit,
+  failure,
+  submitting,
+  onCancel,
+  children,
+}: AdminFormProps) {
+  return (
+    <form className="admin-form" noValidate onSubmit={onSubmit}>
+      <h2>{title}</h2>
+      {children}
+      <FormError message={failure} />
+
+      <div className="form-actions">
+        <button type="submit" disabled={submitting}>
+          {submitting ? '保存中…' : '保存'}
+        </button>
+        {onCancel && (
+          <button type="button" className="secondary" onClick={onCancel}>
+            キャンセル
+          </button>
+        )}
+      </div>
+    </form>
+  )
+}
+
 type FieldProps = {
   id: string
   label: string

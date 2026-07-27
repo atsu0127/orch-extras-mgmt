@@ -1,6 +1,12 @@
-import { desc, eq, sql } from 'drizzle-orm'
+import { countDistinct, desc, eq, sql } from 'drizzle-orm'
 import type { Db } from '../db/client'
-import { type ConcertStatus, concerts, venues } from '../db/schema'
+import {
+  type ConcertStatus,
+  concerts,
+  pieces,
+  practices,
+  venues,
+} from '../db/schema'
 
 export type ConcertOption = {
   id: number
@@ -34,6 +40,45 @@ export function listConcertOptions(db: Db): Promise<Array<ConcertOption>> {
       createdAt: concerts.createdAt,
     })
     .from(concerts)
+    .orderBy(
+      sql`${concerts.performanceDate} is null`,
+      desc(concerts.performanceDate),
+      desc(concerts.id),
+    )
+}
+
+export type ConcertAdminItem = {
+  id: number
+  name: string
+  performanceDate: string | null
+  venueId: number | null
+  attendanceUrl: string | null
+  attendanceNote: string | null
+  status: ConcertStatus
+  /** 削除すると一緒に消える配下の件数。確認ダイアログの警告に使う */
+  practiceCount: number
+  pieceCount: number
+}
+
+/** 管理画面の一覧。並びはセレクタと同じにして、探す場所を変えずに済むようにする */
+export function listConcertsForAdmin(db: Db): Promise<Array<ConcertAdminItem>> {
+  return db
+    .select({
+      id: concerts.id,
+      name: concerts.name,
+      performanceDate: concerts.performanceDate,
+      venueId: concerts.venueId,
+      attendanceUrl: concerts.attendanceUrl,
+      attendanceNote: concerts.attendanceNote,
+      status: concerts.status,
+      // join を2本重ねると行が掛け算になるので、distinct で数える
+      practiceCount: countDistinct(practices.id),
+      pieceCount: countDistinct(pieces.id),
+    })
+    .from(concerts)
+    .leftJoin(practices, eq(practices.concertId, concerts.id))
+    .leftJoin(pieces, eq(pieces.concertId, concerts.id))
+    .groupBy(concerts.id)
     .orderBy(
       sql`${concerts.performanceDate} is null`,
       desc(concerts.performanceDate),

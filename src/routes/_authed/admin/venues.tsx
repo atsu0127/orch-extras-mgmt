@@ -4,6 +4,7 @@ import { useId, useState } from 'react'
 import { z } from 'zod'
 import { requireAdmin } from '../../../auth/middleware'
 import {
+  AdminForm,
   Field,
   FormError,
   useAdminAction,
@@ -144,12 +145,13 @@ function VenueForm({ venue, onDone }: VenueFormProps) {
   })
 
   return (
-    <form
-      className="admin-form"
+    <AdminForm
+      title={venue ? '会場を編集' : '会場を追加'}
       onSubmit={form.onSubmit(() => ({ name, address, note }))}
+      failure={form.failure}
+      submitting={form.submitting}
+      onCancel={venue ? onDone : undefined}
     >
-      <h2>{venue ? '会場を編集' : '会場を追加'}</h2>
-
       <Field id={`${id}-name`} label="名前" error={form.errors.name}>
         <input
           id={`${id}-name`}
@@ -179,20 +181,7 @@ function VenueForm({ venue, onDone }: VenueFormProps) {
           onChange={(event) => setNote(event.target.value)}
         />
       </Field>
-
-      <FormError message={form.failure} />
-
-      <div className="form-actions">
-        <button type="submit" disabled={form.submitting}>
-          {form.submitting ? '保存中…' : '保存'}
-        </button>
-        {venue && (
-          <button type="button" className="secondary" onClick={onDone}>
-            キャンセル
-          </button>
-        )}
-      </div>
-    </form>
+    </AdminForm>
   )
 }
 

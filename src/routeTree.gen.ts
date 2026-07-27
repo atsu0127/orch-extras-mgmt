@@ -16,6 +16,7 @@ import { Route as AuthedAdminRouteRouteImport } from './routes/_authed/admin/rou
 import { Route as AuthedPiecesRouteImport } from './routes/_authed/pieces'
 import { Route as AuthedPracticesRouteImport } from './routes/_authed/practices'
 import { Route as AuthedAdminIndexRouteImport } from './routes/_authed/admin/index'
+import { Route as AuthedAdminConcertsRouteImport } from './routes/_authed/admin/concerts'
 import { Route as AuthedAdminVenuesRouteImport } from './routes/_authed/admin/venues'
 
 const AuthedRouteRoute = AuthedRouteRouteImport.update({
@@ -52,6 +53,11 @@ const AuthedAdminIndexRoute = AuthedAdminIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AuthedAdminRouteRoute,
 } as any)
+const AuthedAdminConcertsRoute = AuthedAdminConcertsRouteImport.update({
+  id: '/concerts',
+  path: '/concerts',
+  getParentRoute: () => AuthedAdminRouteRoute,
+} as any)
 const AuthedAdminVenuesRoute = AuthedAdminVenuesRouteImport.update({
   id: '/venues',
   path: '/venues',
@@ -64,6 +70,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AuthedAdminRouteRouteWithChildren
   '/pieces': typeof AuthedPiecesRoute
   '/practices': typeof AuthedPracticesRoute
+  '/admin/concerts': typeof AuthedAdminConcertsRoute
   '/admin/venues': typeof AuthedAdminVenuesRoute
   '/admin/': typeof AuthedAdminIndexRoute
 }
@@ -72,6 +79,7 @@ export interface FileRoutesByTo {
   '/pieces': typeof AuthedPiecesRoute
   '/practices': typeof AuthedPracticesRoute
   '/': typeof AuthedIndexRoute
+  '/admin/concerts': typeof AuthedAdminConcertsRoute
   '/admin/venues': typeof AuthedAdminVenuesRoute
   '/admin': typeof AuthedAdminIndexRoute
 }
@@ -83,6 +91,7 @@ export interface FileRoutesById {
   '/_authed/pieces': typeof AuthedPiecesRoute
   '/_authed/practices': typeof AuthedPracticesRoute
   '/_authed/': typeof AuthedIndexRoute
+  '/_authed/admin/concerts': typeof AuthedAdminConcertsRoute
   '/_authed/admin/venues': typeof AuthedAdminVenuesRoute
   '/_authed/admin/': typeof AuthedAdminIndexRoute
 }
@@ -94,10 +103,18 @@ export interface FileRouteTypes {
     | '/admin'
     | '/pieces'
     | '/practices'
+    | '/admin/concerts'
     | '/admin/venues'
     | '/admin/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/login' | '/pieces' | '/practices' | '/' | '/admin/venues' | '/admin'
+  to:
+    | '/login'
+    | '/pieces'
+    | '/practices'
+    | '/'
+    | '/admin/concerts'
+    | '/admin/venues'
+    | '/admin'
   id:
     | '__root__'
     | '/_authed'
@@ -106,6 +123,7 @@ export interface FileRouteTypes {
     | '/_authed/pieces'
     | '/_authed/practices'
     | '/_authed/'
+    | '/_authed/admin/concerts'
     | '/_authed/admin/venues'
     | '/_authed/admin/'
   fileRoutesById: FileRoutesById
@@ -166,6 +184,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedAdminIndexRouteImport
       parentRoute: typeof AuthedAdminRouteRoute
     }
+    '/_authed/admin/concerts': {
+      id: '/_authed/admin/concerts'
+      path: '/concerts'
+      fullPath: '/admin/concerts'
+      preLoaderRoute: typeof AuthedAdminConcertsRouteImport
+      parentRoute: typeof AuthedAdminRouteRoute
+    }
     '/_authed/admin/venues': {
       id: '/_authed/admin/venues'
       path: '/venues'
@@ -177,11 +202,13 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthedAdminRouteRouteChildren {
+  AuthedAdminConcertsRoute: typeof AuthedAdminConcertsRoute
   AuthedAdminVenuesRoute: typeof AuthedAdminVenuesRoute
   AuthedAdminIndexRoute: typeof AuthedAdminIndexRoute
 }
 
 const AuthedAdminRouteRouteChildren: AuthedAdminRouteRouteChildren = {
+  AuthedAdminConcertsRoute: AuthedAdminConcertsRoute,
   AuthedAdminVenuesRoute: AuthedAdminVenuesRoute,
   AuthedAdminIndexRoute: AuthedAdminIndexRoute,
 }
