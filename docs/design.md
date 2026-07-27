@@ -272,6 +272,8 @@ venues ─┬─(本番会場)─ concerts ─┬─ practices ─ practice_medi
 2. `status = 'active'` のうち `performance_date` が最も近い将来のもの
 3. それも無ければ最新に作られた演奏会
 
+解決した結果は URL のクエリに書き戻す。以降の画面はクエリを見るだけでよい（[ADR-0009](./adr/0009-canonicalize-selected-concert-in-url.md)）。
+
 セレクタは進行中とアーカイブ済みを区別して表示する。演奏会が1件も無い場合、閲覧側は「まだ公開された演奏会がありません」と表示し、管理者には演奏会作成への導線を出す。
 
 ## 8. 認証・認可設計
@@ -432,3 +434,4 @@ E2E はローカルの D1（wrangler のローカルモード）に対して実�
 | CSRF 対策は更新系に限らず全サーバ関数に掛ける | 「更新系だけ」を人手で維持すると付け忘れに気づけない | [ADR-0006](./adr/0006-apply-csrf-middleware-to-all-server-functions.md) |
 | DB を伴うロジックの単体テストは `node:sqlite` で行う | 検証したいのは SQL の意味論。マイグレーションを流すのでスキーマとずれない | [ADR-0007](./adr/0007-test-db-logic-on-in-memory-sqlite.md) |
 | SPA シェルは assets binding から返し、Worker はサーバ関数だけを受ける | document ごとに Worker が描画していた。5.2・5.3の前提が実態と食い違っていた | [ADR-0008](./adr/0008-serve-spa-shell-from-assets-binding.md) |
+| 選択中の演奏会は URL のクエリを正とし、`beforeLoad` で書き戻す | `loaderDeps` が受け取れるのは search だけ。コンテキストに置くと切り替えが `loader` の再実行につながらない | [ADR-0009](./adr/0009-canonicalize-selected-concert-in-url.md) |

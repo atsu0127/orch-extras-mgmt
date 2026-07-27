@@ -3,6 +3,7 @@ import { useServerFn } from '@tanstack/react-start'
 import { type FormEvent, useState } from 'react'
 import { login } from '../auth/functions'
 import { forgetCurrentSession, loadCurrentSession } from '../auth/session-cache'
+import { forgetConcerts } from '../concerts/concert-cache'
 
 export const Route = createFileRoute('/login')({
   beforeLoad: async () => {
@@ -39,6 +40,7 @@ function LoginPage() {
         return
       }
       forgetCurrentSession()
+      forgetConcerts()
       await router.navigate({ to: '/' })
     } catch {
       setError('通信に失敗しました。しばらくおいてから試してください。')
