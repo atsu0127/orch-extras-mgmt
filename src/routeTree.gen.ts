@@ -17,6 +17,7 @@ import { Route as AuthedPiecesRouteImport } from './routes/_authed/pieces'
 import { Route as AuthedPracticesRouteImport } from './routes/_authed/practices'
 import { Route as AuthedAdminIndexRouteImport } from './routes/_authed/admin/index'
 import { Route as AuthedAdminConcertsRouteImport } from './routes/_authed/admin/concerts'
+import { Route as AuthedAdminPiecesRouteImport } from './routes/_authed/admin/pieces'
 import { Route as AuthedAdminPracticesRouteImport } from './routes/_authed/admin/practices'
 import { Route as AuthedAdminVenuesRouteImport } from './routes/_authed/admin/venues'
 
@@ -59,6 +60,11 @@ const AuthedAdminConcertsRoute = AuthedAdminConcertsRouteImport.update({
   path: '/concerts',
   getParentRoute: () => AuthedAdminRouteRoute,
 } as any)
+const AuthedAdminPiecesRoute = AuthedAdminPiecesRouteImport.update({
+  id: '/pieces',
+  path: '/pieces',
+  getParentRoute: () => AuthedAdminRouteRoute,
+} as any)
 const AuthedAdminPracticesRoute = AuthedAdminPracticesRouteImport.update({
   id: '/practices',
   path: '/practices',
@@ -77,6 +83,7 @@ export interface FileRoutesByFullPath {
   '/pieces': typeof AuthedPiecesRoute
   '/practices': typeof AuthedPracticesRoute
   '/admin/concerts': typeof AuthedAdminConcertsRoute
+  '/admin/pieces': typeof AuthedAdminPiecesRoute
   '/admin/practices': typeof AuthedAdminPracticesRoute
   '/admin/venues': typeof AuthedAdminVenuesRoute
   '/admin/': typeof AuthedAdminIndexRoute
@@ -87,6 +94,7 @@ export interface FileRoutesByTo {
   '/practices': typeof AuthedPracticesRoute
   '/': typeof AuthedIndexRoute
   '/admin/concerts': typeof AuthedAdminConcertsRoute
+  '/admin/pieces': typeof AuthedAdminPiecesRoute
   '/admin/practices': typeof AuthedAdminPracticesRoute
   '/admin/venues': typeof AuthedAdminVenuesRoute
   '/admin': typeof AuthedAdminIndexRoute
@@ -100,6 +108,7 @@ export interface FileRoutesById {
   '/_authed/practices': typeof AuthedPracticesRoute
   '/_authed/': typeof AuthedIndexRoute
   '/_authed/admin/concerts': typeof AuthedAdminConcertsRoute
+  '/_authed/admin/pieces': typeof AuthedAdminPiecesRoute
   '/_authed/admin/practices': typeof AuthedAdminPracticesRoute
   '/_authed/admin/venues': typeof AuthedAdminVenuesRoute
   '/_authed/admin/': typeof AuthedAdminIndexRoute
@@ -113,6 +122,7 @@ export interface FileRouteTypes {
     | '/pieces'
     | '/practices'
     | '/admin/concerts'
+    | '/admin/pieces'
     | '/admin/practices'
     | '/admin/venues'
     | '/admin/'
@@ -123,6 +133,7 @@ export interface FileRouteTypes {
     | '/practices'
     | '/'
     | '/admin/concerts'
+    | '/admin/pieces'
     | '/admin/practices'
     | '/admin/venues'
     | '/admin'
@@ -135,6 +146,7 @@ export interface FileRouteTypes {
     | '/_authed/practices'
     | '/_authed/'
     | '/_authed/admin/concerts'
+    | '/_authed/admin/pieces'
     | '/_authed/admin/practices'
     | '/_authed/admin/venues'
     | '/_authed/admin/'
@@ -203,6 +215,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedAdminConcertsRouteImport
       parentRoute: typeof AuthedAdminRouteRoute
     }
+    '/_authed/admin/pieces': {
+      id: '/_authed/admin/pieces'
+      path: '/pieces'
+      fullPath: '/admin/pieces'
+      preLoaderRoute: typeof AuthedAdminPiecesRouteImport
+      parentRoute: typeof AuthedAdminRouteRoute
+    }
     '/_authed/admin/practices': {
       id: '/_authed/admin/practices'
       path: '/practices'
@@ -222,6 +241,7 @@ declare module '@tanstack/react-router' {
 
 interface AuthedAdminRouteRouteChildren {
   AuthedAdminConcertsRoute: typeof AuthedAdminConcertsRoute
+  AuthedAdminPiecesRoute: typeof AuthedAdminPiecesRoute
   AuthedAdminPracticesRoute: typeof AuthedAdminPracticesRoute
   AuthedAdminVenuesRoute: typeof AuthedAdminVenuesRoute
   AuthedAdminIndexRoute: typeof AuthedAdminIndexRoute
@@ -229,6 +249,7 @@ interface AuthedAdminRouteRouteChildren {
 
 const AuthedAdminRouteRouteChildren: AuthedAdminRouteRouteChildren = {
   AuthedAdminConcertsRoute: AuthedAdminConcertsRoute,
+  AuthedAdminPiecesRoute: AuthedAdminPiecesRoute,
   AuthedAdminPracticesRoute: AuthedAdminPracticesRoute,
   AuthedAdminVenuesRoute: AuthedAdminVenuesRoute,
   AuthedAdminIndexRoute: AuthedAdminIndexRoute,
