@@ -199,11 +199,16 @@ body {
   width: 100%;
 }
 
-/* PC: 上部アプリバー型（ADR-0019） */
+/* PC: 上部アプリバー型（ADR-0019）
+ * ヘッダは画面全幅、中身と本文は同じコンテンツ幅で揃える */
 @media (min-width: 48rem) {
   :root {
-    --app-shell-max: 72rem;
-    --app-content-max: 56rem;
+    --app-shell-max: none;
+    --app-content-max: 64rem;
+  }
+
+  .app-shell {
+    max-width: none;
   }
 
   .app-frame {
@@ -222,6 +227,9 @@ body {
     align-items: center;
     column-gap: 1.25rem;
     row-gap: 0;
+    width: 100%;
+    max-width: var(--app-content-max);
+    margin-inline: auto;
     padding: 0 1.5rem;
     min-height: 3.5rem;
   }
@@ -247,11 +255,11 @@ body {
 
   .app-concert-select {
     grid-area: concert;
-    width: min(18rem, 28vw);
+    width: min(17rem, 26vw);
     justify-self: end;
   }
 
-  /* NativeSelect のラベルは PC では省スペースのため視覚的に小さく */
+  /* NativeSelect のラベルは PC では省スペースのため視覚的に隠す（ラベル自体は残す） */
   .app-concert-select label {
     position: absolute;
     width: 1px;
@@ -313,12 +321,12 @@ body {
   }
 
   .app-main {
-    padding: 1.25rem 1.5rem 2rem;
+    padding: 1.5rem 1.5rem 2.5rem;
   }
 
   /* 管理はフォーム列が窮屈にならないよう本文を少し広げる */
   .app-main:has(.admin-subnav) {
-    max-width: 60rem;
+    max-width: 68rem;
   }
 }
 
@@ -486,6 +494,13 @@ body {
 
 /* PC: プログラム表の見開き（次の練習 | 本番＋出欠） */
 @media (min-width: 48rem) {
+  .pamphlet {
+    background: var(--app-surface);
+    border: 1px solid var(--app-border);
+    border-radius: var(--mantine-radius-md);
+    padding-inline: 1rem;
+  }
+
   .pamphlet-board {
     display: grid;
     grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.9fr);
@@ -499,13 +514,13 @@ body {
   }
 
   .pamphlet-board > .pamphlet-hero {
-    padding: 2rem 1.75rem 2rem 0.5rem;
+    padding: 2rem 1.75rem 2rem 0.75rem;
     border-right: 1px solid var(--app-border);
   }
 
   .pamphlet-aside .pamphlet-section {
     flex: 1;
-    padding: 1.5rem 0.5rem 1.5rem 1.5rem;
+    padding: 1.5rem 0.75rem 1.5rem 1.5rem;
   }
 
   .pamphlet-aside .pamphlet-section:last-child {
