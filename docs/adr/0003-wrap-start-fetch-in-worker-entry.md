@@ -7,7 +7,7 @@ date: 2026-07-26
 
 ## Context and Problem Statement
 
-Cron の `scheduled` ハンドラを公開するため、`wrangler.jsonc` の `main` は Start 既定のエントリではなく自前の `src/server.ts` に向けている（設計書5.1）。
+`wrangler.jsonc` の `main` は Start 既定のエントリではなく自前の `src/server.ts` に向けている（設計書5.1）。当初は Cron の `scheduled` ハンドラも公開する計画だったが、ADR-0014 でリンク切れ検知とともに見送った。以下の `fetch` ラッパーは binding の誤受け渡しを防ぐため、引き続き必要である。
 
 T0-6 で D1 の binding を追加して `Env` 型が空でなくなった時点で、`fetch: handler.fetch` と直接公開していた書き方が型エラーになった。Workers はハンドラに `(request, env, ctx)` を渡すが、Start の `handler.fetch` は第2引数を**自身のオプション**として解釈するため、`Env` がオプションの位置に入ってしまう。
 
