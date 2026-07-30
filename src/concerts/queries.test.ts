@@ -54,7 +54,6 @@ describe('getConcertOverview', () => {
       performanceDate: '2026-12-01',
       venueId: 1,
       attendanceUrl: 'https://example.com/attendance',
-      note: '集合は13時です\n黒服を持参してください',
     })
 
     const overview = await getConcertOverview(db, 1)
@@ -64,8 +63,19 @@ describe('getConcertOverview', () => {
       venueName: '市民ホール',
       venueAddress: '東京都1-1',
       attendanceUrl: 'https://example.com/attendance',
+    })
+  })
+
+  it('複数行の備考を改行ごと返す', async () => {
+    await db.insert(concerts).values({
+      id: 1,
+      name: '備考付き演奏会',
       note: '集合は13時です\n黒服を持参してください',
     })
+
+    const overview = await getConcertOverview(db, 1)
+
+    expect(overview?.note).toBe('集合は13時です\n黒服を持参してください')
   })
 
   it('会場が未設定でも取得できる', async () => {
