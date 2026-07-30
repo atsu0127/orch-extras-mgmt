@@ -8,19 +8,22 @@ import { EmptyState, NoConcertState } from '../../components/states'
 import { getConcertOverview } from '../../concerts/queries'
 import { getDb } from '../../db/client'
 import { formatFullDate, todayInJst } from '../../lib/date'
+import { buildInquiryMailtoUrl } from '../../lib/external-urls'
 import { getNextPractice } from '../../practices/queries'
+import { getAppSettings } from '../../settings/queries'
 
 const getDashboard = createServerFn({ method: 'GET' })
   .middleware([requireAuth])
   .validator(z.object({ concertId: z.number().int().positive() }))
   .handler(async ({ data }) => {
     const db = getDb()
-    const [concert, nextPractice] = await Promise.all([
+    const [concert, nextPractice, appSettings] = await Promise.all([
       getConcertOverview(db, data.concertId),
       getNextPractice(db, data.concertId, todayInJst()),
+      getAppSettings(db),
     ])
 
-    return { concert, nextPractice }
+    return { concert, nextPractice, appSettings }
   })
 
 export const Route = createFileRoute('/_authed/')({
@@ -37,7 +40,7 @@ function Dashboard() {
   const data = Route.useLoaderData()
   if (!data?.concert) return <NoConcertState role={session.role} />
 
-  const { concert, nextPractice } = data
+  const { concert, nextPractice, appSettings } = data
 
   return (
     <>
@@ -67,6 +70,18 @@ function Dashboard() {
           />
         )}
       </section>
+
+      {appSettings.adminEmail && (
+        <section className="section">
+          <h2>問い合わせ</h2>
+          <a
+            href={buildInquiryMailtoUrl(appSettings.adminEmail, concert.name)}
+            className="action"
+          >
+            管理者へ問い合わせる
+          </a>
+        </section>
+      )}
 
       <section className="section">
         <h2>次の練習</h2>
