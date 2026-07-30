@@ -23,7 +23,8 @@ type TestDbOptions = {
  * 行うため、偽のリポジトリではなく本物の SQLite に対して検証する。
  *
  * D1 と sqlite-proxy はドライバが違うだけでクエリビルダの形は同じなので、
- * `Db` として扱う。両者で挙動が分かれる `batch` はテストで使わない。
+ * `Db` として扱う。sqlite-proxy は D1 の `batch` に非対応なので、認証掃除の
+ * テストでは本番の同一トランザクションを再現せず、2文を順次実行する。
  */
 export function createTestDb(options: TestDbOptions = {}): Db {
   const sqlite = new DatabaseSync(':memory:')

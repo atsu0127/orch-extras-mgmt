@@ -2,7 +2,7 @@ import { and, count, eq, gte } from 'drizzle-orm'
 import type { Db } from '../db/client'
 import { loginAttempts } from '../db/schema'
 
-/** 直近この時間の失敗だけを数える。古い行は Cron で掃除する（設計書8.5） */
+/** 直近この時間の失敗だけを数える。古い行はログイン成功時に掃除する（設計書8.5） */
 export const WINDOW_MS = 5 * 60 * 1000
 export const MAX_FAILURES = 10
 
