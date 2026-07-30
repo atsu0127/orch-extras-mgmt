@@ -1,4 +1,5 @@
 import { formatDate, formatTimeRange } from '../lib/date'
+import { buildGoogleMapsUrl } from '../lib/external-urls'
 import type { PracticeEntry } from '../practices/queries'
 import { ExternalLink } from './external-link'
 
@@ -18,6 +19,10 @@ export function PracticeItem({ practice }: { practice: PracticeEntry }) {
           {practice.venue.name}
           <br />
           {practice.venue.address}
+          <br />
+          <ExternalLink href={buildGoogleMapsUrl(practice.venue.address)}>
+            Google Mapsで開く
+          </ExternalLink>
           {practice.venue.note && (
             <>
               <br />

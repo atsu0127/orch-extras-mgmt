@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest'
-import { buildInquiryMailtoUrl } from './external-urls'
+import { buildGoogleMapsUrl, buildInquiryMailtoUrl } from './external-urls'
+
+describe('buildGoogleMapsUrl', () => {
+  it('日本語、空白、&、#を含む住所をGoogle Maps検索URLへエンコードする', () => {
+    expect(buildGoogleMapsUrl('東京都 千代田区1-1 &別館#2')).toBe(
+      'https://www.google.com/maps/search/?api=1&query=%E6%9D%B1%E4%BA%AC%E9%83%BD%20%E5%8D%83%E4%BB%A3%E7%94%B0%E5%8C%BA1-1%20%26%E5%88%A5%E9%A4%A8%232',
+    )
+  })
+})
 
 describe('buildInquiryMailtoUrl', () => {
   it('管理者宛てに演奏会名入りの件名と本文ひな形をエンコードする', () => {

@@ -62,6 +62,36 @@ const nextPractice = {
 }
 
 describe('DashboardContent', () => {
+  it('本番会場の住所があるときGoogle Mapsリンクを表示する', () => {
+    const html = renderToStaticMarkup(
+      createElement(DashboardContent, {
+        appSettings: { adminEmail: null },
+        concert,
+        nextPractice,
+        resources: [],
+      }),
+    )
+
+    expect(html).toContain(
+      'href="https://www.google.com/maps/search/?api=1&amp;query=%E6%9D%B1%E4%BA%AC%E9%83%BD1-1" target="_blank" rel="noopener noreferrer"',
+    )
+    expect(html).toContain('Google Mapsで開く')
+  })
+
+  it('本番会場の住所がないときGoogle Mapsリンクを表示しない', () => {
+    const html = renderToStaticMarkup(
+      createElement(DashboardContent, {
+        appSettings: { adminEmail: null },
+        concert: { ...concert, venueAddress: null },
+        nextPractice,
+        resources: [],
+      }),
+    )
+
+    expect(html).not.toContain('Google Mapsで開く')
+    expect(html).not.toContain('google.com/maps')
+  })
+
   it('次の練習と出欠の間に改行付き備考と資料を受け取った順で表示する', () => {
     const html = renderToStaticMarkup(
       createElement(DashboardContent, {

@@ -12,7 +12,10 @@ import {
 } from '../../concerts/queries'
 import { getDb } from '../../db/client'
 import { formatFullDate, todayInJst } from '../../lib/date'
-import { buildInquiryMailtoUrl } from '../../lib/external-urls'
+import {
+  buildGoogleMapsUrl,
+  buildInquiryMailtoUrl,
+} from '../../lib/external-urls'
 import { getNextPractice, type PracticeEntry } from '../../practices/queries'
 import { type AppSettingsView, getAppSettings } from '../../settings/queries'
 
@@ -74,6 +77,11 @@ export function DashboardContent({
             本番 {formatFullDate(concert.performanceDate)}
             {concert.venueName && ` / ${concert.venueName}`}
           </p>
+        )}
+        {concert.venueAddress && (
+          <ExternalLink href={buildGoogleMapsUrl(concert.venueAddress)}>
+            Google Mapsで開く
+          </ExternalLink>
         )}
       </section>
 
