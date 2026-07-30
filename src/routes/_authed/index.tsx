@@ -4,11 +4,7 @@ import { createServerFn } from '@tanstack/react-start'
 import { z } from 'zod'
 import { requireAuth } from '../../auth/middleware'
 import { ExternalLink } from '../../components/external-link'
-import {
-  EmptyState,
-  NoConcertState,
-  PageSection,
-} from '../../components/states'
+import { EmptyState, NoConcertState } from '../../components/states'
 import { listConcertResources } from '../../concert-resources/queries'
 import {
   type ConcertOverview,
@@ -74,6 +70,7 @@ type DashboardContentProps = {
   }>
 }
 
+/** ホームだけパンフレット型。他タブのコンパクト表現とは分ける */
 export function DashboardContent({
   concert,
   nextPractice,
@@ -92,9 +89,12 @@ export function DashboardContent({
     : null
 
   return (
-    <>
+    <div className="pamphlet">
       {nextPractice ? (
-        <NextPracticeStrip practice={nextPractice} concertName={concert.name} />
+        <NextPracticeProgram
+          practice={nextPractice}
+          concertName={concert.name}
+        />
       ) : (
         <EmptyState
           title="今後の練習の予定はありません"
@@ -102,130 +102,113 @@ export function DashboardContent({
         />
       )}
 
-      {nextPractice && (
-        <NextPracticeExtras
-          practice={nextPractice}
-          concertName={concert.name}
-        />
-      )}
-
-      <section className="panel" aria-labelledby="performance-title">
-        <div className="panel-head">本番</div>
-        <div className="panel-body">
-          <Title order={2} id="performance-title">
-            {concert.name}
-          </Title>
-          <Text size="sm" c="dimmed" mt={4}>
-            {concert.performanceDate
-              ? formatFullDate(concert.performanceDate)
-              : '本番日は未設定'}
-            {concert.venueName && ` / ${concert.venueName}`}
-          </Text>
-        </div>
-        {concert.venueAddress && (
-          <a
-            className="panel-row"
-            href={buildGoogleMapsUrl(concert.venueAddress)}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <span>Google Mapsで開く</span>
-            <span className="panel-row-chevron" aria-hidden>
-              ›
-            </span>
-          </a>
-        )}
-        {performanceCalendarUrl && (
-          <a
-            className="panel-row"
-            href={performanceCalendarUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <span>カレンダーに追加</span>
-            <span className="panel-row-chevron" aria-hidden>
-              ›
-            </span>
-          </a>
-        )}
-      </section>
-
-      <section className="panel" aria-labelledby="attendance-title">
-        <div className="panel-head" id="attendance-title">
-          出欠の回答
-        </div>
-        <div className="panel-body">
-          {concert.attendanceUrl ? (
-            <Stack gap="xs">
-              <ExternalLink href={concert.attendanceUrl} action>
-                出欠を回答する
-              </ExternalLink>
-              {concert.attendanceNote && (
-                <Text size="sm" c="dimmed">
-                  {concert.attendanceNote}
-                </Text>
-              )}
-            </Stack>
-          ) : (
-            <EmptyState
-              title="出欠の回答先はまだ設定されていません"
-              description="決まり次第ここに表示されます。"
-            />
+      <section className="pamphlet-section" aria-labelledby="performance-title">
+        <p className="pamphlet-kicker">本番</p>
+        <Title order={2} id="performance-title" className="pamphlet-heading">
+          {concert.name}
+        </Title>
+        <Text size="sm" c="dimmed" mt={6}>
+          {concert.performanceDate
+            ? formatFullDate(concert.performanceDate)
+            : '本番日は未設定'}
+          {concert.venueName && (
+            <>
+              <br />
+              {concert.venueName}
+            </>
+          )}
+        </Text>
+        <div className="pamphlet-links">
+          {concert.venueAddress && (
+            <ExternalLink href={buildGoogleMapsUrl(concert.venueAddress)}>
+              Google Mapsで開く
+            </ExternalLink>
+          )}
+          {performanceCalendarUrl && (
+            <ExternalLink href={performanceCalendarUrl}>
+              カレンダーに追加
+            </ExternalLink>
           )}
         </div>
       </section>
 
+      <section className="pamphlet-section" aria-labelledby="attendance-title">
+        <p className="pamphlet-kicker" id="attendance-title">
+          出欠の回答
+        </p>
+        {concert.attendanceUrl ? (
+          <Stack gap="sm" align="center">
+            <ExternalLink href={concert.attendanceUrl} action>
+              出欠を回答する
+            </ExternalLink>
+            {concert.attendanceNote && (
+              <Text size="sm" c="dimmed">
+                {concert.attendanceNote}
+              </Text>
+            )}
+          </Stack>
+        ) : (
+          <EmptyState
+            title="出欠の回答先はまだ設定されていません"
+            description="決まり次第ここに表示されます。"
+          />
+        )}
+      </section>
+
       {concert.note && (
-        <section className="panel">
-          <div className="panel-head">備考</div>
-          <div className="panel-body">
-            <p className="detail">{concert.note}</p>
-          </div>
+        <section className="pamphlet-section" aria-labelledby="note-title">
+          <p className="pamphlet-kicker" id="note-title">
+            備考
+          </p>
+          <p className="detail pamphlet-note">{concert.note}</p>
         </section>
       )}
 
       {resources.length > 0 && (
-        <section className="panel" aria-label="資料">
-          <div className="panel-head">資料</div>
-          {resources.map((resource) => (
-            <a
-              key={resource.id}
-              className="panel-row"
-              href={resource.url}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <span>{resource.title}</span>
-              <span className="panel-row-chevron" aria-hidden>
-                ›
-              </span>
-            </a>
-          ))}
+        <section className="pamphlet-section" aria-label="資料">
+          <p className="pamphlet-kicker">資料</p>
+          <Stack gap="xs" component="ul" p={0} style={{ listStyle: 'none' }}>
+            {resources.map((resource) => (
+              <li key={resource.id}>
+                <ExternalLink href={resource.url}>
+                  {resource.title}
+                </ExternalLink>
+              </li>
+            ))}
+          </Stack>
         </section>
       )}
 
       {appSettings.adminEmail && (
-        <PageSection title="問い合わせ">
+        <section className="pamphlet-section" aria-labelledby="inquiry-title">
+          <p className="pamphlet-kicker" id="inquiry-title">
+            問い合わせ
+          </p>
           <Button
             component="a"
             href={buildInquiryMailtoUrl(appSettings.adminEmail, concert.name)}
             fullWidth
+            maw="20rem"
+            mx="auto"
+            display="block"
           >
             管理者へ問い合わせる
           </Button>
-        </PageSection>
+        </section>
       )}
-    </>
+    </div>
   )
 }
 
-type NextPracticeStripProps = {
+type NextPracticeProgramProps = {
   practice: PracticeEntry
   concertName: string
 }
 
-/** 実用コンパクトの「次の練習」要約バー */
-function NextPracticeStrip({ practice, concertName }: NextPracticeStripProps) {
+function NextPracticeProgram({
+  practice,
+  concertName,
+}: NextPracticeProgramProps) {
   const parts = departureDateParts(practice.date)
   const time = formatTimeRange(practice.startTime, practice.endTime)
   const mapsUrl = practice.venue
@@ -240,118 +223,59 @@ function NextPracticeStrip({ practice, concertName }: NextPracticeStripProps) {
   })
 
   return (
-    <section className="next-strip" aria-labelledby="next-practice-title">
-      <div className="next-strip-date">
-        {parts ? (
-          <>
-            <div className="next-strip-month">{parts.month}月</div>
-            <div className="next-strip-day">{parts.day}</div>
-          </>
-        ) : (
-          <Text fw={700} c="inherit" size="sm">
-            {formatDate(practice.date)}
+    <section className="pamphlet-hero" aria-labelledby="next-practice-title">
+      <p className="pamphlet-kicker" id="next-practice-title">
+        次の練習
+      </p>
+      {parts ? (
+        <>
+          <p className="pamphlet-date">
+            {parts.month}月{parts.day}日
+          </p>
+          <p className="pamphlet-weekday">{parts.weekday}曜日</p>
+        </>
+      ) : (
+        <p className="pamphlet-date">{formatDate(practice.date)}</p>
+      )}
+      {time && <p className="pamphlet-time">{time}</p>}
+      {practice.venue ? (
+        <p className="pamphlet-venue">
+          {practice.venue.name}
+          <br />
+          <Text span size="sm" c="dimmed">
+            {practice.venue.address}
           </Text>
+          {practice.venue.note && (
+            <>
+              <br />
+              <Text span size="sm" c="dimmed">
+                {practice.venue.note}
+              </Text>
+            </>
+          )}
+        </p>
+      ) : (
+        <p className="pamphlet-venue">
+          <Text span c="dimmed">
+            会場は未定です。
+          </Text>
+        </p>
+      )}
+      <div className="pamphlet-links">
+        {mapsUrl && <ExternalLink href={mapsUrl}>Google Maps</ExternalLink>}
+        {calendarUrl && (
+          <ExternalLink href={calendarUrl}>カレンダーに追加</ExternalLink>
         )}
       </div>
-
-      <div style={{ minWidth: 0 }}>
-        <div className="next-strip-kicker" id="next-practice-title">
-          次の練習
-          {parts ? ` · ${parts.weekday}` : ''}
-        </div>
-        {time && <div className="next-strip-time">{time}</div>}
-        <div className="next-strip-venue">
-          {practice.venue?.name ?? '会場は未定です'}
-        </div>
-      </div>
-
-      {mapsUrl ? (
-        <a
-          className="next-strip-action"
-          href={mapsUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          地図
-        </a>
-      ) : calendarUrl ? (
-        <a
-          className="next-strip-action"
-          href={calendarUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          予定
-        </a>
-      ) : (
-        <span />
+      {practice.detail && (
+        <details className="pamphlet-details">
+          <summary>詳細</summary>
+          <p className="detail">{practice.detail}</p>
+        </details>
       )}
-    </section>
-  )
-}
-
-function NextPracticeExtras({
-  practice,
-  concertName,
-}: {
-  practice: PracticeEntry
-  concertName: string
-}) {
-  const calendarUrl = buildPracticeCalendarUrl({
-    concertName,
-    date: practice.date,
-    startTime: practice.startTime,
-    endTime: practice.endTime,
-    venue: practice.venue,
-  })
-
-  const showCalendar = Boolean(calendarUrl)
-  const showDetail = Boolean(practice.detail)
-  const showMedia = practice.media.length > 0
-  const showVenueMeta = Boolean(practice.venue?.address || practice.venue?.note)
-  if (!showCalendar && !showDetail && !showMedia && !showVenueMeta) {
-    return null
-  }
-
-  return (
-    <section className="panel" aria-label="次の練習の詳細">
-      {showVenueMeta && practice.venue && (
-        <div className="panel-body">
+      {practice.media.length > 0 && (
+        <Stack gap={4} mt="sm">
           <Text size="sm" c="dimmed">
-            {practice.venue.address}
-            {practice.venue.note && (
-              <>
-                <br />
-                {practice.venue.note}
-              </>
-            )}
-          </Text>
-        </div>
-      )}
-      {showCalendar && calendarUrl && (
-        <a
-          className="panel-row"
-          href={calendarUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <span>カレンダーに追加</span>
-          <span className="panel-row-chevron" aria-hidden>
-            ›
-          </span>
-        </a>
-      )}
-      {showDetail && (
-        <div className="panel-body">
-          <details>
-            <summary>詳細</summary>
-            <p className="detail">{practice.detail}</p>
-          </details>
-        </div>
-      )}
-      {showMedia && (
-        <div className="panel-body">
-          <Text size="sm" c="dimmed" mb={4}>
             録音・録画
           </Text>
           <Stack gap={2} component="ul" pl="md" style={{ margin: 0 }}>
@@ -361,7 +285,7 @@ function NextPracticeExtras({
               </li>
             ))}
           </Stack>
-        </div>
+        </Stack>
       )}
     </section>
   )

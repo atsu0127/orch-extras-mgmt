@@ -149,7 +149,7 @@ describe('DashboardContent', () => {
     )
 
     expect(html).toContain(
-      '<p class="detail">集合は13時です\n黒服を持参してください</p>',
+      '<p class="detail pamphlet-note">集合は13時です\n黒服を持参してください</p>',
     )
     expect(html.indexOf('次の練習')).toBeLessThan(html.indexOf('本番'))
     expect(html.indexOf('本番')).toBeLessThan(html.indexOf('出欠の回答'))

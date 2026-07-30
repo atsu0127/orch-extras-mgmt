@@ -15,7 +15,7 @@ import appCss from '../styles.css?url'
 import { theme } from '../theme'
 
 const FONT_CSS =
-  'https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+JP:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;600;700&display=swap'
+  'https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700&family=Noto+Serif+JP:wght@500;600;700&display=swap'
 
 export const Route = createRootRoute({
   head: () => ({

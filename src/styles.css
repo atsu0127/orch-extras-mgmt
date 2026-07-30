@@ -68,10 +68,11 @@ body {
 }
 
 .app-brand {
-  color: var(--mantine-color-text);
+  color: var(--mantine-color-bordeaux-filled);
+  font-family: "Noto Serif JP", "Hiragino Mincho ProN", serif;
   font-size: 0.8125rem;
-  font-weight: 700;
-  letter-spacing: 0.02em;
+  font-weight: 600;
+  letter-spacing: 0.08em;
 }
 
 .app-main {
@@ -203,98 +204,91 @@ body {
   }
 }
 
-/* 次の練習の要約バー（ADR-0018） */
-.next-strip {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
-  gap: 0.75rem;
-  align-items: center;
-  margin: 0 -1rem;
-  padding: 0.7rem 1rem;
-  background: var(--app-strip-bg);
-  color: var(--app-strip-fg);
+/* ホーム専用: パンフレット／プログラム表の読みもの配置 */
+.pamphlet {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
 }
 
-@media (max-width: 47.99rem) {
-  .next-strip {
-    position: sticky;
-    top: 0;
-    z-index: 18;
-  }
-}
-
-.next-strip-date {
+.pamphlet-hero,
+.pamphlet-section {
+  padding: 1.5rem 0.35rem;
+  border-bottom: 1px solid var(--app-border);
   text-align: center;
-  font-variant-numeric: tabular-nums;
-  min-width: 2.75rem;
 }
 
-.next-strip-month {
-  font-size: 0.625rem;
+.pamphlet-hero {
+  padding-top: 1.75rem;
+  padding-bottom: 1.75rem;
+}
+
+.pamphlet-kicker {
+  margin: 0 0 0.65rem;
+  color: var(--app-muted);
+  font-size: 0.6875rem;
   font-weight: 600;
-  opacity: 0.7;
+  letter-spacing: 0.16em;
+}
+
+.pamphlet-date {
+  margin: 0;
+  font-family: "Noto Serif JP", "Hiragino Mincho ProN", serif;
+  font-size: clamp(1.85rem, 7vw, 2.35rem);
+  font-weight: 600;
+  line-height: 1.25;
   letter-spacing: 0.04em;
 }
 
-.next-strip-day {
-  font-size: 1.35rem;
-  font-weight: 700;
-  line-height: 1;
-}
-
-.next-strip-kicker {
-  font-size: 0.625rem;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  opacity: 0.65;
-}
-
-.next-strip-time {
+.pamphlet-weekday {
+  margin: 0.35rem 0 0;
+  font-family: "Noto Serif JP", "Hiragino Mincho ProN", serif;
   font-size: 0.9375rem;
-  font-weight: 700;
+  color: var(--app-muted);
+}
+
+.pamphlet-time {
+  margin: 1rem 0 0;
+  font-size: 1.05rem;
+  font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
 
-.next-strip-venue {
-  font-size: 0.75rem;
-  opacity: 0.8;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+.pamphlet-venue {
+  margin: 0.65rem 0 0;
+  font-size: 0.9375rem;
+  line-height: 1.65;
 }
 
-.next-strip-action {
-  display: inline-flex;
-  align-items: center;
+.pamphlet-heading {
+  font-family: "Noto Serif JP", "Hiragino Mincho ProN", serif;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.pamphlet-links {
+  display: flex;
+  flex-wrap: wrap;
   justify-content: center;
-  min-height: 2rem;
-  padding: 0.35rem 0.65rem;
-  border-radius: var(--mantine-radius-sm);
-  background: var(--mantine-color-bordeaux-filled);
-  color: #fff;
-  font-size: 0.75rem;
-  font-weight: 700;
-  text-decoration: none;
-  white-space: nowrap;
-  cursor: pointer;
-  transition:
-    filter 150ms ease,
-    opacity 150ms ease;
+  gap: 1.1rem 1.35rem;
+  margin-top: 1rem;
 }
 
-.next-strip-action:hover {
-  filter: brightness(1.08);
+.pamphlet-details {
+  margin-top: 1rem;
+  text-align: left;
+  max-width: 22rem;
+  margin-inline: auto;
 }
 
-.next-strip-action:focus-visible {
-  outline: 2px solid #fff;
-  outline-offset: 2px;
+.pamphlet-note {
+  text-align: left;
+  max-width: 24rem;
+  margin-inline: auto;
+  line-height: 1.7;
 }
 
-.next-strip-action:active {
-  filter: brightness(0.95);
-}
-
+/* 他タブ用の平坦パネル（ホーム以外） */
 .panel {
   background: var(--app-surface);
   border: 1px solid var(--app-border);

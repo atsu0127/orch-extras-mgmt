@@ -2,6 +2,7 @@ import { createTheme, type MantineColorsTuple } from '@mantine/core'
 
 /**
  * クールニュートラル＋ボルドー CTA（設計書7.2 / ADR-0018）。
+ * 本文は Noto Sans JP、見出しは Noto Serif JP（日本語向け）。
  * Mantine の既定色（青・紫系）は primary に使わない。
  */
 const bordeaux: MantineColorsTuple = [
@@ -31,7 +32,9 @@ const ink: MantineColorsTuple = [
 ]
 
 const sans =
-  '"IBM Plex Sans JP", "Noto Sans JP", "Hiragino Sans", "Hiragino Kaku Gothic ProN", sans-serif'
+  '"Noto Sans JP", "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif'
+const serif =
+  '"Noto Serif JP", "Hiragino Mincho ProN", "Yu Mincho", "Shippori Mincho", serif'
 
 export const theme = createTheme({
   primaryColor: 'bordeaux',
@@ -42,12 +45,12 @@ export const theme = createTheme({
   },
   fontFamily: sans,
   headings: {
-    fontFamily: sans,
-    fontWeight: '700',
+    fontFamily: serif,
+    fontWeight: '600',
     sizes: {
-      h1: { fontSize: '1.25rem', lineHeight: '1.35' },
-      h2: { fontSize: '1rem', lineHeight: '1.4' },
-      h3: { fontSize: '0.9375rem', lineHeight: '1.4' },
+      h1: { fontSize: '1.35rem', lineHeight: '1.4' },
+      h2: { fontSize: '1.125rem', lineHeight: '1.45' },
+      h3: { fontSize: '1rem', lineHeight: '1.45' },
     },
   },
   // 設計書7.2: 角丸は原則6〜8px。ピル型は選択肢の表現に限る
