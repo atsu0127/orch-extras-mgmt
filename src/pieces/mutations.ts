@@ -75,10 +75,7 @@ export async function movePiece(
   }
 }
 
-/**
- * 検知結果は消さない。id は再利用されないので別の曲の結果として読まれることはなく、
- * 孤児は Cron がまとめて掃除する（設計書9.5）
- */
+/** `link_checks` は今回未使用で新しい行を作らないため、曲だけを削除する。 */
 export async function deletePiece(db: Db, id: number): Promise<void> {
   await db.delete(pieces).where(eq(pieces.id, id))
 }

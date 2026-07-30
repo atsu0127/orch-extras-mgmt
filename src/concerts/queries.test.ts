@@ -66,6 +66,18 @@ describe('getConcertOverview', () => {
     })
   })
 
+  it('複数行の備考を改行ごと返す', async () => {
+    await db.insert(concerts).values({
+      id: 1,
+      name: '備考付き演奏会',
+      note: '集合は13時です\n黒服を持参してください',
+    })
+
+    const overview = await getConcertOverview(db, 1)
+
+    expect(overview?.note).toBe('集合は13時です\n黒服を持参してください')
+  })
+
   it('会場が未設定でも取得できる', async () => {
     await db.insert(concerts).values({ id: 1, name: '会場未定の演奏会' })
 

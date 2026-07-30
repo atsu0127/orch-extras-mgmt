@@ -1,14 +1,14 @@
 # orch-extras-mgmt
 
-オーケストラのエキストラ（客演奏者）向け情報ポータル。練習日程と出欠の回答先、ボウイング、練習の録音を1か所にまとめて公開し、管理者がブラウザから更新できるようにする。
+オーケストラのエキストラ（客演奏者）向け情報ポータル。練習日程、出欠の回答先、演奏会資料、地図、カレンダー、ボウイング、練習の録音を1か所にまとめて公開し、管理者がブラウザから更新できるようにする。
 
-現在の状態: **Phase 4 完了（管理機能）**。ログインすると演奏会を切り替えながら練習日程・曲・ボウイング・録音リンクを閲覧でき、管理者はブラウザから会場・演奏会・練習・録音リンク・曲・パスワードを更新できる。リンク切れ検知はこれから。
+現在の状態: **Phase 5 完了（利便性向上）**。エキストラは演奏会の備考・資料・問い合わせ先、本番と練習の地図・カレンダーを確認できる。管理者はこれらをブラウザから更新でき、練習を複製して繰り返し入力を減らせる。
 
 本番: <https://orch-extras-mgmt.atsu-dq9.workers.dev>
 
 ## ドキュメント
 
-- [設計書](docs/design.md) — 機能仕様、データモデル、認証設計、リンク切れ検知の仕様。決定の一覧は14章
+- [設計書](docs/design.md) — 機能仕様、データモデル、認証設計、外部サービス導線の仕様。決定の一覧は14章
 - [タスク一覧](docs/tasks.md) — リリースまでの作業とフェーズ、受け入れ条件
 - [ADR](docs/adr/) — 実装中に行った設計判断の記録（[MADR](https://adr.github.io/madr/) の minimal 版）
 
@@ -18,15 +18,18 @@
 - 出欠回答先（外部サービス）へのリンク
 - 練習ごとの録音・録画リンク
 - 曲ごとのボウイングリンク
-- ボウイングリンクの死活を毎日自動チェックし、状態が変わったら Slack に通知
+- 演奏会の備考と最大5件の資料リンク
+- 管理者への `mailto:` 問い合わせ
+- 本番・練習会場の Google Maps と Google カレンダー導線
+- 練習の複製入力
 - 演奏会単位の管理と切り替え
 - 管理者は更新可、エキストラは参照のみ。個人情報は保持せず、ロールごとの共有パスワードで認証する
 
 ## 技術構成
 
-TanStack Start (React + TypeScript) を SPA モードでビルドし、Cloudflare Workers 1つとしてデプロイする。データは Cloudflare D1 (SQLite) に置き、定期実行は Cloudflare Cron Triggers を使う。いずれも無料プランの範囲内で運用する。
+TanStack Start (React + TypeScript) を SPA モードでビルドし、Cloudflare Workers 1つとしてデプロイする。データは Cloudflare D1 (SQLite) に置き、定期実行基盤は持たない。いずれも無料プランの範囲内で運用する。
 
-画面は事前生成した SPA シェル（`dist/client/index.html`）を Cloudflare の assets binding が返し、Worker が受けるのは `/_serverFn/*` と Cron だけ。この振り分けは `wrangler.jsonc` の `assets` にある。**外すと document ごとに Worker が描画してしまい、無料プランの CPU 制限に効いてくる**（[ADR-0008](docs/adr/0008-serve-spa-shell-from-assets-binding.md)）。
+画面は事前生成した SPA シェル（`dist/client/index.html`）を Cloudflare の assets binding が返し、Worker が受けるのは `/_serverFn/*` だけ。この振り分けは `wrangler.jsonc` の `assets` にある。**外すと document ごとに Worker が描画してしまい、無料プランの CPU 制限に効いてくる**（[ADR-0008](docs/adr/0008-serve-spa-shell-from-assets-binding.md)）。
 
 詳細と選定理由は[設計書](docs/design.md)の5章および14章を参照。
 

@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { createServerFn, useServerFn } from '@tanstack/react-start'
-import { useId, useState } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
 import { z } from 'zod'
 import { requireAdmin } from '../../../auth/middleware'
 import {
@@ -23,6 +23,12 @@ import {
   requiredUrl,
   toOptionalId,
 } from '../../../lib/validation'
+import {
+  createDuplicatePracticeState,
+  type DuplicatePracticeState,
+  duplicatePracticeValuesForConcert,
+  type PracticeFormValues,
+} from '../../../practices/duplicate'
 import { practiceInput } from '../../../practices/input'
 import {
   createPractice,
@@ -100,7 +106,31 @@ export const Route = createFileRoute('/_authed/admin/practices')({
 function AdminPracticesPage() {
   const { session, concert } = Route.useRouteContext()
   const data = Route.useLoaderData()
+  const [duplicateState, setDuplicateState] = useState<DuplicatePracticeState>()
+  const newFormRef = useRef<HTMLDivElement>(null)
+  const duplicateValues = concert
+    ? duplicatePracticeValuesForConcert(duplicateState, concert.id)
+    : undefined
+
+  useEffect(() => {
+    if (!duplicateValues) return
+
+    newFormRef.current?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start',
+    })
+    newFormRef.current
+      ?.querySelector<HTMLInputElement>('input[type="date"]')
+      ?.focus()
+  }, [duplicateValues])
+
   if (!data || !concert) return <NoConcertState role={session.role} />
+
+  const duplicate = (practice: PracticeAdminItem) => {
+    setDuplicateState((current) =>
+      createDuplicatePracticeState(current, concert.id, practice),
+    )
+  }
 
   return (
     <section className="section">
@@ -109,7 +139,14 @@ function AdminPracticesPage() {
         「{concert.name}」の練習です。別の演奏会は上のセレクタで切り替えます。
       </p>
 
-      <PracticeForm concertId={concert.id} venues={data.venues} />
+      <div ref={newFormRef}>
+        <PracticeForm
+          key={`${concert.id}:${duplicateState?.revision ?? 0}`}
+          concertId={concert.id}
+          venues={data.venues}
+          {...(duplicateValues ? { initialValues: duplicateValues } : {})}
+        />
+      </div>
 
       {data.practices.length === 0 ? (
         <EmptyState
@@ -124,6 +161,7 @@ function AdminPracticesPage() {
                 practice={practice}
                 concertId={concert.id}
                 venues={data.venues}
+                onDuplicate={() => duplicate(practice)}
               />
             </li>
           ))}
@@ -137,12 +175,14 @@ type AdminPracticeItemProps = {
   practice: PracticeAdminItem
   concertId: number
   venues: ReadonlyArray<VenueOption>
+  onDuplicate: () => void
 }
 
 function AdminPracticeItem({
   practice,
   concertId,
   venues,
+  onDuplicate,
 }: AdminPracticeItemProps) {
   const [editing, setEditing] = useState(false)
   const remove = useServerFn(removePractice)
@@ -174,6 +214,9 @@ function AdminPracticeItem({
       <MediaSection practice={practice} />
 
       <div className="controls">
+        <button type="button" className="secondary" onClick={onDuplicate}>
+          複製して編集
+        </button>
         <button
           type="button"
           className="secondary"
@@ -336,6 +379,7 @@ type PracticeFormProps = {
   practice?: PracticeAdminItem
   concertId: number
   venues: ReadonlyArray<VenueOption>
+  initialValues?: PracticeFormValues
   onDone?: () => void
 }
 
@@ -343,16 +387,25 @@ function PracticeForm({
   practice,
   concertId,
   venues,
+  initialValues,
   onDone,
 }: PracticeFormProps) {
   const id = useId()
   const add = useServerFn(addPractice)
   const edit = useServerFn(editPractice)
-  const [date, setDate] = useState(practice?.date ?? '')
-  const [startTime, setStartTime] = useState(practice?.startTime ?? '')
-  const [endTime, setEndTime] = useState(practice?.endTime ?? '')
-  const [venueId, setVenueId] = useState(String(practice?.venueId ?? ''))
-  const [detail, setDetail] = useState(practice?.detail ?? '')
+  const [date, setDate] = useState(practice?.date ?? initialValues?.date ?? '')
+  const [startTime, setStartTime] = useState(
+    practice?.startTime ?? initialValues?.startTime ?? '',
+  )
+  const [endTime, setEndTime] = useState(
+    practice?.endTime ?? initialValues?.endTime ?? '',
+  )
+  const [venueId, setVenueId] = useState(
+    String(practice?.venueId ?? initialValues?.venueId ?? ''),
+  )
+  const [detail, setDetail] = useState(
+    practice?.detail ?? initialValues?.detail ?? '',
+  )
 
   const form = useAdminForm({
     schema: practiceInput,

@@ -5,22 +5,34 @@ import { requireAuth } from '../../auth/middleware'
 import { ExternalLink } from '../../components/external-link'
 import { PracticeItem } from '../../components/practice-item'
 import { EmptyState, NoConcertState } from '../../components/states'
-import { getConcertOverview } from '../../concerts/queries'
+import { listConcertResources } from '../../concert-resources/queries'
+import {
+  type ConcertOverview,
+  getConcertOverview,
+} from '../../concerts/queries'
 import { getDb } from '../../db/client'
 import { formatFullDate, todayInJst } from '../../lib/date'
-import { getNextPractice } from '../../practices/queries'
+import {
+  buildGoogleMapsUrl,
+  buildInquiryMailtoUrl,
+  buildPerformanceCalendarUrl,
+} from '../../lib/external-urls'
+import { getNextPractice, type PracticeEntry } from '../../practices/queries'
+import { type AppSettingsView, getAppSettings } from '../../settings/queries'
 
 const getDashboard = createServerFn({ method: 'GET' })
   .middleware([requireAuth])
   .validator(z.object({ concertId: z.number().int().positive() }))
   .handler(async ({ data }) => {
     const db = getDb()
-    const [concert, nextPractice] = await Promise.all([
+    const [concert, nextPractice, appSettings, resources] = await Promise.all([
       getConcertOverview(db, data.concertId),
       getNextPractice(db, data.concertId, todayInJst()),
+      getAppSettings(db),
+      listConcertResources(db, data.concertId),
     ])
 
-    return { concert, nextPractice }
+    return { concert, nextPractice, appSettings, resources }
   })
 
 export const Route = createFileRoute('/_authed/')({
@@ -37,7 +49,36 @@ function Dashboard() {
   const data = Route.useLoaderData()
   if (!data?.concert) return <NoConcertState role={session.role} />
 
-  const { concert, nextPractice } = data
+  return <DashboardContent {...data} concert={data.concert} />
+}
+
+type DashboardContentProps = {
+  concert: ConcertOverview
+  nextPractice: PracticeEntry | null
+  appSettings: AppSettingsView
+  resources: Array<{
+    id: number
+    title: string
+    url: string
+  }>
+}
+
+export function DashboardContent({
+  concert,
+  nextPractice,
+  appSettings,
+  resources,
+}: DashboardContentProps) {
+  const performanceCalendarUrl = concert.performanceDate
+    ? buildPerformanceCalendarUrl({
+        concertName: concert.name,
+        date: concert.performanceDate,
+        venue:
+          concert.venueName && concert.venueAddress
+            ? { name: concert.venueName, address: concert.venueAddress }
+            : null,
+      })
+    : null
 
   return (
     <>
@@ -49,7 +90,51 @@ function Dashboard() {
             {concert.venueName && ` / ${concert.venueName}`}
           </p>
         )}
+        {concert.venueAddress && (
+          <ExternalLink href={buildGoogleMapsUrl(concert.venueAddress)}>
+            Google Mapsで開く
+          </ExternalLink>
+        )}
+        {performanceCalendarUrl && (
+          <ExternalLink href={performanceCalendarUrl}>
+            Googleカレンダーに追加
+          </ExternalLink>
+        )}
       </section>
+
+      <section className="section">
+        <h2>次の練習</h2>
+        {nextPractice ? (
+          <PracticeItem practice={nextPractice} concertName={concert.name} />
+        ) : (
+          <EmptyState
+            title="今後の練習の予定はありません"
+            description="終わった練習は日程一覧から見られます。"
+          />
+        )}
+      </section>
+
+      {concert.note && (
+        <section className="section">
+          <h2>備考</h2>
+          <p className="detail">{concert.note}</p>
+        </section>
+      )}
+
+      {resources.length > 0 && (
+        <section className="section">
+          <h2>資料</h2>
+          <ul className="link-list">
+            {resources.map((resource) => (
+              <li key={resource.id}>
+                <ExternalLink href={resource.url}>
+                  {resource.title}
+                </ExternalLink>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       <section className="section">
         <h2>出欠の回答</h2>
@@ -68,17 +153,17 @@ function Dashboard() {
         )}
       </section>
 
-      <section className="section">
-        <h2>次の練習</h2>
-        {nextPractice ? (
-          <PracticeItem practice={nextPractice} />
-        ) : (
-          <EmptyState
-            title="今後の練習の予定はありません"
-            description="終わった練習は日程一覧から見られます。"
-          />
-        )}
-      </section>
+      {appSettings.adminEmail && (
+        <section className="section">
+          <h2>問い合わせ</h2>
+          <a
+            href={buildInquiryMailtoUrl(appSettings.adminEmail, concert.name)}
+            className="action"
+          >
+            管理者へ問い合わせる
+          </a>
+        </section>
+      )}
 
       <nav className="stack">
         <Link to="/practices" className="action">

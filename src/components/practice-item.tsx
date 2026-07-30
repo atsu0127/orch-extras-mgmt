@@ -1,10 +1,26 @@
 import { formatDate, formatTimeRange } from '../lib/date'
+import {
+  buildGoogleMapsUrl,
+  buildPracticeCalendarUrl,
+} from '../lib/external-urls'
 import type { PracticeEntry } from '../practices/queries'
 import { ExternalLink } from './external-link'
 
+type PracticeItemProps = {
+  practice: PracticeEntry
+  concertName: string
+}
+
 /** 練習1件の見せ方。ダッシュボードの「次の練習」と日程一覧で同じものを使う */
-export function PracticeItem({ practice }: { practice: PracticeEntry }) {
+export function PracticeItem({ practice, concertName }: PracticeItemProps) {
   const time = formatTimeRange(practice.startTime, practice.endTime)
+  const calendarUrl = buildPracticeCalendarUrl({
+    concertName,
+    date: practice.date,
+    startTime: practice.startTime,
+    endTime: practice.endTime,
+    venue: practice.venue,
+  })
 
   return (
     <div className="item">
@@ -18,6 +34,10 @@ export function PracticeItem({ practice }: { practice: PracticeEntry }) {
           {practice.venue.name}
           <br />
           {practice.venue.address}
+          <br />
+          <ExternalLink href={buildGoogleMapsUrl(practice.venue.address)}>
+            Google Mapsで開く
+          </ExternalLink>
           {practice.venue.note && (
             <>
               <br />
@@ -27,6 +47,12 @@ export function PracticeItem({ practice }: { practice: PracticeEntry }) {
         </p>
       ) : (
         <p className="item-note">会場は未定です。</p>
+      )}
+
+      {calendarUrl && (
+        <p>
+          <ExternalLink href={calendarUrl}>Googleカレンダーに追加</ExternalLink>
+        </p>
       )}
 
       {practice.detail && (

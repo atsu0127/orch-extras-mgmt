@@ -1,6 +1,8 @@
 import { countDistinct, desc, eq, sql } from 'drizzle-orm'
+import { listConcertResourcesByConcert } from '../concert-resources/queries'
 import type { Db } from '../db/client'
 import {
+  type ConcertResource,
   type ConcertStatus,
   concerts,
   pieces,
@@ -22,6 +24,7 @@ export type ConcertOverview = {
   performanceDate: string | null
   attendanceUrl: string | null
   attendanceNote: string | null
+  note: string | null
   venueName: string | null
   venueAddress: string | null
 }
@@ -54,15 +57,20 @@ export type ConcertAdminItem = {
   venueId: number | null
   attendanceUrl: string | null
   attendanceNote: string | null
+  note: string | null
   status: ConcertStatus
   /** 削除すると一緒に消える配下の件数。確認ダイアログの警告に使う */
   practiceCount: number
   pieceCount: number
+  resourceCount: number
+  resources: Array<ConcertResource>
 }
 
 /** 管理画面の一覧。並びはセレクタと同じにして、探す場所を変えずに済むようにする */
-export function listConcertsForAdmin(db: Db): Promise<Array<ConcertAdminItem>> {
-  return db
+export async function listConcertsForAdmin(
+  db: Db,
+): Promise<Array<ConcertAdminItem>> {
+  const rows = await db
     .select({
       id: concerts.id,
       name: concerts.name,
@@ -70,6 +78,7 @@ export function listConcertsForAdmin(db: Db): Promise<Array<ConcertAdminItem>> {
       venueId: concerts.venueId,
       attendanceUrl: concerts.attendanceUrl,
       attendanceNote: concerts.attendanceNote,
+      note: concerts.note,
       status: concerts.status,
       // join を2本重ねると行が掛け算になるので、distinct で数える
       practiceCount: countDistinct(practices.id),
@@ -84,6 +93,19 @@ export function listConcertsForAdmin(db: Db): Promise<Array<ConcertAdminItem>> {
       desc(concerts.performanceDate),
       desc(concerts.id),
     )
+
+  const resources = await listConcertResourcesByConcert(
+    db,
+    rows.map(({ id }) => id),
+  )
+  return rows.map((row) => {
+    const concertResourceItems = resources.get(row.id) ?? []
+    return {
+      ...row,
+      resourceCount: concertResourceItems.length,
+      resources: concertResourceItems,
+    }
+  })
 }
 
 export async function getConcertOverview(
@@ -97,6 +119,7 @@ export async function getConcertOverview(
       performanceDate: concerts.performanceDate,
       attendanceUrl: concerts.attendanceUrl,
       attendanceNote: concerts.attendanceNote,
+      note: concerts.note,
       venueName: venues.name,
       venueAddress: venues.address,
     })

@@ -11,16 +11,37 @@ import {
 import { MIN_PASSWORD_LENGTH, passwordChangeInput } from '../../../auth/input'
 import { requireAdmin } from '../../../auth/middleware'
 import { forgetCurrentSession } from '../../../auth/session-cache'
-import { AdminForm, Field } from '../../../components/admin-form'
+import { AdminForm, Field, useAdminForm } from '../../../components/admin-form'
 import { forgetConcerts } from '../../../concerts/concert-cache'
 import { getDb } from '../../../db/client'
 import { formatFullDate, jstDateOf } from '../../../lib/date'
+import { MAX_LENGTH } from '../../../lib/limits'
 import { ROLE_LABELS, ROLES, type Role } from '../../../lib/roles'
-import { type FieldErrors, fieldErrors } from '../../../lib/validation'
+import {
+  type FieldErrors,
+  fieldErrors,
+  optionalEmail,
+} from '../../../lib/validation'
+import { updateAdminEmail } from '../../../settings/mutations'
+import { getAppSettings } from '../../../settings/queries'
 
-const getCredentials = createServerFn({ method: 'GET' })
+const adminEmailInput = z.object({ adminEmail: optionalEmail })
+
+const getSettings = createServerFn({ method: 'GET' })
   .middleware([requireAdmin])
-  .handler(() => listCredentials(getDb()))
+  .handler(async () => {
+    const db = getDb()
+    const [credentials, appSettings] = await Promise.all([
+      listCredentials(db),
+      getAppSettings(db),
+    ])
+    return { credentials, appSettings }
+  })
+
+const submitAdminEmail = createServerFn({ method: 'POST' })
+  .middleware([requireAdmin])
+  .validator(adminEmailInput)
+  .handler(({ data }) => updateAdminEmail(getDb(), data.adminEmail))
 
 /**
  * 変更できるのは管理者だけなので、確かめるのも常に管理者のパスワード。
@@ -40,16 +61,18 @@ const submitPasswordChange = createServerFn({ method: 'POST' })
   })
 
 export const Route = createFileRoute('/_authed/admin/settings')({
-  loader: () => getCredentials(),
+  loader: () => getSettings(),
   component: SettingsPage,
 })
 
 function SettingsPage() {
-  const credentials = Route.useLoaderData()
+  const { credentials, appSettings } = Route.useLoaderData()
 
   return (
     <section className="section">
       <h1>設定</h1>
+      <AdminEmailForm initialEmail={appSettings.adminEmail} />
+
       <p>
         パスワードはロールごとに1本です。変更すると、そのロールで開いている全員が
         ログアウトされ、新しいパスワードが必要になります。
@@ -63,6 +86,50 @@ function SettingsPage() {
         />
       ))}
     </section>
+  )
+}
+
+function AdminEmailForm({ initialEmail }: { initialEmail: string | null }) {
+  const id = useId()
+  const save = useServerFn(submitAdminEmail)
+  const [adminEmail, setAdminEmail] = useState(initialEmail ?? '')
+  const [saved, setSaved] = useState(false)
+  const form = useAdminForm({
+    schema: adminEmailInput,
+    action: (data) => save({ data }),
+    onSaved: () => setSaved(true),
+  })
+
+  return (
+    <AdminForm
+      title="管理者メールアドレス"
+      onSubmit={form.onSubmit(() => ({ adminEmail }))}
+      failure={form.failure}
+      submitting={form.submitting}
+    >
+      <p className="field-hint">
+        エキストラからの問い合わせ先として使います。空欄のまま保存すると設定を解除できます。
+      </p>
+      {saved && <p className="notice">保存しました。</p>}
+
+      <Field
+        id={`${id}-admin-email`}
+        label="メールアドレス"
+        error={form.errors.adminEmail}
+      >
+        <input
+          id={`${id}-admin-email`}
+          type="email"
+          autoComplete="email"
+          maxLength={MAX_LENGTH.adminEmail}
+          value={adminEmail}
+          onChange={(event) => {
+            setAdminEmail(event.target.value)
+            setSaved(false)
+          }}
+        />
+      </Field>
+    </AdminForm>
   )
 }
 

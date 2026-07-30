@@ -5,6 +5,7 @@ import type { Db } from '../db/client'
 import { getDb } from '../db/client'
 import { credentials } from '../db/schema'
 import { ROLES, type Role } from '../lib/roles'
+import { cleanupAuthData } from './cleanup'
 import { getClientIp } from './client-ip'
 import {
   clearSessionCookie,
@@ -61,7 +62,9 @@ export const login = createServerFn({ method: 'POST' })
     await recordLoginAttempt(db, ip, role !== null, now)
     if (!role) return { ok: false, reason: 'invalid' }
 
-    writeSessionCookie(await issueSession(db, role, now))
+    const token = await issueSession(db, role, now)
+    await cleanupAuthData(db, now)
+    writeSessionCookie(token)
     return { ok: true, role }
   })
 

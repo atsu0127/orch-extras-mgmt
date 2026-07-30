@@ -11,9 +11,16 @@ export const MAX_LENGTH = {
   venueNote: 500,
   concertName: 100,
   attendanceNote: 500,
+  concertNote: 2000,
+  resourceTitle: 100,
+  adminEmail: 254,
   practiceDetail: 2000,
   mediaTitle: 100,
   pieceTitle: 100,
   pieceComposer: 100,
   url: 2000,
 } as const
+
+export const MAX_CONCERT_RESOURCES = 5
+
+export const CONCERT_RESOURCE_LIMIT_MESSAGE = `資料は${MAX_CONCERT_RESOURCES}件まで登録できます`

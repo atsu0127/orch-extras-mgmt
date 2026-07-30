@@ -6,7 +6,7 @@
 
 ## 最初に読むもの
 
-- `docs/design.md` — 機能仕様、データモデル、認証設計、リンク切れ検知の仕様。**実装の判断はここが正**。決定の一覧は14章
+- `docs/design.md` — 機能仕様、データモデル、認証設計、外部サービス導線の仕様。**実装の判断はここが正**。決定の一覧は14章
 - `docs/tasks.md` — フェーズとタスク、受け入れ条件、現在の進捗
 - `docs/adr/` — 実装中に行った設計判断の記録
 
@@ -16,13 +16,13 @@
 
 ## 技術構成
 
-TanStack Start (React + TypeScript) を SPA モードでビルドし、Cloudflare Workers 1つとしてデプロイする。データは D1 (SQLite)、定期実行は Cron Triggers。すべて無料プランの範囲で運用する。選定理由は `docs/design.md` の5章と14章。
+TanStack Start (React + TypeScript) を SPA モードでビルドし、Cloudflare Workers 1つとしてデプロイする。データは D1 (SQLite) に置き、定期実行基盤は持たない。すべて無料プランの範囲で運用する。選定理由は `docs/design.md` の5章と14章。
 
 - ランタイムは mise で固定（`mise.toml`）。Vite 8 / TypeScript 7 / React 19
 - Lint と整形は Biome（`biome.json`）
 - 単体テストは Vitest（`src/**/*.test.ts`、node 環境、Start プラグインは読み込まない）
 - E2E は Playwright（`e2e/`、モバイル幅）。`E2E_BASE_URL` でデプロイ先にも向けられる
-- Worker のエントリは自前の `src/server.ts`（Start の fetch と Cron 用の scheduled を公開）
+- Worker のエントリは自前の `src/server.ts`（Start の fetch をラップして公開）
 
 ## コマンド
 
