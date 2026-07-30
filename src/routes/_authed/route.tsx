@@ -1,4 +1,4 @@
-import { Box, Button, NativeSelect, Stack, Text } from '@mantine/core'
+import { Box, Button, NativeSelect } from '@mantine/core'
 import {
   createFileRoute,
   Link,
@@ -66,26 +66,16 @@ function AuthedLayout() {
   return (
     <div className="app-frame">
       <header className="app-header">
-        <Stack gap="sm">
-          <Box
-            style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'baseline',
-              gap: '0.75rem',
-            }}
-          >
+        <div className="app-header-inner">
+          <div className="app-header-bar">
             <span className="app-brand">エキストラ情報ポータル</span>
-            <LogoutButton />
-          </Box>
-
-          <Text size="xs" c="dimmed">
-            {ROLE_LABELS[session.role]}としてログイン中
-          </Text>
-
-          {concert && (
-            <ConcertSelector concerts={concerts} selectedId={concert.id} />
-          )}
+            <div className="app-header-actions">
+              <span className="app-role">
+                {ROLE_LABELS[session.role]}としてログイン中
+              </span>
+              <LogoutButton />
+            </div>
+          </div>
 
           <nav className="app-desktop-nav" aria-label="メイン">
             <DesktopLink to="/" exact>
@@ -95,7 +85,13 @@ function AuthedLayout() {
             <DesktopLink to="/pieces">曲</DesktopLink>
             {showAdmin && <DesktopLink to="/admin">管理</DesktopLink>}
           </nav>
-        </Stack>
+
+          {concert && (
+            <div className="app-concert-select">
+              <ConcertSelector concerts={concerts} selectedId={concert.id} />
+            </div>
+          )}
+        </div>
       </header>
 
       {/*
@@ -243,21 +239,10 @@ function DesktopLink({
     <Link
       to={to}
       activeOptions={{ exact }}
-      style={{
-        paddingBottom: 2,
-        borderBottom: '2px solid transparent',
-        color: 'var(--mantine-color-text)',
-        fontWeight: 500,
-        fontSize: '0.9375rem',
-        textDecoration: 'none',
-      }}
-      activeProps={{
-        style: {
-          borderBottomColor: 'var(--mantine-color-bordeaux-filled)',
-          color: 'var(--mantine-color-bordeaux-filled)',
-          fontWeight: 700,
-        },
-      }}
+      // 下部ナビと同じく data-active で切り替える。style の activeProps は
+      // 非アクティブ時に下線が残ることがある（ADR-0019）
+      activeProps={{ 'data-active': 'true' }}
+      inactiveProps={{ 'data-active': 'false' }}
     >
       {children}
     </Link>

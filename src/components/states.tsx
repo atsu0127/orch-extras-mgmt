@@ -13,7 +13,15 @@ type EmptyStateProps = {
 /** データが無いときの表示。何が無いのかと、次に何をすればよいかを同じ形で見せる */
 export function EmptyState({ title, description, children }: EmptyStateProps) {
   return (
-    <Alert variant="light" color="ink" radius="md" title={title}>
+    <Alert
+      variant="light"
+      color="ink"
+      radius="md"
+      title={title}
+      // アイコン列があると親の text-align:center と組み合わさり左右で揃いが崩れる
+      icon={null}
+      className="empty-state"
+    >
       <Stack gap="xs">
         {description && <Text size="sm">{description}</Text>}
         {children}
