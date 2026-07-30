@@ -224,7 +224,7 @@ D1 (SQLite) 上の11テーブル。Drizzle でスキーマを定義し、`drizzl
 | target_type | text | not null, 現状は `bowing` のみ | 将来 `practice_media` を追加できる |
 | target_id | integer | not null | 対象レコードの id |
 | url | text | not null | チェック時点の URL |
-| verdict | text | not null, `ok` \| `broken` \| `suspect` \| `error` | 9.2 参照 |
+| verdict | text | not null, `ok` \| `broken` \| `suspect` \| `error` | 初期設計の判定値。今回は使用しない |
 | http_status | integer | null | |
 | detail | text | null | 判定理由（例: `redirected to accounts.google.com`） |
 | checked_at | text | not null | UTC ISO 8601 |

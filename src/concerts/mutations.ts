@@ -33,8 +33,7 @@ export async function updateConcert(
 }
 
 /**
- * アーカイブは削除の代わりに使う。終わった演奏会をセレクタから隠さずに残しておけて、
- * リンク切れ検知の対象からは外れる（設計書9.1）。
+ * アーカイブは削除の代わりに使う。終わった演奏会もセレクタから選べる状態で残す。
  */
 export async function setConcertStatus(
   db: Db,
