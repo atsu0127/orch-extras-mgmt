@@ -14,6 +14,7 @@ import { ConfirmButton } from '../../../components/confirm-button'
 import { ExternalLink } from '../../../components/external-link'
 import { EmptyState } from '../../../components/states'
 import {
+  CONCERT_RESOURCE_LIMIT_MESSAGE,
   createConcertResource,
   deleteConcertResource,
   moveConcertResource,
@@ -48,6 +49,8 @@ const resourceInput = z.object({
   url: requiredUrl,
 })
 
+type ResourceActionResult = { ok: true } | { ok: false; reason: 'limit' }
+
 const getConcertsPage = createServerFn({ method: 'GET' })
   .middleware([requireAdmin])
   .handler(async () => {
@@ -81,15 +84,33 @@ const removeConcert = createServerFn({ method: 'POST' })
 const addResource = createServerFn({ method: 'POST' })
   .middleware([requireAdmin])
   .validator(resourceInput.extend({ concertId: idValue }))
-  .handler(({ data: { concertId, ...fields } }) =>
-    createConcertResource(getDb(), concertId, fields),
+  .handler(
+    async ({
+      data: { concertId, ...fields },
+    }): Promise<ResourceActionResult> => {
+      try {
+        await createConcertResource(getDb(), concertId, fields)
+        return { ok: true }
+      } catch (error) {
+        if (
+          error instanceof Error &&
+          error.message === CONCERT_RESOURCE_LIMIT_MESSAGE
+        ) {
+          return { ok: false, reason: 'limit' }
+        }
+        throw error
+      }
+    },
   )
 
 const editResource = createServerFn({ method: 'POST' })
   .middleware([requireAdmin])
   .validator(resourceInput.extend({ id: idValue }))
-  .handler(({ data: { id, ...fields } }) =>
-    updateConcertResource(getDb(), id, fields),
+  .handler(
+    async ({ data: { id, ...fields } }): Promise<ResourceActionResult> => {
+      await updateConcertResource(getDb(), id, fields)
+      return { ok: true }
+    },
   )
 
 const moveResource = createServerFn({ method: 'POST' })
@@ -362,6 +383,12 @@ function ResourceForm({ resource, concertId, onDone }: ResourceFormProps) {
       resource
         ? edit({ data: { ...data, id: resource.id } })
         : add({ data: { ...data, concertId } }),
+    ...(resource
+      ? {}
+      : {
+          getResultFailure: (result: ResourceActionResult) =>
+            result.ok ? null : CONCERT_RESOURCE_LIMIT_MESSAGE,
+        }),
     onSaved: onDone,
   })
 

@@ -90,23 +90,33 @@ export function FormError({ message }: { message: string | null }) {
   )
 }
 
-type AdminFormOptions<Input, Output> = {
+type AdminFormOptions<Input, Output, Result> = {
   /** サーバ関数と同じスキーマを渡す。入力の可否とエラー文を両側で一致させる */
   schema: z.ZodType<Output, Input>
-  action: (value: Input) => Promise<unknown>
+  action: (value: Input) => Promise<Result>
+  /** サーバが返した業務エラーを、フォームに表示する文言へ変換する */
+  getResultFailure?: (result: Result) => string | null
   /** 保存できたときだけ呼ぶ。編集フォームを閉じる、入力欄を空に戻すなど */
   onSaved?: () => void
+}
+
+export function actionResultFailure<Result>(
+  result: Result,
+  getResultFailure?: (result: Result) => string | null,
+): string | null {
+  return getResultFailure?.(result) ?? null
 }
 
 /**
  * 管理画面のフォームの共通処理。検証 → 保存 → 画面の作り直しまでを1か所に置く。
  * 画面ごとに書くと、保存後の作り直しやエラー表示の付け忘れに気づけない。
  */
-export function useAdminForm<Input, Output>({
+export function useAdminForm<Input, Output, Result>({
   schema,
   action,
+  getResultFailure,
   onSaved,
-}: AdminFormOptions<Input, Output>) {
+}: AdminFormOptions<Input, Output, Result>) {
   const refresh = useRefresh()
   const [errors, setErrors] = useState<FieldErrors>({})
   const [failure, setFailure] = useState<string | null>(null)
@@ -123,14 +133,22 @@ export function useAdminForm<Input, Output>({
 
     setErrors({})
     setSubmitting(true)
+    let resultFailure: string | null = null
     try {
       // 検証を通った値ではなく入力そのものを送る。空欄を null に寄せるといった
       // 正規化はサーバ側の検証で行い、そこを唯一の正とする
-      await action(input)
+      const result = await action(input)
+      resultFailure = actionResultFailure(result, getResultFailure)
+      if (resultFailure) {
+        setFailure(resultFailure)
+        await refresh()
+        return
+      }
+
       await refresh()
       onSaved?.()
     } catch {
-      setFailure(FAILURE_MESSAGE)
+      if (!resultFailure) setFailure(FAILURE_MESSAGE)
     } finally {
       setSubmitting(false)
     }
