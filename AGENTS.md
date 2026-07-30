@@ -65,3 +65,13 @@ TanStack Start (React + TypeScript) を SPA モードでビルドし、Cloudflar
 - `PLAYWRIGHT_BROWSERS_PATH` が一時領域を指しているため、Playwright を動かすときは `unset PLAYWRIGHT_BROWSERS_PATH` する
 - 開発サーバを止めるときは、pnpm のラッパーではなく実際のリスナを止める（`lsof -t -nP -iTCP:3000 -sTCP:LISTEN`）。ラッパーだけ kill すると子プロセスが残る
 - 本番 D1 への操作（`--remote`）とデプロイは影響が及ぶので、実行前に確認を取る
+
+## Cursor Cloud specific instructions
+
+この節は Cursor Cloud のVM向け。上の「環境上の注意」は mise/asdf を使うローカル開発機の話で、Cloud VM には当てはまらない。
+
+- ランタイムは mise ではなく nvm で入れた Node 24.18.0。`/usr/local/cargo/bin`（PATH の先頭）に `node`/`pnpm` 等の symlink を張ってあるので、`export PATH=...` の小細工なしで `node`/`pnpm` は v24 に解決される（symlink が無いと `/exec-daemon/node` の v22 が優先されるので、壊れていたら `ln -sf $HOME/.nvm/versions/node/v24.18.0/bin/{node,pnpm,npm,npx,corepack} /usr/local/cargo/bin/` で復旧する）
+- 依存の更新は起動時の update script（`pnpm install`）が済ませる。`.dev.vars`・ローカル D1（`.wrangler/state`）はスナップショットに残るが、消えていたら `cp .dev.vars.example .dev.vars` → `pnpm db:migrate` → `pnpm db:seed` で作り直す。スキーマを変えたら `pnpm db:migrate` を流す
+- 検査（`pnpm lint` / `pnpm typecheck` / `pnpm test`）と開発サーバ（`pnpm dev`、http://localhost:3000）はこのVMではサンドボックスの制約なくそのまま実行できる。上の「環境上の注意」のサンドボックス回避は不要
+- ローカルログインの共有パスワードは `.dev.vars.example` の既定値（管理者 `local-admin-password` / エキストラ `local-extra-password`）。`pnpm db:seed` がこれを投入する
+- E2E（Playwright）を動かすなら初回のみ `pnpm exec playwright install chromium`
