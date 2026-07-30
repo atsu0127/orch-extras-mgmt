@@ -1,3 +1,4 @@
+import { Stack, Text } from '@mantine/core'
 import { createFileRoute } from '@tanstack/react-router'
 import { createServerFn, useServerFn } from '@tanstack/react-start'
 import { useId, useState } from 'react'
@@ -6,12 +7,18 @@ import { requireAdmin } from '../../../auth/middleware'
 import {
   AdminForm,
   Field,
-  FormError,
   useAdminAction,
   useAdminForm,
 } from '../../../components/admin-form'
 import { ConfirmButton } from '../../../components/confirm-button'
-import { EmptyState } from '../../../components/states'
+import {
+  AdminList,
+  AdminListItem,
+  ControlRow,
+  SecondaryButton,
+} from '../../../components/control-row'
+import { AppTextarea, AppTextInput } from '../../../components/form-controls'
+import { EmptyState, PageSection } from '../../../components/states'
 import { getDb } from '../../../db/client'
 import { MAX_LENGTH } from '../../../lib/limits'
 import { idValue, optionalText, requiredText } from '../../../lib/validation'
@@ -56,9 +63,10 @@ function VenuesPage() {
   const venues = Route.useLoaderData()
 
   return (
-    <section className="section">
-      <h1>会場</h1>
-      <p>ここに登録した会場を、演奏会と練習の登録で選べるようになります。</p>
+    <PageSection title="会場" titleOrder={1}>
+      <Text c="dimmed">
+        ここに登録した会場を、演奏会と練習の登録で選べるようになります。
+      </Text>
 
       <VenueForm />
 
@@ -68,15 +76,13 @@ function VenuesPage() {
           description="上のフォームから登録してください。"
         />
       ) : (
-        <ul className="list">
+        <AdminList>
           {venues.map((venue) => (
-            <li key={venue.id}>
-              <VenueItem venue={venue} />
-            </li>
+            <VenueItem key={venue.id} venue={venue} />
           ))}
-        </ul>
+        </AdminList>
       )}
-    </section>
+    </PageSection>
   )
 }
 
@@ -85,34 +91,46 @@ function VenueItem({ venue }: { venue: VenueListItem }) {
   const remove = useServerFn(removeVenue)
   const action = useAdminAction()
 
-  if (editing)
-    return <VenueForm venue={venue} onDone={() => setEditing(false)} />
+  if (editing) {
+    return (
+      <li>
+        <VenueForm venue={venue} onDone={() => setEditing(false)} />
+      </li>
+    )
+  }
 
   return (
-    <div className="item">
-      <div className="item-title">{venue.name}</div>
-      <p className="item-note">{venue.address}</p>
-      {venue.note && <p className="item-note">{venue.note}</p>}
-      <p className="item-note">{usageLabel(venue)}</p>
+    <AdminListItem>
+      <Stack gap={4}>
+        <Text fw={600}>{venue.name}</Text>
+        <Text size="sm" c="dimmed">
+          {venue.address}
+        </Text>
+        {venue.note && (
+          <Text size="sm" c="dimmed">
+            {venue.note}
+          </Text>
+        )}
+        <Text size="sm" c="dimmed">
+          {usageLabel(venue)}
+        </Text>
 
-      <div className="controls">
-        <button
-          type="button"
-          className="secondary"
-          onClick={() => setEditing(true)}
-        >
-          編集
-        </button>
-        <ConfirmButton
-          label="削除"
-          title={`「${venue.name}」を削除しますか？`}
-          description={<p>{deleteWarning(venue)}</p>}
-          disabled={action.running}
-          onConfirm={() => action.run(() => remove({ data: { id: venue.id } }))}
-        />
-      </div>
-      <FormError message={action.failure} />
-    </div>
+        <ControlRow failure={action.failure}>
+          <SecondaryButton onClick={() => setEditing(true)}>
+            編集
+          </SecondaryButton>
+          <ConfirmButton
+            label="削除"
+            title={`「${venue.name}」を削除しますか？`}
+            description={<p>{deleteWarning(venue)}</p>}
+            disabled={action.running}
+            onConfirm={() =>
+              action.run(() => remove({ data: { id: venue.id } }))
+            }
+          />
+        </ControlRow>
+      </Stack>
+    </AdminListItem>
   )
 }
 
@@ -153,7 +171,7 @@ function VenueForm({ venue, onDone }: VenueFormProps) {
       onCancel={venue ? onDone : undefined}
     >
       <Field id={`${id}-name`} label="名前" error={form.errors.name}>
-        <input
+        <AppTextInput
           id={`${id}-name`}
           value={name}
           onChange={(event) => setName(event.target.value)}
@@ -161,7 +179,7 @@ function VenueForm({ venue, onDone }: VenueFormProps) {
       </Field>
 
       <Field id={`${id}-address`} label="住所" error={form.errors.address}>
-        <input
+        <AppTextInput
           id={`${id}-address`}
           value={address}
           onChange={(event) => setAddress(event.target.value)}
@@ -174,7 +192,7 @@ function VenueForm({ venue, onDone }: VenueFormProps) {
         hint="最寄り駅、入館方法など"
         error={form.errors.note}
       >
-        <textarea
+        <AppTextarea
           id={`${id}-note`}
           rows={2}
           value={note}

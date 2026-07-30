@@ -1,3 +1,4 @@
+import { Badge, Group, Stack, Text } from '@mantine/core'
 import { createFileRoute } from '@tanstack/react-router'
 import { createServerFn, useServerFn } from '@tanstack/react-start'
 import { useId, useState } from 'react'
@@ -6,13 +7,24 @@ import { requireAdmin } from '../../../auth/middleware'
 import {
   AdminForm,
   Field,
-  FormError,
   useAdminAction,
   useAdminForm,
 } from '../../../components/admin-form'
 import { ConfirmButton } from '../../../components/confirm-button'
+import {
+  AdminList,
+  AdminListItem,
+  ControlRow,
+  MediaList,
+  SecondaryButton,
+} from '../../../components/control-row'
 import { ExternalLink } from '../../../components/external-link'
-import { EmptyState } from '../../../components/states'
+import {
+  AppSelect,
+  AppTextarea,
+  AppTextInput,
+} from '../../../components/form-controls'
+import { EmptyState, PageSection } from '../../../components/states'
 import {
   createConcertResource,
   deleteConcertResource,
@@ -135,9 +147,10 @@ function ConcertsPage() {
   const { concerts, venues } = Route.useLoaderData()
 
   return (
-    <section className="section">
-      <h1>演奏会</h1>
-      <p>練習と曲は演奏会ごとに登録します。まずここに演奏会を作ります。</p>
+    <PageSection title="演奏会" titleOrder={1}>
+      <Text c="dimmed">
+        練習と曲は演奏会ごとに登録します。まずここに演奏会を作ります。
+      </Text>
 
       <ConcertForm venues={venues} />
 
@@ -147,15 +160,13 @@ function ConcertsPage() {
           description="上のフォームから登録してください。"
         />
       ) : (
-        <ul className="list">
+        <AdminList>
           {concerts.map((concert) => (
-            <li key={concert.id}>
-              <ConcertItem concert={concert} venues={venues} />
-            </li>
+            <ConcertItem key={concert.id} concert={concert} venues={venues} />
           ))}
-        </ul>
+        </AdminList>
       )}
-    </section>
+    </PageSection>
   )
 }
 
@@ -172,11 +183,13 @@ function ConcertItem({ concert, venues }: ConcertItemProps) {
 
   if (editing) {
     return (
-      <ConcertForm
-        concert={concert}
-        venues={venues}
-        onDone={() => setEditing(false)}
-      />
+      <li>
+        <ConcertForm
+          concert={concert}
+          venues={venues}
+          onDone={() => setEditing(false)}
+        />
+      </li>
     )
   }
 
@@ -184,61 +197,60 @@ function ConcertItem({ concert, venues }: ConcertItemProps) {
   const venue = venues.find(({ id }) => id === concert.venueId)
 
   return (
-    <div className="item">
-      <div className="item-title">
-        <span>{concert.name}</span>
-        {archived && <span className="badge">アーカイブ済み</span>}
-      </div>
-      <p className="item-note">
-        {concert.performanceDate
-          ? `本番 ${formatFullDate(concert.performanceDate)}`
-          : '本番日は未設定'}
-        {venue && ` / ${venue.name}`}
-      </p>
-      <p className="item-note">
-        {concert.attendanceUrl ? '出欠の回答先あり' : '出欠の回答先は未設定'}
-        {` / 練習 ${concert.practiceCount} 件 / 曲 ${concert.pieceCount} 件 / 資料 ${concert.resourceCount} 件`}
-      </p>
+    <AdminListItem>
+      <Stack gap={4}>
+        <Group gap="sm" align="center">
+          <Text fw={600}>{concert.name}</Text>
+          {archived && (
+            <Badge color="bordeaux" variant="light" radius="sm">
+              アーカイブ済み
+            </Badge>
+          )}
+        </Group>
+        <Text size="sm" c="dimmed">
+          {concert.performanceDate
+            ? `本番 ${formatFullDate(concert.performanceDate)}`
+            : '本番日は未設定'}
+          {venue && ` / ${venue.name}`}
+        </Text>
+        <Text size="sm" c="dimmed">
+          {concert.attendanceUrl ? '出欠の回答先あり' : '出欠の回答先は未設定'}
+          {` / 練習 ${concert.practiceCount} 件 / 曲 ${concert.pieceCount} 件 / 資料 ${concert.resourceCount} 件`}
+        </Text>
 
-      <ResourceSection concert={concert} />
+        <ResourceSection concert={concert} />
 
-      <div className="controls">
-        <button
-          type="button"
-          className="secondary"
-          onClick={() => setEditing(true)}
-        >
-          編集
-        </button>
-        <button
-          type="button"
-          className="secondary"
-          disabled={action.running}
-          onClick={() =>
-            void action.run(() =>
-              changeStatus({
-                data: {
-                  id: concert.id,
-                  status: archived ? 'active' : 'archived',
-                },
-              }),
-            )
-          }
-        >
-          {archived ? '進行中に戻す' : 'アーカイブする'}
-        </button>
-        <ConfirmButton
-          label="削除"
-          title={`「${concert.name}」を削除しますか？`}
-          description={<p>{deleteWarning(concert)}</p>}
-          disabled={action.running}
-          onConfirm={() =>
-            action.run(() => remove({ data: { id: concert.id } }))
-          }
-        />
-      </div>
-      <FormError message={action.failure} />
-    </div>
+        <ControlRow failure={action.failure}>
+          <SecondaryButton onClick={() => setEditing(true)}>
+            編集
+          </SecondaryButton>
+          <SecondaryButton
+            disabled={action.running}
+            onClick={() =>
+              void action.run(() =>
+                changeStatus({
+                  data: {
+                    id: concert.id,
+                    status: archived ? 'active' : 'archived',
+                  },
+                }),
+              )
+            }
+          >
+            {archived ? '進行中に戻す' : 'アーカイブする'}
+          </SecondaryButton>
+          <ConfirmButton
+            label="削除"
+            title={`「${concert.name}」を削除しますか？`}
+            description={<p>{deleteWarning(concert)}</p>}
+            disabled={action.running}
+            onConfirm={() =>
+              action.run(() => remove({ data: { id: concert.id } }))
+            }
+          />
+        </ControlRow>
+      </Stack>
+    </AdminListItem>
   )
 }
 
@@ -249,39 +261,31 @@ function ResourceSection({ concert }: { concert: ConcertAdminItem }) {
   return (
     <>
       {concert.resources.length > 0 && (
-        <div>
-          <p className="item-note">資料</p>
-          <ul className="media-list">
-            {concert.resources.map((resource, index) => (
-              <ResourceItem
-                key={resource.id}
-                resource={resource}
-                first={index === 0}
-                last={index === concert.resources.length - 1}
-              />
-            ))}
-          </ul>
-        </div>
+        <MediaList title="資料">
+          {concert.resources.map((resource, index) => (
+            <ResourceItem
+              key={resource.id}
+              resource={resource}
+              first={index === 0}
+              last={index === concert.resources.length - 1}
+            />
+          ))}
+        </MediaList>
       )}
 
       {adding ? (
         <ResourceForm concertId={concert.id} onDone={() => setAdding(false)} />
       ) : (
-        <div className="controls">
-          <button
-            type="button"
-            className="secondary"
-            disabled={atLimit}
-            onClick={() => setAdding(true)}
-          >
+        <ControlRow>
+          <SecondaryButton disabled={atLimit} onClick={() => setAdding(true)}>
             資料リンクを追加
-          </button>
-        </div>
+          </SecondaryButton>
+        </ControlRow>
       )}
       {atLimit && (
-        <p className="item-note">
+        <Text size="sm" c="dimmed">
           資料は{MAX_CONCERT_RESOURCES}件まで登録できます
-        </p>
+        </Text>
       )}
     </>
   )
@@ -316,17 +320,9 @@ function ResourceItem({ resource, first, last }: ResourceItemProps) {
   return (
     <li>
       <ExternalLink href={resource.url}>{resource.title}</ExternalLink>
-      <div className="controls">
-        <button
-          type="button"
-          className="secondary"
-          onClick={() => setEditing(true)}
-        >
-          編集
-        </button>
-        <button
-          type="button"
-          className="secondary"
+      <ControlRow failure={action.failure}>
+        <SecondaryButton onClick={() => setEditing(true)}>編集</SecondaryButton>
+        <SecondaryButton
           aria-label={`「${resource.title}」を上へ`}
           disabled={first || action.running}
           onClick={() =>
@@ -336,10 +332,8 @@ function ResourceItem({ resource, first, last }: ResourceItemProps) {
           }
         >
           ↑
-        </button>
-        <button
-          type="button"
-          className="secondary"
+        </SecondaryButton>
+        <SecondaryButton
           aria-label={`「${resource.title}」を下へ`}
           disabled={last || action.running}
           onClick={() =>
@@ -349,7 +343,7 @@ function ResourceItem({ resource, first, last }: ResourceItemProps) {
           }
         >
           ↓
-        </button>
+        </SecondaryButton>
         <ConfirmButton
           label="削除"
           title={`「${resource.title}」を削除しますか？`}
@@ -361,8 +355,7 @@ function ResourceItem({ resource, first, last }: ResourceItemProps) {
             action.run(() => remove({ data: { id: resource.id } }))
           }
         />
-      </div>
-      <FormError message={action.failure} />
+      </ControlRow>
     </li>
   )
 }
@@ -410,7 +403,7 @@ function ResourceForm({ resource, concertId, onDone }: ResourceFormProps) {
         hint="例: 演奏会のしおり"
         error={form.errors.title}
       >
-        <input
+        <AppTextInput
           id={`${id}-title`}
           value={title}
           onChange={(event) => setTitle(event.target.value)}
@@ -418,7 +411,7 @@ function ResourceForm({ resource, concertId, onDone }: ResourceFormProps) {
       </Field>
 
       <Field id={`${id}-url`} label="URL" error={form.errors.url}>
-        <input
+        <AppTextInput
           id={`${id}-url`}
           type="url"
           inputMode="url"
@@ -487,7 +480,7 @@ function ConcertForm({ concert, venues, onDone }: ConcertFormProps) {
       onCancel={concert ? onDone : undefined}
     >
       <Field id={`${id}-name`} label="名前" error={form.errors.name}>
-        <input
+        <AppTextInput
           id={`${id}-name`}
           value={name}
           onChange={(event) => setName(event.target.value)}
@@ -499,7 +492,7 @@ function ConcertForm({ concert, venues, onDone }: ConcertFormProps) {
         label="本番日（任意）"
         error={form.errors.performanceDate}
       >
-        <input
+        <AppTextInput
           id={`${id}-date`}
           type="date"
           value={performanceDate}
@@ -513,7 +506,7 @@ function ConcertForm({ concert, venues, onDone }: ConcertFormProps) {
         hint={venues.length === 0 ? '会場を登録すると選べます' : undefined}
         error={form.errors.venueId}
       >
-        <select
+        <AppSelect
           id={`${id}-venue`}
           value={venueId}
           onChange={(event) => setVenueId(event.target.value)}
@@ -524,7 +517,7 @@ function ConcertForm({ concert, venues, onDone }: ConcertFormProps) {
               {venue.name}
             </option>
           ))}
-        </select>
+        </AppSelect>
       </Field>
 
       <Field
@@ -533,7 +526,7 @@ function ConcertForm({ concert, venues, onDone }: ConcertFormProps) {
         hint="調整さんなど、外部サービスのURL"
         error={form.errors.attendanceUrl}
       >
-        <input
+        <AppTextInput
           id={`${id}-attendance-url`}
           type="url"
           inputMode="url"
@@ -548,7 +541,7 @@ function ConcertForm({ concert, venues, onDone }: ConcertFormProps) {
         hint="回答期限など"
         error={form.errors.attendanceNote}
       >
-        <textarea
+        <AppTextarea
           id={`${id}-attendance-note`}
           rows={2}
           value={attendanceNote}
@@ -562,7 +555,7 @@ function ConcertForm({ concert, venues, onDone }: ConcertFormProps) {
         hint="集合時間、服装、持ち物など"
         error={form.errors.note}
       >
-        <textarea
+        <AppTextarea
           id={`${id}-note`}
           rows={6}
           value={note}

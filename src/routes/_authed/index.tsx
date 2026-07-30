@@ -1,10 +1,15 @@
+import { Button, Stack, Text, Title } from '@mantine/core'
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
 import { z } from 'zod'
 import { requireAuth } from '../../auth/middleware'
 import { ExternalLink } from '../../components/external-link'
 import { PracticeItem } from '../../components/practice-item'
-import { EmptyState, NoConcertState } from '../../components/states'
+import {
+  EmptyState,
+  NoConcertState,
+  PageSection,
+} from '../../components/states'
 import { listConcertResources } from '../../concert-resources/queries'
 import {
   type ConcertOverview,
@@ -82,13 +87,13 @@ export function DashboardContent({
 
   return (
     <>
-      <section className="section">
-        <h1>{concert.name}</h1>
+      <Stack gap="xs" component="section">
+        <Title order={1}>{concert.name}</Title>
         {concert.performanceDate && (
-          <p>
+          <Text c="dimmed">
             本番 {formatFullDate(concert.performanceDate)}
             {concert.venueName && ` / ${concert.venueName}`}
-          </p>
+          </Text>
         )}
         {concert.venueAddress && (
           <ExternalLink href={buildGoogleMapsUrl(concert.venueAddress)}>
@@ -100,10 +105,9 @@ export function DashboardContent({
             Googleカレンダーに追加
           </ExternalLink>
         )}
-      </section>
+      </Stack>
 
-      <section className="section">
-        <h2>次の練習</h2>
+      <PageSection title="次の練習">
         {nextPractice ? (
           <PracticeItem practice={nextPractice} concertName={concert.name} />
         ) : (
@@ -112,19 +116,17 @@ export function DashboardContent({
             description="終わった練習は日程一覧から見られます。"
           />
         )}
-      </section>
+      </PageSection>
 
       {concert.note && (
-        <section className="section">
-          <h2>備考</h2>
+        <PageSection title="備考">
           <p className="detail">{concert.note}</p>
-        </section>
+        </PageSection>
       )}
 
       {resources.length > 0 && (
-        <section className="section">
-          <h2>資料</h2>
-          <ul className="link-list">
+        <PageSection title="資料">
+          <Stack gap={4} component="ul" pl="md" style={{ margin: 0 }}>
             {resources.map((resource) => (
               <li key={resource.id}>
                 <ExternalLink href={resource.url}>
@@ -132,47 +134,46 @@ export function DashboardContent({
                 </ExternalLink>
               </li>
             ))}
-          </ul>
-        </section>
+          </Stack>
+        </PageSection>
       )}
 
-      <section className="section">
-        <h2>出欠の回答</h2>
+      <PageSection title="出欠の回答">
         {concert.attendanceUrl ? (
-          <div className="stack">
-            <ExternalLink href={concert.attendanceUrl} className="action">
+          <Stack gap="sm">
+            <ExternalLink href={concert.attendanceUrl} action>
               出欠を回答する
             </ExternalLink>
-            {concert.attendanceNote && <p>{concert.attendanceNote}</p>}
-          </div>
+            {concert.attendanceNote && <Text>{concert.attendanceNote}</Text>}
+          </Stack>
         ) : (
           <EmptyState
             title="出欠の回答先はまだ設定されていません"
             description="決まり次第ここに表示されます。"
           />
         )}
-      </section>
+      </PageSection>
 
       {appSettings.adminEmail && (
-        <section className="section">
-          <h2>問い合わせ</h2>
-          <a
+        <PageSection title="問い合わせ">
+          <Button
+            component="a"
             href={buildInquiryMailtoUrl(appSettings.adminEmail, concert.name)}
-            className="action"
+            fullWidth
           >
             管理者へ問い合わせる
-          </a>
-        </section>
+          </Button>
+        </PageSection>
       )}
 
-      <nav className="stack">
-        <Link to="/practices" className="action">
+      <Stack gap="sm" component="nav" aria-label="関連ページ">
+        <Button component={Link} to="/practices" variant="light" fullWidth>
           練習日程をすべて見る
-        </Link>
-        <Link to="/pieces" className="action">
+        </Button>
+        <Button component={Link} to="/pieces" variant="light" fullWidth>
           曲とボウイングを見る
-        </Link>
-      </nav>
+        </Button>
+      </Stack>
     </>
   )
 }

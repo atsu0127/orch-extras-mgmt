@@ -1,3 +1,12 @@
+import {
+  Alert,
+  Button,
+  Paper,
+  PasswordInput,
+  Stack,
+  Text,
+  Title,
+} from '@mantine/core'
 import { createFileRoute, redirect, useRouter } from '@tanstack/react-router'
 import { useServerFn } from '@tanstack/react-start'
 import { type FormEvent, useState } from 'react'
@@ -50,34 +59,47 @@ function LoginPage() {
   }
 
   return (
-    <main className="centered">
-      <form className="card" onSubmit={handleSubmit}>
-        <h1>エキストラ情報ポータル</h1>
-        <p>配布されたパスワードを入力してください。</p>
+    <Stack mih="calc(100dvh - 2rem)" justify="center" align="center">
+      <Paper
+        component="form"
+        onSubmit={handleSubmit}
+        withBorder
+        p="xl"
+        radius="md"
+        w="100%"
+        maw="24rem"
+        bg="var(--app-surface)"
+        style={{ borderColor: 'var(--app-border)' }}
+      >
+        <Stack gap="md">
+          <Title order={1}>エキストラ情報ポータル</Title>
+          <Text c="dimmed">配布されたパスワードを入力してください。</Text>
 
-        <label className="field" htmlFor="password">
-          パスワード
-          <input
+          <PasswordInput
             id="password"
             name="password"
-            type="password"
+            label="パスワード"
             autoComplete="current-password"
             required
             value={password}
-            onChange={(event) => setPassword(event.target.value)}
+            onChange={(event) => setPassword(event.currentTarget.value)}
           />
-        </label>
 
-        {error && (
-          <p className="error" role="alert">
-            {error}
-          </p>
-        )}
+          {error && (
+            <Alert color="red" variant="light" role="alert">
+              {error}
+            </Alert>
+          )}
 
-        <button type="submit" disabled={submitting || password === ''}>
-          {submitting ? 'ログイン中…' : 'ログイン'}
-        </button>
-      </form>
-    </main>
+          <Button
+            type="submit"
+            disabled={submitting || password === ''}
+            fullWidth
+          >
+            {submitting ? 'ログイン中…' : 'ログイン'}
+          </Button>
+        </Stack>
+      </Paper>
+    </Stack>
   )
 }

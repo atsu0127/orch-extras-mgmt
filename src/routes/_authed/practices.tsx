@@ -1,9 +1,14 @@
+import { Group, Stack } from '@mantine/core'
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
 import { z } from 'zod'
 import { requireAuth } from '../../auth/middleware'
 import { PracticeItem } from '../../components/practice-item'
-import { EmptyState, NoConcertState } from '../../components/states'
+import {
+  EmptyState,
+  NoConcertState,
+  PageSection,
+} from '../../components/states'
 import { getDb } from '../../db/client'
 import { todayInJst } from '../../lib/date'
 import { listPracticesWithMedia } from '../../practices/queries'
@@ -40,9 +45,7 @@ function PracticesPage() {
   const shown = view === 'past' ? past : upcoming
 
   return (
-    <section className="section">
-      <h1>練習日程</h1>
-
+    <PageSection title="練習日程" titleOrder={1}>
       {data.practices.length === 0 ? (
         <EmptyState
           title="練習の日程はまだ登録されていません"
@@ -50,22 +53,22 @@ function PracticesPage() {
         />
       ) : (
         <>
-          <nav className="tabs">
+          <Group grow gap="sm" component="nav" aria-label="練習の表示切替">
             <Link
               to="/practices"
               search={(prev) => ({ ...prev, view: undefined })}
-              className={view === 'upcoming' ? 'is-active' : ''}
+              style={viewTabStyle(view === 'upcoming')}
             >
               今後（{upcoming.length}）
             </Link>
             <Link
               to="/practices"
-              search={(prev) => ({ ...prev, view: 'past' })}
-              className={view === 'past' ? 'is-active' : ''}
+              search={(prev) => ({ ...prev, view: 'past' as const })}
+              style={viewTabStyle(view === 'past')}
             >
               過去（{past.length}）
             </Link>
-          </nav>
+          </Group>
 
           {shown.length === 0 ? (
             <EmptyState
@@ -76,7 +79,7 @@ function PracticesPage() {
               }
             />
           ) : (
-            <ul className="list">
+            <Stack gap="sm" component="ul" p={0} style={{ listStyle: 'none' }}>
               {shown.map((practice) => (
                 <li key={practice.id}>
                   <PracticeItem
@@ -85,10 +88,26 @@ function PracticesPage() {
                   />
                 </li>
               ))}
-            </ul>
+            </Stack>
           )}
         </>
       )}
-    </section>
+    </PageSection>
   )
+}
+
+function viewTabStyle(active: boolean): React.CSSProperties {
+  return {
+    border: `1px solid ${active ? 'var(--mantine-color-bordeaux-filled)' : 'var(--app-border)'}`,
+    borderRadius: 'var(--mantine-radius-sm)',
+    textDecoration: 'none',
+    minHeight: '2.75rem',
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '0.5rem 1rem',
+    fontWeight: active ? 600 : 500,
+    color: active ? 'var(--mantine-color-bordeaux-filled)' : 'var(--app-muted)',
+    background: active ? 'var(--app-surface)' : 'transparent',
+  }
 }

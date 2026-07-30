@@ -1,3 +1,4 @@
+import { Badge, Stack, Text } from '@mantine/core'
 import { formatDate, formatTimeRange } from '../lib/date'
 import {
   buildGoogleMapsUrl,
@@ -5,6 +6,7 @@ import {
 } from '../lib/external-urls'
 import type { PracticeEntry } from '../practices/queries'
 import { ExternalLink } from './external-link'
+import { ListItem } from './list-item'
 
 type PracticeItemProps = {
   practice: PracticeEntry
@@ -23,57 +25,77 @@ export function PracticeItem({ practice, concertName }: PracticeItemProps) {
   })
 
   return (
-    <div className="item">
-      <div className="item-title">
-        <span>{formatDate(practice.date)}</span>
-        {time && <span className="item-note">{time}</span>}
-      </div>
-
-      {practice.venue ? (
-        <p className="item-note">
-          {practice.venue.name}
-          <br />
-          {practice.venue.address}
-          <br />
-          <ExternalLink href={buildGoogleMapsUrl(practice.venue.address)}>
-            Google Mapsで開く
-          </ExternalLink>
-          {practice.venue.note && (
-            <>
-              <br />
-              {practice.venue.note}
-            </>
+    <ListItem>
+      <Stack gap={4}>
+        <Text fw={600} size="lg">
+          {formatDate(practice.date)}
+          {time && (
+            <Text span size="sm" c="dimmed" ml="sm">
+              {time}
+            </Text>
           )}
-        </p>
-      ) : (
-        <p className="item-note">会場は未定です。</p>
-      )}
+        </Text>
 
-      {calendarUrl && (
-        <p>
-          <ExternalLink href={calendarUrl}>Googleカレンダーに追加</ExternalLink>
-        </p>
-      )}
+        {practice.venue ? (
+          <Text size="sm" c="dimmed">
+            {practice.venue.name}
+            <br />
+            {practice.venue.address}
+            <br />
+            <ExternalLink href={buildGoogleMapsUrl(practice.venue.address)}>
+              Google Mapsで開く
+            </ExternalLink>
+            {practice.venue.note && (
+              <>
+                <br />
+                {practice.venue.note}
+              </>
+            )}
+          </Text>
+        ) : (
+          <Text size="sm" c="dimmed">
+            会場は未定です。
+          </Text>
+        )}
 
-      {practice.detail && (
-        <details>
-          <summary>詳細</summary>
-          <p className="detail">{practice.detail}</p>
-        </details>
-      )}
+        {calendarUrl && (
+          <Text size="sm">
+            <ExternalLink href={calendarUrl}>
+              Googleカレンダーに追加
+            </ExternalLink>
+          </Text>
+        )}
 
-      {practice.media.length > 0 && (
-        <div>
-          <p className="item-note">録音・録画</p>
-          <ul className="link-list">
-            {practice.media.map((link) => (
-              <li key={link.id}>
-                <ExternalLink href={link.url}>{link.title}</ExternalLink>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-    </div>
+        {practice.detail && (
+          <details>
+            <summary>詳細</summary>
+            <p className="detail">{practice.detail}</p>
+          </details>
+        )}
+
+        {practice.media.length > 0 && (
+          <Stack gap={4}>
+            <Text size="sm" c="dimmed">
+              録音・録画
+            </Text>
+            <Stack gap={2} component="ul" pl="md" style={{ margin: 0 }}>
+              {practice.media.map((link) => (
+                <li key={link.id}>
+                  <ExternalLink href={link.url}>{link.title}</ExternalLink>
+                </li>
+              ))}
+            </Stack>
+          </Stack>
+        )}
+      </Stack>
+    </ListItem>
+  )
+}
+
+export function OrderBadge({ value }: { value: number }) {
+  return (
+    <Badge color="bordeaux" variant="light" radius="sm" size="lg">
+      {value}
+    </Badge>
   )
 }

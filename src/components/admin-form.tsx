@@ -1,3 +1,4 @@
+import { Alert, Button, Group, Paper, Stack, Text, Title } from '@mantine/core'
 import { useRouter } from '@tanstack/react-router'
 import { type FormEvent, type ReactNode, useState } from 'react'
 import type { z } from 'zod'
@@ -33,25 +34,34 @@ export function AdminForm({
   onCancel,
   children,
 }: AdminFormProps) {
-  const Title = titleLevel === 3 ? 'h3' : 'h2'
-
   return (
-    <form className="admin-form" noValidate onSubmit={onSubmit}>
-      <Title>{title}</Title>
-      {children}
-      <FormError message={failure} />
+    <Paper
+      component="form"
+      noValidate
+      onSubmit={onSubmit}
+      withBorder
+      p="md"
+      radius="md"
+      bg="var(--app-surface)"
+      style={{ borderColor: 'var(--app-border)' }}
+    >
+      <Stack gap="md">
+        <Title order={titleLevel}>{title}</Title>
+        {children}
+        <FormError message={failure} />
 
-      <div className="form-actions">
-        <button type="submit" disabled={submitting}>
-          {submitting ? '保存中…' : '保存'}
-        </button>
-        {onCancel && (
-          <button type="button" className="secondary" onClick={onCancel}>
-            キャンセル
-          </button>
-        )}
-      </div>
-    </form>
+        <Group grow>
+          <Button type="submit" disabled={submitting}>
+            {submitting ? '保存中…' : '保存'}
+          </Button>
+          {onCancel && (
+            <Button type="button" variant="default" onClick={onCancel}>
+              キャンセル
+            </Button>
+          )}
+        </Group>
+      </Stack>
+    </Paper>
   )
 }
 
@@ -66,16 +76,22 @@ type FieldProps = {
 /** 入力欄1つ分。エラー文とヒントの置き場所を全画面で揃えるために必ずこれを通す */
 export function Field({ id, label, error, hint, children }: FieldProps) {
   return (
-    <div className="field">
-      <label htmlFor={id}>{label}</label>
+    <Stack gap={4}>
+      <Text component="label" htmlFor={id} size="sm" fw={500}>
+        {label}
+      </Text>
       {children}
-      {hint && <p className="field-hint">{hint}</p>}
-      {error && (
-        <p className="error" role="alert">
-          {error}
-        </p>
+      {hint && (
+        <Text size="xs" c="dimmed">
+          {hint}
+        </Text>
       )}
-    </div>
+      {error && (
+        <Text size="sm" c="red" role="alert">
+          {error}
+        </Text>
+      )}
+    </Stack>
   )
 }
 
@@ -84,9 +100,9 @@ export function FormError({ message }: { message: string | null }) {
   if (!message) return null
 
   return (
-    <p className="error" role="alert">
+    <Alert color="red" variant="light" role="alert">
       {message}
-    </p>
+    </Alert>
   )
 }
 

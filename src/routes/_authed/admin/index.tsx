@@ -1,7 +1,9 @@
+import { Anchor, Text } from '@mantine/core'
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
 import { count } from 'drizzle-orm'
 import { requireAdmin } from '../../../auth/middleware'
+import { PageSection } from '../../../components/states'
 import { getDb } from '../../../db/client'
 import { concerts } from '../../../db/schema'
 
@@ -21,10 +23,11 @@ function AdminHome() {
   const { concertCount } = Route.useLoaderData()
 
   return (
-    <>
-      <h1>管理画面</h1>
-      <p>登録済みの演奏会は {concertCount} 件です。</p>
-      <Link to="/">閲覧画面へ戻る</Link>
-    </>
+    <PageSection title="管理画面" titleOrder={1}>
+      <Text c="dimmed">登録済みの演奏会は {concertCount} 件です。</Text>
+      <Anchor component={Link} to="/">
+        閲覧画面へ戻る
+      </Anchor>
+    </PageSection>
   )
 }

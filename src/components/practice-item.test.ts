@@ -1,6 +1,6 @@
 import { createElement } from 'react'
-import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, it } from 'vitest'
+import { renderMarkup } from '../test/render'
 import { PracticeItem } from './practice-item'
 
 const practice = {
@@ -19,7 +19,7 @@ const practice = {
 
 describe('PracticeItem', () => {
   it('会場があるとき住所の後にGoogle Mapsリンクを表示する', () => {
-    const html = renderToStaticMarkup(
+    const html = renderMarkup(
       createElement(PracticeItem, {
         practice,
         concertName: '第10回定期演奏会',
@@ -35,7 +35,7 @@ describe('PracticeItem', () => {
   })
 
   it('会場がないときGoogle Mapsリンクを表示しない', () => {
-    const html = renderToStaticMarkup(
+    const html = renderMarkup(
       createElement(PracticeItem, {
         practice: { ...practice, venue: null },
         concertName: '第10回定期演奏会',
@@ -48,7 +48,7 @@ describe('PracticeItem', () => {
   })
 
   it('会場がなくても有効な練習日ならGoogleカレンダーリンクを表示する', () => {
-    const html = renderToStaticMarkup(
+    const html = renderMarkup(
       createElement(PracticeItem, {
         practice: { ...practice, venue: null },
         concertName: '第10回定期&特別演奏会',
@@ -69,7 +69,7 @@ describe('PracticeItem', () => {
   })
 
   it('練習日が不正ならGoogleカレンダーリンクを表示しない', () => {
-    const html = renderToStaticMarkup(
+    const html = renderMarkup(
       createElement(PracticeItem, {
         practice: { ...practice, date: '2026-02-30' },
         concertName: '第10回定期演奏会',

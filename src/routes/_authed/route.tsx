@@ -1,4 +1,13 @@
 import {
+  Anchor,
+  Box,
+  Button,
+  Group,
+  NativeSelect,
+  Stack,
+  Text,
+} from '@mantine/core'
+import {
   createFileRoute,
   Link,
   Outlet,
@@ -61,33 +70,43 @@ function AuthedLayout() {
   const { session, concerts, concert } = Route.useRouteContext()
 
   return (
-    <>
-      <header className="app-header">
-        <div className="app-header-account">
-          <span>{ROLE_LABELS[session.role]}としてログイン中</span>
-          <LogoutButton />
-        </div>
-        {concert && (
-          <ConcertSelector concerts={concerts} selectedId={concert.id} />
-        )}
-        <nav className="app-nav">
-          <Link to="/" activeOptions={{ exact: true }}>
-            ホーム
-          </Link>
-          <Link to="/practices">練習日程</Link>
-          <Link to="/pieces">曲・ボウイング</Link>
-          {session.role === 'admin' && <Link to="/admin">管理</Link>}
-        </nav>
-      </header>
+    <Stack gap="lg">
+      <Box
+        component="header"
+        pb="md"
+        style={{ borderBottom: '1px solid var(--app-border)' }}
+      >
+        <Stack gap="md">
+          <Group justify="space-between" align="baseline" gap="md">
+            <Text size="sm" c="dimmed">
+              {ROLE_LABELS[session.role]}としてログイン中
+            </Text>
+            <LogoutButton />
+          </Group>
+
+          {concert && (
+            <ConcertSelector concerts={concerts} selectedId={concert.id} />
+          )}
+
+          <Group gap="md" wrap="wrap" component="nav" aria-label="メイン">
+            <NavLink to="/" exact>
+              ホーム
+            </NavLink>
+            <NavLink to="/practices">練習日程</NavLink>
+            <NavLink to="/pieces">曲・ボウイング</NavLink>
+            {session.role === 'admin' && <NavLink to="/admin">管理</NavLink>}
+          </Group>
+        </Stack>
+      </Box>
 
       {/*
         演奏会が無いときの表示は各画面に任せる。ここで差し替えると、
         演奏会を作る画面にも入れなくなる
       */}
-      <main>
+      <Box component="main" className="app-main">
         <Outlet />
-      </main>
-    </>
+      </Box>
+    </Stack>
   )
 }
 
@@ -108,27 +127,25 @@ function ConcertSelector({ concerts, selectedId }: ConcertSelectorProps) {
   ].filter((group) => group.items.length > 0)
 
   return (
-    <label className="field concert-selector" htmlFor="concert-selector">
-      演奏会
-      <select
-        id="concert-selector"
-        value={selectedId}
-        onChange={(event) => {
-          const concert = Number(event.target.value)
-          void navigate({ to: '.', search: (prev) => ({ ...prev, concert }) })
-        }}
-      >
-        {groups.map((group) => (
-          <optgroup key={group.label} label={group.label}>
-            {group.items.map((concert) => (
-              <option key={concert.id} value={concert.id}>
-                {concertLabel(concert)}
-              </option>
-            ))}
-          </optgroup>
-        ))}
-      </select>
-    </label>
+    <NativeSelect
+      id="concert-selector"
+      label="演奏会"
+      value={String(selectedId)}
+      onChange={(event) => {
+        const concert = Number(event.currentTarget.value)
+        void navigate({ to: '.', search: (prev) => ({ ...prev, concert }) })
+      }}
+    >
+      {groups.map((group) => (
+        <optgroup key={group.label} label={group.label}>
+          {group.items.map((concert) => (
+            <option key={concert.id} value={concert.id}>
+              {concertLabel(concert)}
+            </option>
+          ))}
+        </optgroup>
+      ))}
+    </NativeSelect>
   )
 }
 
@@ -155,13 +172,45 @@ function LogoutButton() {
   }
 
   return (
-    <button
+    <Button
       type="button"
-      className="link-button"
+      variant="subtle"
+      size="compact-sm"
       onClick={handleClick}
       disabled={submitting}
     >
       ログアウト
-    </button>
+    </Button>
+  )
+}
+
+type NavLinkProps = {
+  to: '/' | '/practices' | '/pieces' | '/admin'
+  exact?: boolean
+  children: string
+}
+
+function NavLink({ to, exact = false, children }: NavLinkProps) {
+  return (
+    <Anchor
+      component={Link}
+      to={to}
+      activeOptions={{ exact }}
+      fw={500}
+      underline="hover"
+      c="var(--mantine-color-text)"
+      style={{
+        paddingBottom: 2,
+        borderBottom: '2px solid transparent',
+      }}
+      activeProps={{
+        style: {
+          borderBottomColor: 'var(--mantine-color-bordeaux-filled)',
+          color: 'var(--mantine-color-bordeaux-filled)',
+        },
+      }}
+    >
+      {children}
+    </Anchor>
   )
 }

@@ -1,3 +1,4 @@
+import { Button, Group, Stack, Title } from '@mantine/core'
 import { type ReactNode, useRef, useState } from 'react'
 
 type ConfirmButtonProps = {
@@ -12,7 +13,8 @@ type ConfirmButtonProps = {
 
 /**
  * 取り消せない操作の確認。ネイティブの `<dialog>` を使うので、Esc で閉じる・
- * 背後を操作させない・フォーカスを閉じ込めるといった扱いが標準の実装で済む。
+ * 背後を操作させない・フォーカスを閉じ込めるといった扱いが標準の実装で済む
+ *（ADR-0010）。見た目だけ Mantine のボタンに揃える。
  */
 export function ConfirmButton({
   label,
@@ -37,36 +39,43 @@ export function ConfirmButton({
 
   return (
     <>
-      <button
+      <Button
         type="button"
-        className="danger"
+        color="red"
+        variant="outline"
+        size="compact-md"
         disabled={disabled}
         onClick={() => dialog.current?.showModal()}
       >
         {label}
-      </button>
+      </Button>
 
-      <dialog ref={dialog}>
-        <h2>{title}</h2>
-        {description}
-        <div className="dialog-actions">
-          <button
-            type="button"
-            className="secondary"
-            disabled={running}
-            onClick={() => dialog.current?.close()}
-          >
-            キャンセル
-          </button>
-          <button
-            type="button"
-            className="danger"
-            disabled={running}
-            onClick={() => void confirm()}
-          >
-            {running ? '処理中…' : confirmLabel}
-          </button>
-        </div>
+      <dialog ref={dialog} className="confirm-dialog">
+        <Stack gap="md">
+          <Title order={2} size="h3">
+            {title}
+          </Title>
+          {description}
+          <Group grow>
+            <Button
+              type="button"
+              variant="default"
+              disabled={running}
+              onClick={() => dialog.current?.close()}
+            >
+              キャンセル
+            </Button>
+            <Button
+              type="button"
+              color="red"
+              variant="outline"
+              disabled={running}
+              onClick={() => void confirm()}
+            >
+              {running ? '処理中…' : confirmLabel}
+            </Button>
+          </Group>
+        </Stack>
       </dialog>
     </>
   )
