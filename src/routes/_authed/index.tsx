@@ -15,6 +15,7 @@ import { formatFullDate, todayInJst } from '../../lib/date'
 import {
   buildGoogleMapsUrl,
   buildInquiryMailtoUrl,
+  buildPerformanceCalendarUrl,
 } from '../../lib/external-urls'
 import { getNextPractice, type PracticeEntry } from '../../practices/queries'
 import { type AppSettingsView, getAppSettings } from '../../settings/queries'
@@ -68,6 +69,17 @@ export function DashboardContent({
   appSettings,
   resources,
 }: DashboardContentProps) {
+  const performanceCalendarUrl = concert.performanceDate
+    ? buildPerformanceCalendarUrl({
+        concertName: concert.name,
+        date: concert.performanceDate,
+        venue:
+          concert.venueName && concert.venueAddress
+            ? { name: concert.venueName, address: concert.venueAddress }
+            : null,
+      })
+    : null
+
   return (
     <>
       <section className="section">
@@ -83,12 +95,17 @@ export function DashboardContent({
             Google Mapsで開く
           </ExternalLink>
         )}
+        {performanceCalendarUrl && (
+          <ExternalLink href={performanceCalendarUrl}>
+            Googleカレンダーに追加
+          </ExternalLink>
+        )}
       </section>
 
       <section className="section">
         <h2>次の練習</h2>
         {nextPractice ? (
-          <PracticeItem practice={nextPractice} />
+          <PracticeItem practice={nextPractice} concertName={concert.name} />
         ) : (
           <EmptyState
             title="今後の練習の予定はありません"

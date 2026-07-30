@@ -92,6 +92,41 @@ describe('DashboardContent', () => {
     expect(html).not.toContain('google.com/maps')
   })
 
+  it('本番会場がなくても有効な本番日ならGoogleカレンダーリンクを表示する', () => {
+    const html = renderToStaticMarkup(
+      createElement(DashboardContent, {
+        appSettings: { adminEmail: null },
+        concert: { ...concert, venueName: null, venueAddress: null },
+        nextPractice: null,
+        resources: [],
+      }),
+    )
+
+    expect(html).toContain('Googleカレンダーに追加')
+    const href = html.match(
+      /href="(https:\/\/calendar\.google\.com\/calendar\/render[^"]+)"/,
+    )?.[1]
+    expect(href).toBeDefined()
+    const parsed = new URL(href?.replaceAll('&amp;', '&') ?? '')
+    expect(parsed.searchParams.get('text')).toBe('第10回定期演奏会')
+    expect(parsed.searchParams.get('dates')).toBe('20261201/20261202')
+    expect(parsed.searchParams.has('location')).toBe(false)
+  })
+
+  it('本番日が不正ならGoogleカレンダーリンクを表示しない', () => {
+    const html = renderToStaticMarkup(
+      createElement(DashboardContent, {
+        appSettings: { adminEmail: null },
+        concert: { ...concert, performanceDate: '2026-02-30' },
+        nextPractice: null,
+        resources: [],
+      }),
+    )
+
+    expect(html).not.toContain('Googleカレンダーに追加')
+    expect(html).not.toContain('calendar.google.com')
+  })
+
   it('次の練習と出欠の間に改行付き備考と資料を受け取った順で表示する', () => {
     const html = renderToStaticMarkup(
       createElement(DashboardContent, {

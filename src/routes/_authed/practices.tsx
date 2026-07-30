@@ -31,10 +31,10 @@ export const Route = createFileRoute('/_authed/practices')({
 })
 
 function PracticesPage() {
-  const { session } = Route.useRouteContext()
+  const { session, concert } = Route.useRouteContext()
   const data = Route.useLoaderData()
   const { view = 'upcoming' } = Route.useSearch()
-  if (!data) return <NoConcertState role={session.role} />
+  if (!data || !concert) return <NoConcertState role={session.role} />
 
   const { upcoming, past } = splitPractices(data.practices, data.today)
   const shown = view === 'past' ? past : upcoming
@@ -79,7 +79,10 @@ function PracticesPage() {
             <ul className="list">
               {shown.map((practice) => (
                 <li key={practice.id}>
-                  <PracticeItem practice={practice} />
+                  <PracticeItem
+                    practice={practice}
+                    concertName={concert.name}
+                  />
                 </li>
               ))}
             </ul>
