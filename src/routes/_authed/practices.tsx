@@ -1,4 +1,4 @@
-import { Group, Stack } from '@mantine/core'
+import { Stack } from '@mantine/core'
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
 import { z } from 'zod'
@@ -53,22 +53,22 @@ function PracticesPage() {
         />
       ) : (
         <>
-          <Group grow gap="sm" component="nav" aria-label="練習の表示切替">
+          <nav className="segmented" aria-label="練習の表示切替">
             <Link
               to="/practices"
               search={(prev) => ({ ...prev, view: undefined })}
-              style={viewTabStyle(view === 'upcoming')}
+              data-active={view === 'upcoming' ? 'true' : 'false'}
             >
               今後（{upcoming.length}）
             </Link>
             <Link
               to="/practices"
               search={(prev) => ({ ...prev, view: 'past' as const })}
-              style={viewTabStyle(view === 'past')}
+              data-active={view === 'past' ? 'true' : 'false'}
             >
               過去（{past.length}）
             </Link>
-          </Group>
+          </nav>
 
           {shown.length === 0 ? (
             <EmptyState
@@ -79,35 +79,21 @@ function PracticesPage() {
               }
             />
           ) : (
-            <Stack gap="sm" component="ul" p={0} style={{ listStyle: 'none' }}>
-              {shown.map((practice) => (
-                <li key={practice.id}>
-                  <PracticeItem
-                    practice={practice}
-                    concertName={concert.name}
-                  />
-                </li>
-              ))}
-            </Stack>
+            <div className="panel">
+              <Stack gap={0} component="ul" p={0} style={{ listStyle: 'none' }}>
+                {shown.map((practice) => (
+                  <li key={practice.id}>
+                    <PracticeItem
+                      practice={practice}
+                      concertName={concert.name}
+                    />
+                  </li>
+                ))}
+              </Stack>
+            </div>
           )}
         </>
       )}
     </PageSection>
   )
-}
-
-function viewTabStyle(active: boolean): React.CSSProperties {
-  return {
-    border: `1px solid ${active ? 'var(--mantine-color-bordeaux-filled)' : 'var(--app-border)'}`,
-    borderRadius: 'var(--mantine-radius-sm)',
-    textDecoration: 'none',
-    minHeight: '2.75rem',
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: '0.5rem 1rem',
-    fontWeight: active ? 600 : 500,
-    color: active ? 'var(--mantine-color-bordeaux-filled)' : 'var(--app-muted)',
-    background: active ? 'var(--app-surface)' : 'transparent',
-  }
 }

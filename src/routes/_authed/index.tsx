@@ -1,4 +1,4 @@
-import { Button, Group, SimpleGrid, Stack, Text, Title } from '@mantine/core'
+import { Button, Stack, Text, Title } from '@mantine/core'
 import { createFileRoute } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
 import { z } from 'zod'
@@ -94,7 +94,7 @@ export function DashboardContent({
   return (
     <>
       {nextPractice ? (
-        <NextPracticeBoard practice={nextPractice} concertName={concert.name} />
+        <NextPracticeStrip practice={nextPractice} concertName={concert.name} />
       ) : (
         <EmptyState
           title="今後の練習の予定はありません"
@@ -102,68 +102,106 @@ export function DashboardContent({
         />
       )}
 
-      <Stack gap={4} component="section" className="section-rule">
-        <Text className="departure-kicker">本番</Text>
-        <Title order={2}>{concert.name}</Title>
-        <Text size="sm" c="dimmed">
-          {concert.performanceDate
-            ? formatFullDate(concert.performanceDate)
-            : '本番日は未設定'}
-          {concert.venueName && ` / ${concert.venueName}`}
-        </Text>
-        <Group gap="md" mt={4}>
-          {concert.venueAddress && (
-            <ExternalLink href={buildGoogleMapsUrl(concert.venueAddress)}>
-              Google Mapsで開く
-            </ExternalLink>
-          )}
-          {performanceCalendarUrl && (
-            <ExternalLink href={performanceCalendarUrl}>
-              Googleカレンダーに追加
-            </ExternalLink>
-          )}
-        </Group>
-      </Stack>
+      {nextPractice && (
+        <NextPracticeExtras
+          practice={nextPractice}
+          concertName={concert.name}
+        />
+      )}
 
-      <Stack gap="xs" component="section" className="section-rule">
-        <Text className="departure-kicker">出欠の回答</Text>
-        {concert.attendanceUrl ? (
-          <>
-            <ExternalLink href={concert.attendanceUrl} action>
-              出欠を回答する
-            </ExternalLink>
-            {concert.attendanceNote && (
-              <Text size="sm" c="dimmed" ta="center">
-                {concert.attendanceNote}
-              </Text>
-            )}
-          </>
-        ) : (
-          <EmptyState
-            title="出欠の回答先はまだ設定されていません"
-            description="決まり次第ここに表示されます。"
-          />
+      <section className="panel" aria-labelledby="performance-title">
+        <div className="panel-head">本番</div>
+        <div className="panel-body">
+          <Title order={2} id="performance-title">
+            {concert.name}
+          </Title>
+          <Text size="sm" c="dimmed" mt={4}>
+            {concert.performanceDate
+              ? formatFullDate(concert.performanceDate)
+              : '本番日は未設定'}
+            {concert.venueName && ` / ${concert.venueName}`}
+          </Text>
+        </div>
+        {concert.venueAddress && (
+          <a
+            className="panel-row"
+            href={buildGoogleMapsUrl(concert.venueAddress)}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <span>Google Mapsで開く</span>
+            <span className="panel-row-chevron" aria-hidden>
+              ›
+            </span>
+          </a>
         )}
-      </Stack>
+        {performanceCalendarUrl && (
+          <a
+            className="panel-row"
+            href={performanceCalendarUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <span>カレンダーに追加</span>
+            <span className="panel-row-chevron" aria-hidden>
+              ›
+            </span>
+          </a>
+        )}
+      </section>
+
+      <section className="panel" aria-labelledby="attendance-title">
+        <div className="panel-head" id="attendance-title">
+          出欠の回答
+        </div>
+        <div className="panel-body">
+          {concert.attendanceUrl ? (
+            <Stack gap="xs">
+              <ExternalLink href={concert.attendanceUrl} action>
+                出欠を回答する
+              </ExternalLink>
+              {concert.attendanceNote && (
+                <Text size="sm" c="dimmed">
+                  {concert.attendanceNote}
+                </Text>
+              )}
+            </Stack>
+          ) : (
+            <EmptyState
+              title="出欠の回答先はまだ設定されていません"
+              description="決まり次第ここに表示されます。"
+            />
+          )}
+        </div>
+      </section>
 
       {concert.note && (
-        <PageSection title="備考">
-          <p className="detail">{concert.note}</p>
-        </PageSection>
+        <section className="panel">
+          <div className="panel-head">備考</div>
+          <div className="panel-body">
+            <p className="detail">{concert.note}</p>
+          </div>
+        </section>
       )}
 
       {resources.length > 0 && (
-        <PageSection title="資料">
-          <Stack gap={4} component="ul" pl="md" style={{ margin: 0 }}>
-            {resources.map((resource) => (
-              <li key={resource.id}>
-                <ExternalLink href={resource.url}>
-                  {resource.title}
-                </ExternalLink>
-              </li>
-            ))}
-          </Stack>
-        </PageSection>
+        <section className="panel" aria-label="資料">
+          <div className="panel-head">資料</div>
+          {resources.map((resource) => (
+            <a
+              key={resource.id}
+              className="panel-row"
+              href={resource.url}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <span>{resource.title}</span>
+              <span className="panel-row-chevron" aria-hidden>
+                ›
+              </span>
+            </a>
+          ))}
+        </section>
       )}
 
       {appSettings.adminEmail && (
@@ -181,15 +219,18 @@ export function DashboardContent({
   )
 }
 
-type NextPracticeBoardProps = {
+type NextPracticeStripProps = {
   practice: PracticeEntry
   concertName: string
 }
 
-/** 出発案内型の「次の練習」。日付を大きく分け、操作導線をその中に閉じる */
-function NextPracticeBoard({ practice, concertName }: NextPracticeBoardProps) {
+/** 実用コンパクトの「次の練習」要約バー */
+function NextPracticeStrip({ practice, concertName }: NextPracticeStripProps) {
   const parts = departureDateParts(practice.date)
   const time = formatTimeRange(practice.startTime, practice.endTime)
+  const mapsUrl = practice.venue
+    ? buildGoogleMapsUrl(practice.venue.address)
+    : null
   const calendarUrl = buildPracticeCalendarUrl({
     concertName,
     date: practice.date,
@@ -199,100 +240,129 @@ function NextPracticeBoard({ practice, concertName }: NextPracticeBoardProps) {
   })
 
   return (
-    <section className="departure-board" aria-labelledby="next-practice-title">
-      <div className="departure-date">
+    <section className="next-strip" aria-labelledby="next-practice-title">
+      <div className="next-strip-date">
         {parts ? (
           <>
-            <div className="departure-month">{parts.month}月</div>
-            <div className="departure-day">{parts.day}</div>
-            <div className="departure-weekday">{parts.weekday}曜日</div>
+            <div className="next-strip-month">{parts.month}月</div>
+            <div className="next-strip-day">{parts.day}</div>
           </>
         ) : (
-          <Text fw={700}>{formatDate(practice.date)}</Text>
+          <Text fw={700} c="inherit" size="sm">
+            {formatDate(practice.date)}
+          </Text>
         )}
       </div>
 
-      <Stack gap="xs">
-        <Text className="departure-kicker" id="next-practice-title">
+      <div style={{ minWidth: 0 }}>
+        <div className="next-strip-kicker" id="next-practice-title">
           次の練習
-        </Text>
-        {time && (
-          <Text fw={600} size="lg">
-            {time}
-          </Text>
-        )}
+          {parts ? ` · ${parts.weekday}` : ''}
+        </div>
+        {time && <div className="next-strip-time">{time}</div>}
+        <div className="next-strip-venue">
+          {practice.venue?.name ?? '会場は未定です'}
+        </div>
+      </div>
 
-        {practice.venue ? (
-          <Text size="sm">
-            <Text span fw={600}>
-              {practice.venue.name}
-            </Text>
-            <br />
+      {mapsUrl ? (
+        <a
+          className="next-strip-action"
+          href={mapsUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          地図
+        </a>
+      ) : calendarUrl ? (
+        <a
+          className="next-strip-action"
+          href={calendarUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          予定
+        </a>
+      ) : (
+        <span />
+      )}
+    </section>
+  )
+}
+
+function NextPracticeExtras({
+  practice,
+  concertName,
+}: {
+  practice: PracticeEntry
+  concertName: string
+}) {
+  const calendarUrl = buildPracticeCalendarUrl({
+    concertName,
+    date: practice.date,
+    startTime: practice.startTime,
+    endTime: practice.endTime,
+    venue: practice.venue,
+  })
+
+  const showCalendar = Boolean(calendarUrl)
+  const showDetail = Boolean(practice.detail)
+  const showMedia = practice.media.length > 0
+  const showVenueMeta = Boolean(practice.venue?.address || practice.venue?.note)
+  if (!showCalendar && !showDetail && !showMedia && !showVenueMeta) {
+    return null
+  }
+
+  return (
+    <section className="panel" aria-label="次の練習の詳細">
+      {showVenueMeta && practice.venue && (
+        <div className="panel-body">
+          <Text size="sm" c="dimmed">
             {practice.venue.address}
             {practice.venue.note && (
               <>
                 <br />
-                <Text span c="dimmed">
-                  {practice.venue.note}
-                </Text>
+                {practice.venue.note}
               </>
             )}
           </Text>
-        ) : (
-          <Text size="sm" c="dimmed">
-            会場は未定です。
-          </Text>
-        )}
-
-        <SimpleGrid cols={2} spacing="sm" mt={4}>
-          {practice.venue && (
-            <Button
-              component="a"
-              href={buildGoogleMapsUrl(practice.venue.address)}
-              target="_blank"
-              rel="noopener noreferrer"
-              variant="default"
-              fullWidth
-            >
-              地図を開く
-            </Button>
-          )}
-          {calendarUrl && (
-            <Button
-              component="a"
-              href={calendarUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              variant="default"
-              fullWidth
-            >
-              予定に追加
-            </Button>
-          )}
-        </SimpleGrid>
-
-        {practice.detail && (
+        </div>
+      )}
+      {showCalendar && calendarUrl && (
+        <a
+          className="panel-row"
+          href={calendarUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <span>カレンダーに追加</span>
+          <span className="panel-row-chevron" aria-hidden>
+            ›
+          </span>
+        </a>
+      )}
+      {showDetail && (
+        <div className="panel-body">
           <details>
             <summary>詳細</summary>
             <p className="detail">{practice.detail}</p>
           </details>
-        )}
-
-        {practice.media.length > 0 && (
-          <Stack gap={4}>
-            <Text size="sm" c="dimmed">
-              録音・録画
-            </Text>
-            <Stack gap={2} component="ul" pl="md" style={{ margin: 0 }}>
-              {practice.media.map((link) => (
-                <li key={link.id}>
-                  <ExternalLink href={link.url}>{link.title}</ExternalLink>
-                </li>
-              ))}
-            </Stack>
+        </div>
+      )}
+      {showMedia && (
+        <div className="panel-body">
+          <Text size="sm" c="dimmed" mb={4}>
+            録音・録画
+          </Text>
+          <Stack gap={2} component="ul" pl="md" style={{ margin: 0 }}>
+            {practice.media.map((link) => (
+              <li key={link.id}>
+                <ExternalLink href={link.url}>{link.title}</ExternalLink>
+              </li>
+            ))}
           </Stack>
-        )}
-      </Stack>
+        </div>
+      )}
     </section>
   )
 }

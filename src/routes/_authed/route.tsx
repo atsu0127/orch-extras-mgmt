@@ -91,8 +91,8 @@ function AuthedLayout() {
             <DesktopLink to="/" exact>
               ホーム
             </DesktopLink>
-            <DesktopLink to="/practices">練習日程</DesktopLink>
-            <DesktopLink to="/pieces">曲・ボウイング</DesktopLink>
+            <DesktopLink to="/practices">練習</DesktopLink>
+            <DesktopLink to="/pieces">曲</DesktopLink>
             {showAdmin && <DesktopLink to="/admin">管理</DesktopLink>}
           </nav>
         </Stack>
@@ -107,17 +107,17 @@ function AuthedLayout() {
       </Box>
 
       <nav className="app-bottom-nav" aria-label="メイン">
-        <BottomLink to="/" exact label="ホーム">
+        <BottomLink to="/" exact label="ホーム" ariaLabel="ホーム">
           <HomeIcon />
         </BottomLink>
-        <BottomLink to="/practices" label="練習日程">
+        <BottomLink to="/practices" label="練習" ariaLabel="練習日程">
           <CalendarIcon />
         </BottomLink>
-        <BottomLink to="/pieces" label="曲・ボウイング">
+        <BottomLink to="/pieces" label="曲" ariaLabel="曲・ボウイング">
           <MusicIcon />
         </BottomLink>
         {showAdmin && (
-          <BottomLink to="/admin" label="管理">
+          <BottomLink to="/admin" label="管理" ariaLabel="管理">
             <AdminIcon />
           </BottomLink>
         )}
@@ -204,15 +204,22 @@ type BottomLinkProps = {
   to: '/' | '/practices' | '/pieces' | '/admin'
   exact?: boolean
   label: string
+  ariaLabel: string
   children: ReactNode
 }
 
-function BottomLink({ to, exact = false, label, children }: BottomLinkProps) {
+function BottomLink({
+  to,
+  exact = false,
+  label,
+  ariaLabel,
+  children,
+}: BottomLinkProps) {
   return (
     <Link
       to={to}
       activeOptions={{ exact }}
-      aria-label={label}
+      aria-label={ariaLabel}
       // data-active で見た目を切り替える。activeProps の型が Mantine 非依存の Link 向き
       activeProps={{ 'data-active': 'true' }}
       inactiveProps={{ 'data-active': 'false' }}
@@ -259,62 +266,40 @@ function DesktopLink({
 
 function HomeIcon() {
   return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.8"
-    >
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden>
       <title>ホーム</title>
-      <path d="M3 11.5 12 4l9 7.5" />
-      <path d="M5.5 10v10h13V10" />
+      <path d="M4 10.5 12 4l8 6.5V20a1 1 0 0 1-1 1h-5v-6H10v6H5a1 1 0 0 1-1-1v-9.5z" />
     </svg>
   )
 }
 
 function CalendarIcon() {
   return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.8"
-    >
-      <title>練習日程</title>
-      <rect x="3" y="5" width="18" height="16" rx="2" />
-      <path d="M7 3v4M17 3v4M3 10h18" />
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden>
+      <title>練習</title>
+      <rect x="4" y="5" width="16" height="15" rx="1" />
+      <path d="M8 3v4M16 3v4M4 10h16" />
     </svg>
   )
 }
 
 function MusicIcon() {
   return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.8"
-    >
-      <title>曲・ボウイング</title>
-      <path d="M9 18V5l11-2v13" />
-      <circle cx="6" cy="18" r="3" />
-      <circle cx="17" cy="16" r="3" />
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden>
+      <title>曲</title>
+      <path d="M9 18V6l10-2v12" />
+      <circle cx="7" cy="18" r="2.5" />
+      <circle cx="17" cy="16" r="2.5" />
     </svg>
   )
 }
 
 function AdminIcon() {
   return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.8"
-    >
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden>
       <title>管理</title>
-      <path d="M4 20h16" />
-      <path d="M7 20V10l5-6 5 6v10" />
-      <path d="M10 20v-5h4v5" />
+      <circle cx="12" cy="12" r="3" />
+      <path d="M12 3.5v2.2M12 18.3v2.2M4.9 6.5l1.6 1.6M17.5 15.9l1.6 1.6M3.5 12h2.2M18.3 12h2.2M4.9 17.5l1.6-1.6M17.5 8.1l1.6-1.6" />
     </svg>
   )
 }

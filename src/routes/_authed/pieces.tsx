@@ -1,11 +1,8 @@
-import { Stack, Text, Title } from '@mantine/core'
+import { Text } from '@mantine/core'
 import { createFileRoute } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
 import { z } from 'zod'
 import { requireAuth } from '../../auth/middleware'
-import { ExternalLink } from '../../components/external-link'
-import { ListItem } from '../../components/list-item'
-import { OrderBadge } from '../../components/practice-item'
 import {
   EmptyState,
   NoConcertState,
@@ -41,36 +38,47 @@ function PiecesPage() {
           description="登録されると演奏順に並びます。"
         />
       ) : (
-        <Stack gap="sm" component="ol" p={0} style={{ listStyle: 'none' }}>
-          {pieces.map((piece, index) => (
-            <li key={piece.id}>
-              <ListItem>
-                <Stack gap={4}>
-                  <Title order={2} size="h3">
-                    <OrderBadge value={index + 1} />{' '}
-                    <Text span fw={600}>
-                      {piece.title}
-                    </Text>
-                  </Title>
-                  {piece.composer && (
-                    <Text size="sm" c="dimmed">
-                      {piece.composer}
-                    </Text>
-                  )}
-                  {piece.bowingUrl ? (
-                    <ExternalLink href={piece.bowingUrl}>
-                      ボウイングを開く
-                    </ExternalLink>
-                  ) : (
-                    <Text size="sm" c="dimmed">
-                      ボウイングは未登録です。
-                    </Text>
-                  )}
-                </Stack>
-              </ListItem>
-            </li>
-          ))}
-        </Stack>
+        <section className="panel" aria-label="曲一覧">
+          {pieces.map((piece, index) =>
+            piece.bowingUrl ? (
+              <a
+                key={piece.id}
+                className="panel-row"
+                href={piece.bowingUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ alignItems: 'flex-start' }}
+              >
+                <span>
+                  {index + 1}. {piece.title}
+                  <Text span display="block" size="xs" c="dimmed" mt={2}>
+                    {piece.composer
+                      ? `${piece.composer} · ボウイング`
+                      : 'ボウイング'}
+                  </Text>
+                </span>
+                <span className="panel-row-chevron" aria-hidden>
+                  ›
+                </span>
+              </a>
+            ) : (
+              <div
+                key={piece.id}
+                className="panel-row"
+                style={{ alignItems: 'flex-start', cursor: 'default' }}
+              >
+                <span>
+                  {index + 1}. {piece.title}
+                  <Text span display="block" size="xs" c="dimmed" mt={2}>
+                    {piece.composer
+                      ? `${piece.composer} · 未設定`
+                      : 'ボウイング未設定'}
+                  </Text>
+                </span>
+              </div>
+            ),
+          )}
+        </section>
       )}
     </PageSection>
   )

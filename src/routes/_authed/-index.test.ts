@@ -102,7 +102,7 @@ describe('DashboardContent', () => {
       }),
     )
 
-    expect(html).toContain('Googleカレンダーに追加')
+    expect(html).toContain('カレンダーに追加')
     const href = html.match(
       /href="(https:\/\/calendar\.google\.com\/calendar\/render[^"]+)"/,
     )?.[1]
@@ -123,7 +123,7 @@ describe('DashboardContent', () => {
       }),
     )
 
-    expect(html).not.toContain('Googleカレンダーに追加')
+    expect(html).not.toContain('カレンダーに追加')
     expect(html).not.toContain('calendar.google.com')
   })
 

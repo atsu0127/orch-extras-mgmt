@@ -14,8 +14,8 @@ import type { ReactNode } from 'react'
 import appCss from '../styles.css?url'
 import { theme } from '../theme'
 
-const NOTO_SANS_JP =
-  'https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+JP:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;600;700&family=Shippori+Mincho:wght@600;700&display=swap'
+const FONT_CSS =
+  'https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+JP:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;600;700&display=swap'
 
 export const Route = createRootRoute({
   head: () => ({
@@ -33,7 +33,7 @@ export const Route = createRootRoute({
         href: 'https://fonts.gstatic.com',
         crossOrigin: 'anonymous',
       },
-      { rel: 'stylesheet', href: NOTO_SANS_JP },
+      { rel: 'stylesheet', href: FONT_CSS },
       { rel: 'stylesheet', href: mantineCss },
       { rel: 'stylesheet', href: appCss },
     ],

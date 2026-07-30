@@ -65,10 +65,7 @@ function LoginPage() {
       align="center"
       px="md"
       py="xl"
-      style={{
-        background:
-          'linear-gradient(180deg, color-mix(in srgb, var(--mantine-color-bordeaux-1) 55%, transparent), transparent 42%), var(--mantine-color-body)',
-      }}
+      style={{ background: 'var(--mantine-color-body)' }}
     >
       <Paper
         component="form"
@@ -82,7 +79,7 @@ function LoginPage() {
         style={{ borderColor: 'var(--app-border)' }}
       >
         <Stack gap="md">
-          <Text className="departure-kicker">EXTRAS PORTAL</Text>
+          <Text className="section-label">EXTRAS PORTAL</Text>
           <Title order={1}>エキストラ情報ポータル</Title>
           <Text c="dimmed">配布されたパスワードを入力してください。</Text>
 

@@ -1,6 +1,6 @@
 /*
  * Mantine のテーマを土台にし、アプリ固有のレイアウトだけを残す。
- * 色・角丸・フォントは src/theme.ts 側が正。
+ * 色・角丸・フォントは src/theme.ts 側が正（ADR-0018 実用コンパクト）。
  */
 
 :root {
@@ -24,21 +24,27 @@ body {
 }
 
 [data-mantine-color-scheme="light"] {
-  --mantine-color-body: #f5f0e6;
-  --mantine-color-text: var(--mantine-color-ink-9);
-  --app-surface: #fffaf2;
-  --app-border: #d8cfc1;
-  --app-muted: var(--mantine-color-ink-6);
-  --app-nav-bg: rgb(255 250 242 / 94%);
+  --mantine-color-body: #f4f5f7;
+  --mantine-color-text: var(--mantine-color-ink-8);
+  --app-surface: #ffffff;
+  --app-border: #e5e7eb;
+  --app-muted: var(--mantine-color-ink-4);
+  --app-nav-bg: #ffffff;
+  --app-strip-bg: #111827;
+  --app-strip-fg: #f9fafb;
+  --app-panel-head: #f9fafb;
 }
 
 [data-mantine-color-scheme="dark"] {
-  --mantine-color-body: #161310;
+  --mantine-color-body: #0f1115;
   --mantine-color-text: var(--mantine-color-ink-1);
-  --app-surface: #201c18;
-  --app-border: color-mix(in srgb, var(--mantine-color-ink-6) 55%, transparent);
-  --app-muted: var(--mantine-color-ink-4);
-  --app-nav-bg: rgb(22 19 16 / 94%);
+  --app-surface: #1a1d24;
+  --app-border: color-mix(in srgb, var(--mantine-color-ink-5) 45%, transparent);
+  --app-muted: var(--mantine-color-ink-3);
+  --app-nav-bg: #151820;
+  --app-strip-bg: #030712;
+  --app-strip-fg: #f9fafb;
+  --app-panel-head: #151820;
 }
 
 .app-shell {
@@ -51,33 +57,29 @@ body {
   display: flex;
   flex-direction: column;
   min-height: 100dvh;
-  padding-bottom: calc(4.5rem + env(safe-area-inset-bottom, 0px));
+  padding-bottom: calc(4.25rem + env(safe-area-inset-bottom, 0px));
 }
 
 .app-header {
-  position: sticky;
-  top: 0;
   z-index: 20;
-  padding: 0.85rem 1rem 0.75rem;
+  padding: 0.65rem 1rem 0.7rem;
   border-bottom: 1px solid var(--app-border);
-  background: color-mix(in srgb, var(--app-surface) 92%, transparent);
-  backdrop-filter: blur(10px);
+  background: var(--app-surface);
 }
 
 .app-brand {
-  color: var(--mantine-color-bordeaux-filled);
-  font-family: "Shippori Mincho", "Hiragino Mincho ProN", serif;
+  color: var(--mantine-color-text);
   font-size: 0.8125rem;
   font-weight: 700;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.02em;
 }
 
 .app-main {
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  gap: 0.75rem;
   flex: 1;
-  padding: 1rem 1rem 1.5rem;
+  padding: 0.75rem 1rem 1.25rem;
 }
 
 .app-bottom-nav {
@@ -86,16 +88,14 @@ body {
   left: 50%;
   bottom: 0;
   display: grid;
-  /* 子の数に応じて等分。無いと1列になり縦積みになる */
   grid-auto-flow: column;
   grid-auto-columns: minmax(0, 1fr);
   width: 100%;
   max-width: 42rem;
-  min-height: calc(4rem + env(safe-area-inset-bottom, 0px));
-  padding: 0.35rem 0.5rem env(safe-area-inset-bottom, 0px);
+  min-height: calc(3.75rem + env(safe-area-inset-bottom, 0px));
+  padding: 0.25rem 0.35rem env(safe-area-inset-bottom, 0px);
   border-top: 1px solid var(--app-border);
   background: var(--app-nav-bg);
-  backdrop-filter: blur(12px);
   transform: translateX(-50%);
 }
 
@@ -107,11 +107,37 @@ body {
   justify-content: center;
   min-width: 0;
   min-height: 2.75rem;
-  padding: 0.25rem 0.35rem;
+  padding: 0.2rem 0.25rem;
+  border-radius: var(--mantine-radius-sm);
   color: var(--app-muted);
-  font-size: 0.6875rem;
-  font-weight: 500;
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
   text-decoration: none;
+  cursor: pointer;
+  transition:
+    color 150ms ease,
+    background-color 150ms ease;
+}
+
+.app-bottom-nav a:hover {
+  color: var(--mantine-color-text);
+  background: color-mix(in srgb, var(--app-border) 55%, transparent);
+}
+
+.app-bottom-nav a:focus-visible {
+  outline: 2px solid var(--mantine-color-bordeaux-filled);
+  outline-offset: 2px;
+}
+
+.app-bottom-nav a[data-active="true"] {
+  color: var(--mantine-color-bordeaux-filled);
+}
+
+.app-bottom-nav a[aria-disabled="true"],
+.app-bottom-nav a[data-disabled="true"] {
+  opacity: 0.4;
+  pointer-events: none;
 }
 
 .app-bottom-nav a span {
@@ -121,21 +147,26 @@ body {
   white-space: nowrap;
 }
 
-.app-bottom-nav a[data-active="true"] {
-  color: var(--mantine-color-bordeaux-filled);
-  font-weight: 700;
-}
-
 .app-bottom-nav svg {
-  width: 1.15rem;
-  height: 1.15rem;
+  width: 1.35rem;
+  height: 1.35rem;
   flex-shrink: 0;
+  stroke-width: 1.75;
 }
 
-/* PC: 下部ナビをやめてヘッダ横ナビへ。タップ領域より走査性を優先 */
+.app-bottom-nav a[data-active="true"] svg {
+  stroke-width: 2.15;
+}
+
+/* PC: 下部ナビをやめてヘッダ横ナビへ */
 @media (min-width: 48rem) {
   .app-frame {
     padding-bottom: 0;
+  }
+
+  .app-header {
+    position: sticky;
+    top: 0;
   }
 
   .app-bottom-nav {
@@ -148,65 +179,257 @@ body {
     flex-wrap: wrap;
     padding-top: 0.25rem;
   }
+
+  .app-desktop-nav a {
+    cursor: pointer;
+    transition:
+      color 150ms ease,
+      border-color 150ms ease;
+  }
+
+  .app-desktop-nav a:focus-visible {
+    outline: 2px solid var(--mantine-color-bordeaux-filled);
+    outline-offset: 3px;
+  }
 }
 
 @media (max-width: 47.99rem) {
+  .app-header {
+    position: relative;
+  }
+
   .app-desktop-nav {
     display: none;
   }
 }
 
-.departure-board {
+/* 次の練習の要約バー（ADR-0018） */
+.next-strip {
   display: grid;
-  grid-template-columns: 4.75rem minmax(0, 1fr);
-  gap: 1rem;
-  align-items: start;
-  padding: 1rem 0 1.1rem;
-  border-bottom: 1px solid var(--app-border);
-  background: var(--app-surface);
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 0.75rem;
+  align-items: center;
   margin: 0 -1rem;
-  padding-left: 1rem;
-  padding-right: 1rem;
-  padding-top: 1.1rem;
-  border-top: 1px solid var(--app-border);
+  padding: 0.7rem 1rem;
+  background: var(--app-strip-bg);
+  color: var(--app-strip-fg);
 }
 
-.departure-date {
-  padding-right: 0.85rem;
-  border-right: 1px solid var(--app-border);
+@media (max-width: 47.99rem) {
+  .next-strip {
+    position: sticky;
+    top: 0;
+    z-index: 18;
+  }
+}
+
+.next-strip-date {
   text-align: center;
+  font-variant-numeric: tabular-nums;
+  min-width: 2.75rem;
 }
 
-.departure-month {
-  color: var(--mantine-color-bordeaux-filled);
-  font-size: 0.75rem;
-  font-weight: 700;
+.next-strip-month {
+  font-size: 0.625rem;
+  font-weight: 600;
+  opacity: 0.7;
   letter-spacing: 0.04em;
 }
 
-.departure-day {
-  font-family: "Shippori Mincho", "Hiragino Mincho ProN", serif;
-  font-size: 2.5rem;
+.next-strip-day {
+  font-size: 1.35rem;
   font-weight: 700;
   line-height: 1;
 }
 
-.departure-weekday {
-  margin-top: 0.2rem;
-  color: var(--app-muted);
-  font-size: 0.75rem;
+.next-strip-kicker {
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  opacity: 0.65;
 }
 
-.departure-kicker {
-  color: var(--mantine-color-bordeaux-filled);
+.next-strip-time {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.next-strip-venue {
+  font-size: 0.75rem;
+  opacity: 0.8;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.next-strip-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2rem;
+  padding: 0.35rem 0.65rem;
+  border-radius: var(--mantine-radius-sm);
+  background: var(--mantine-color-bordeaux-filled);
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    filter 150ms ease,
+    opacity 150ms ease;
+}
+
+.next-strip-action:hover {
+  filter: brightness(1.08);
+}
+
+.next-strip-action:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+
+.next-strip-action:active {
+  filter: brightness(0.95);
+}
+
+.panel {
+  background: var(--app-surface);
+  border: 1px solid var(--app-border);
+  border-radius: var(--mantine-radius-md);
+  overflow: hidden;
+}
+
+.panel-head {
+  padding: 0.45rem 0.75rem;
+  border-bottom: 1px solid var(--app-border);
+  background: var(--app-panel-head);
+  color: var(--app-muted);
   font-size: 0.6875rem;
   font-weight: 700;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.06em;
 }
 
-.section-rule {
-  padding-top: 1rem;
+.panel-body {
+  padding: 0.75rem;
+}
+
+.panel-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: 2.75rem;
+  padding: 0.65rem 0.75rem;
   border-top: 1px solid var(--app-border);
+  color: inherit;
+  font-size: 0.875rem;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 150ms ease;
+}
+
+.panel-row:first-child {
+  border-top: none;
+}
+
+.panel-row:hover {
+  background: color-mix(in srgb, var(--app-border) 40%, transparent);
+}
+
+.panel-row:focus-visible {
+  outline: 2px solid var(--mantine-color-bordeaux-filled);
+  outline-offset: -2px;
+}
+
+.panel-row-chevron {
+  color: var(--app-muted);
+  flex-shrink: 0;
+}
+
+.segmented {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.2rem;
+  padding: 0.2rem;
+  border-radius: var(--mantine-radius-md);
+  background: color-mix(in srgb, var(--app-border) 80%, transparent);
+}
+
+.segmented a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.5rem;
+  padding: 0.4rem 0.75rem;
+  border-radius: var(--mantine-radius-sm);
+  color: var(--app-muted);
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    background-color 150ms ease,
+    color 150ms ease;
+}
+
+.segmented a:hover {
+  color: var(--mantine-color-text);
+}
+
+.segmented a:focus-visible {
+  outline: 2px solid var(--mantine-color-bordeaux-filled);
+  outline-offset: 1px;
+}
+
+.segmented a[data-active="true"] {
+  background: var(--app-surface);
+  color: var(--mantine-color-text);
+}
+
+.practice-row {
+  display: grid;
+  grid-template-columns: 3.25rem minmax(0, 1fr);
+  gap: 0.65rem;
+  align-items: start;
+  padding: 0.7rem 0.75rem;
+  border-top: 1px solid var(--app-border);
+}
+
+.practice-row:first-child {
+  border-top: none;
+}
+
+.practice-row-date {
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.practice-row-month {
+  color: var(--app-muted);
+  font-size: 0.625rem;
+  font-weight: 600;
+}
+
+.practice-row-day {
+  font-size: 1.15rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.practice-row-weekday {
+  margin-top: 0.15rem;
+  color: var(--app-muted);
+  font-size: 0.625rem;
+}
+
+.section-label {
+  color: var(--app-muted);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
 }
 
 /* 練習の詳細。改行をそのまま見せる（設計書6.1） */

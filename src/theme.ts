@@ -1,7 +1,7 @@
 import { createTheme, type MantineColorsTuple } from '@mantine/core'
 
 /**
- * 温かいアイボリー・墨色・深いボルドー（設計書7.2 / ADR-0015）。
+ * クールニュートラル＋ボルドー CTA（設計書7.2 / ADR-0018）。
  * Mantine の既定色（青・紫系）は primary に使わない。
  */
 const bordeaux: MantineColorsTuple = [
@@ -18,21 +18,20 @@ const bordeaux: MantineColorsTuple = [
 ]
 
 const ink: MantineColorsTuple = [
-  '#F4F1EC',
-  '#E4DFD6',
-  '#C9C1B4',
-  '#A89F90',
-  '#877E70',
-  '#6B6358',
-  '#524C43',
-  '#3C3731',
-  '#2A2622',
-  '#1A1714',
+  '#F4F5F7',
+  '#E5E7EB',
+  '#D1D5DB',
+  '#9CA3AF',
+  '#6B7280',
+  '#4B5563',
+  '#374151',
+  '#1F2937',
+  '#111827',
+  '#030712',
 ]
 
 const sans =
   '"IBM Plex Sans JP", "Noto Sans JP", "Hiragino Sans", "Hiragino Kaku Gothic ProN", sans-serif'
-const display = `"Shippori Mincho", "Hiragino Mincho ProN", ${sans}`
 
 export const theme = createTheme({
   primaryColor: 'bordeaux',
@@ -43,12 +42,12 @@ export const theme = createTheme({
   },
   fontFamily: sans,
   headings: {
-    fontFamily: display,
-    fontWeight: '600',
+    fontFamily: sans,
+    fontWeight: '700',
     sizes: {
-      h1: { fontSize: '1.5rem', lineHeight: '1.35' },
-      h2: { fontSize: '1.125rem', lineHeight: '1.4' },
-      h3: { fontSize: '1rem', lineHeight: '1.4' },
+      h1: { fontSize: '1.25rem', lineHeight: '1.35' },
+      h2: { fontSize: '1rem', lineHeight: '1.4' },
+      h3: { fontSize: '0.9375rem', lineHeight: '1.4' },
     },
   },
   // 設計書7.2: 角丸は原則6〜8px。ピル型は選択肢の表現に限る
