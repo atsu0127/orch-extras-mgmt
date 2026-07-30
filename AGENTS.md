@@ -36,18 +36,21 @@ TanStack Start (React + TypeScript) を SPA モードでビルドし、Cloudflar
 - 書式は Biome に従う。手で整えず `pnpm lint:fix` を使う
 - `tsconfig.json` は strict に加えて `noUncheckedIndexedAccess` と `exactOptionalPropertyTypes` を有効にしている。緩めたくなったら相談する
 - `verbatimModuleSyntax` は有効にしない。サーバ側のバンドルがクライアントへ混入する恐れがあるため TanStack Start が非推奨としている
-- 画面（コンポーネント本体）から `src/db/schema.ts` を import しない。読むだけで drizzle がクライアントのバンドルに載る。画面にも出す定数は `src/lib/` に置き、スキーマ側がそれを読む（`src/lib/limits.ts`、`src/lib/roles.ts`）。サーバ関数の `.validator()` の中だけで使うぶんは、ビルド時に落ちるので構わない
+- 画面（コンポーネント本体）から `src/db/schema.ts` や、それを読むサーバ専用モジュールの値を直接・間接に参照しない。読むだけで drizzle がクライアントのバンドルに載る。画面にも出す定数・型は `src/lib/` に置き、スキーマやサーバ側がそれを読む（`src/lib/limits.ts`、`src/lib/roles.ts`）。サーバ関数の `.validator()` や `.handler()` の中だけで使う import は、ビルド時に落ちるので構わない
+- `src/routes/` 配下にテストを置く場合、TanStack Router のルート走査から外すためファイル名を `-` で始める
+- 選択中の演奏会に属するフォーム state を追加したら、演奏会切り替えで初期化し、別演奏会へ値が残らない回帰テストを書く
 - `src/routeTree.gen.ts` と `worker-configuration.d.ts` は生成物。手で編集しない
 - コードコメントは、読めば分かることを書かない。設計上の制約や、そう書かなければならない理由だけを書く
 
 ## 作業の進め方
 
-1. 着手前にタスク分析と実装方針を示し、合意を得てから実装する
+1. 着手前にタスク分析と実装方針を示し、合意を得てから実装する。フェーズ全体を頼まれた場合はフェーズ単位の合意1回にまとめ、「最後まで進めて」と指示された後は設計変更・破壊的操作・外部作業が必要にならない限り、節やタスクごとの再承認を挟まない
 2. タスク単位（T1-1、T1-2 のような粒度）でこまめにコミットする
-3. コミット前に `pnpm lint` / `pnpm typecheck` / `pnpm test` を通す
-4. ブランチを切って作業し、最後に PR を作る。本文は `.github/pull_request_template.md` の見出しに沿って書く（`gh pr create --body` はテンプレートを読まないので自分で埋める）。main への直接 push は本番デプロイが走るため、ドキュメントのみの変更に限る
+3. コミット前に `pnpm lint` / `pnpm typecheck` / `pnpm test` を通す。Subagent が同じ差分で通した直後ならその結果を使い、親 Agent が重ねて全検査を実行しない。差分が変わった場合とフェーズ最終確認では親 Agent が再実行する
+4. ブランチを切って作業し、最後に PR を作る。フェーズ実装は原則1ブランチ・1PRとし、明示依頼がなければ設計文書だけの別PRや `docs/superpowers/` の仕様書・計画書を作らない。本文は `.github/pull_request_template.md` の見出しに沿って書く（`gh pr create --body` はテンプレートを読まないので自分で埋める）。main への直接 push は本番デプロイが走るため、ドキュメントのみの変更に限る
 5. 構成が変わったら `README.md` を更新する
 6. タスクが終わったら `docs/tasks.md` の進捗セクションを更新する
+7. 機能を見送る設計変更では、完了前に旧機能名をコード・設定・文書から横断検索し、意図した履歴記述以外を除去する
 
 コミットメッセージは日本語で書く。1行目に達成したことを書き、本文には**なぜそうしたか**を書く。何をしたかは差分を見れば分かる。
 
@@ -71,7 +74,15 @@ TanStack Start (React + TypeScript) を SPA モードでビルドし、Cloudflar
 この節は Cursor Cloud のVM向け。上の「環境上の注意」は mise/asdf を使うローカル開発機の話で、Cloud VM には当てはまらない。
 
 - ランタイムは mise ではなく nvm で入れた Node 24.18.0。`/usr/local/cargo/bin`（PATH の先頭）に `node`/`pnpm` 等の symlink を張ってあるので、`export PATH=...` の小細工なしで `node`/`pnpm` は v24 に解決される（symlink が無いと `/exec-daemon/node` の v22 が優先されるので、壊れていたら `ln -sf $HOME/.nvm/versions/node/v24.18.0/bin/{node,pnpm,npm,npx,corepack} /usr/local/cargo/bin/` で復旧する）
-- 依存の更新は起動時の update script（`pnpm install`）が済ませる。`.dev.vars`・ローカル D1（`.wrangler/state`）はスナップショットに残るが、消えていたら `cp .dev.vars.example .dev.vars` → `pnpm db:migrate` → `pnpm db:seed` で作り直す。スキーマを変えたら `pnpm db:migrate` を流す
+- 依存の更新は起動時の update script（`pnpm install`）が済ませる。作業開始時に `.dev.vars` とローカル D1（`.wrangler/state`）の有無を確認し、消えていたら `cp .dev.vars.example .dev.vars` → `pnpm db:migrate` → `pnpm db:seed` で作り直す。スキーマを変えたら `pnpm db:migrate` を流す
 - 検査（`pnpm lint` / `pnpm typecheck` / `pnpm test`）と開発サーバ（`pnpm dev`、http://localhost:3000）はこのVMではサンドボックスの制約なくそのまま実行できる。上の「環境上の注意」のサンドボックス回避は不要
 - ローカルログインの共有パスワードは `.dev.vars.example` の既定値（管理者 `local-admin-password` / エキストラ `local-extra-password`）。`pnpm db:seed` がこれを投入する
 - E2E（Playwright）を動かすなら初回のみ `pnpm exec playwright install chromium`
+
+### Cloud Agent と Subagent の実行
+
+- 共有ワークスペースを変更する Subagent は同時に1件だけ起動する。完了を確認できないまま同じタスクを再起動しない。`aborted` や中断を受け取ったら、まず `git status` と UI 上の状態を確認する
+- Subagent には commit・push・PR操作をさせず、戻った直後に親 Agent が作業ツリーと `git log` を確認する。予期しないcommitがあれば先へ進む前に内容を確認する
+- フェーズタスクでは各小タスクへ仕様レビューと品質レビューを二重に付けない。DB・認証・マイグレーションなど高リスク部分だけ追加レビューし、全体の仕様・品質レビューをフェーズ末に1回ずつ行う
+- 停止要求を受けたら新しい Subagent やコマンドを起動しない。確認手段がない状態で「全て停止済み」と断言せず、確認できた範囲と UI 側で必要な操作を伝える
+- 画面録画は操作準備を終えてから開始し、成功確認の直後に保存する。長い待機や別作業を録画中に挟まない
