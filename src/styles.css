@@ -541,9 +541,19 @@ body {
   text-align: left;
 }
 
-.pamphlet-section .empty-state {
+.pamphlet-section .empty-state,
+.pamphlet-hero .empty-state {
   max-width: 22rem;
   margin-inline: auto;
+  text-align: center;
+}
+
+.pamphlet-section
+  .empty-state
+  :where([data-title], .mantine-Alert-title, .mantine-Alert-message, p),
+.pamphlet-hero
+  .empty-state
+  :where([data-title], .mantine-Alert-title, .mantine-Alert-message, p) {
   text-align: center;
 }
 
