@@ -14,7 +14,6 @@ import { ConfirmButton } from '../../../components/confirm-button'
 import { ExternalLink } from '../../../components/external-link'
 import { EmptyState } from '../../../components/states'
 import {
-  CONCERT_RESOURCE_LIMIT_MESSAGE,
   createConcertResource,
   deleteConcertResource,
   moveConcertResource,
@@ -34,7 +33,11 @@ import {
 import { getDb } from '../../../db/client'
 import { CONCERT_STATUSES } from '../../../db/schema'
 import { formatFullDate } from '../../../lib/date'
-import { MAX_CONCERT_RESOURCES, MAX_LENGTH } from '../../../lib/limits'
+import {
+  CONCERT_RESOURCE_LIMIT_MESSAGE,
+  MAX_CONCERT_RESOURCES,
+  MAX_LENGTH,
+} from '../../../lib/limits'
 import { DIRECTIONS } from '../../../lib/ordering'
 import {
   idValue,

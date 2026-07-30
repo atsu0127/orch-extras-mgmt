@@ -1,10 +1,11 @@
 import { and, asc, eq, gt, sql } from 'drizzle-orm'
 import type { Db } from '../db/client'
 import { concertResources } from '../db/schema'
-import { MAX_CONCERT_RESOURCES } from '../lib/limits'
+import {
+  CONCERT_RESOURCE_LIMIT_MESSAGE,
+  MAX_CONCERT_RESOURCES,
+} from '../lib/limits'
 import { type Direction, reorderRows } from '../lib/ordering'
-
-export const CONCERT_RESOURCE_LIMIT_MESSAGE = `資料は${MAX_CONCERT_RESOURCES}件まで登録できます`
 
 export type ConcertResourceFields = {
   title: string

@@ -1,10 +1,12 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 import type { Db } from '../db/client'
 import { concerts } from '../db/schema'
-import { MAX_CONCERT_RESOURCES } from '../lib/limits'
-import { createTestDb } from '../test/db'
 import {
   CONCERT_RESOURCE_LIMIT_MESSAGE,
+  MAX_CONCERT_RESOURCES,
+} from '../lib/limits'
+import { createTestDb } from '../test/db'
+import {
   createConcertResource,
   deleteConcertResource,
   moveConcertResource,

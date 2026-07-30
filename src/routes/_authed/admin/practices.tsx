@@ -24,7 +24,9 @@ import {
   toOptionalId,
 } from '../../../lib/validation'
 import {
-  duplicatePracticeValues,
+  createDuplicatePracticeState,
+  type DuplicatePracticeState,
+  duplicatePracticeValuesForConcert,
   type PracticeFormValues,
 } from '../../../practices/duplicate'
 import { practiceInput } from '../../../practices/input'
@@ -104,9 +106,11 @@ export const Route = createFileRoute('/_authed/admin/practices')({
 function AdminPracticesPage() {
   const { session, concert } = Route.useRouteContext()
   const data = Route.useLoaderData()
-  const [duplicateValues, setDuplicateValues] = useState<PracticeFormValues>()
-  const [duplicateRevision, setDuplicateRevision] = useState(0)
+  const [duplicateState, setDuplicateState] = useState<DuplicatePracticeState>()
   const newFormRef = useRef<HTMLDivElement>(null)
+  const duplicateValues = concert
+    ? duplicatePracticeValuesForConcert(duplicateState, concert.id)
+    : undefined
 
   useEffect(() => {
     if (!duplicateValues) return
@@ -123,8 +127,9 @@ function AdminPracticesPage() {
   if (!data || !concert) return <NoConcertState role={session.role} />
 
   const duplicate = (practice: PracticeAdminItem) => {
-    setDuplicateValues(duplicatePracticeValues(practice))
-    setDuplicateRevision((revision) => revision + 1)
+    setDuplicateState((current) =>
+      createDuplicatePracticeState(current, concert.id, practice),
+    )
   }
 
   return (
@@ -136,7 +141,7 @@ function AdminPracticesPage() {
 
       <div ref={newFormRef}>
         <PracticeForm
-          key={duplicateRevision}
+          key={`${concert.id}:${duplicateState?.revision ?? 0}`}
           concertId={concert.id}
           venues={data.venues}
           {...(duplicateValues ? { initialValues: duplicateValues } : {})}

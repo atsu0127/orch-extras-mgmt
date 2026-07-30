@@ -1,5 +1,9 @@
 import { describe, expect, expectTypeOf, it } from 'vitest'
-import { duplicatePracticeValues } from './duplicate'
+import {
+  createDuplicatePracticeState,
+  duplicatePracticeValues,
+  duplicatePracticeValuesForConcert,
+} from './duplicate'
 import type { PracticeAdminItem } from './queries'
 
 const source: PracticeAdminItem = {
@@ -57,5 +61,23 @@ describe('duplicatePracticeValues', () => {
       venueId: '',
       detail: '',
     })
+  })
+})
+
+describe('複製フォームstate', () => {
+  it('元の演奏会でだけ複製値を返す', () => {
+    const state = createDuplicatePracticeState(undefined, 1, source)
+
+    expect(duplicatePracticeValuesForConcert(state, 1)).toEqual(
+      duplicatePracticeValues(source),
+    )
+    expect(duplicatePracticeValuesForConcert(state, 2)).toBeUndefined()
+  })
+
+  it('再複製するとrevisionを更新する', () => {
+    const first = createDuplicatePracticeState(undefined, 1, source)
+    const second = createDuplicatePracticeState(first, 1, source)
+
+    expect(second.revision).toBe(first.revision + 1)
   })
 })

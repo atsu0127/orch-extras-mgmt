@@ -22,3 +22,5 @@ export const MAX_LENGTH = {
 } as const
 
 export const MAX_CONCERT_RESOURCES = 5
+
+export const CONCERT_RESOURCE_LIMIT_MESSAGE = `資料は${MAX_CONCERT_RESOURCES}件まで登録できます`
