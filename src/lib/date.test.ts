@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
+  departureDateParts,
   formatDate,
   formatFullDate,
   formatTimeRange,
@@ -26,6 +27,20 @@ describe('weekdayOf', () => {
     expect(weekdayOf('2026-07-27')).toBe('月')
     expect(weekdayOf('2026-08-01')).toBe('土')
     expect(weekdayOf('2026-08-02')).toBe('日')
+  })
+})
+
+describe('departureDateParts', () => {
+  it('月・日・曜日を分解する', () => {
+    expect(departureDateParts('2026-08-07')).toEqual({
+      month: 8,
+      day: 7,
+      weekday: '金',
+    })
+  })
+
+  it('形式が違うものは null', () => {
+    expect(departureDateParts('2026/08/07')).toBeNull()
   })
 })
 

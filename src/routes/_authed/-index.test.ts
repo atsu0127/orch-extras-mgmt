@@ -1,6 +1,6 @@
 import { createElement, type ReactNode } from 'react'
-import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, it, vi } from 'vitest'
+import { renderMarkup } from '../../test/render'
 
 vi.mock('@tanstack/react-router', async () => {
   return {
@@ -63,11 +63,11 @@ const nextPractice = {
 
 describe('DashboardContent', () => {
   it('本番会場の住所があるときGoogle Mapsリンクを表示する', () => {
-    const html = renderToStaticMarkup(
+    const html = renderMarkup(
       createElement(DashboardContent, {
         appSettings: { adminEmail: null },
         concert,
-        nextPractice,
+        nextPractice: null,
         resources: [],
       }),
     )
@@ -79,11 +79,11 @@ describe('DashboardContent', () => {
   })
 
   it('本番会場の住所がないときGoogle Mapsリンクを表示しない', () => {
-    const html = renderToStaticMarkup(
+    const html = renderMarkup(
       createElement(DashboardContent, {
         appSettings: { adminEmail: null },
         concert: { ...concert, venueAddress: null },
-        nextPractice,
+        nextPractice: null,
         resources: [],
       }),
     )
@@ -93,7 +93,7 @@ describe('DashboardContent', () => {
   })
 
   it('本番会場がなくても有効な本番日ならGoogleカレンダーリンクを表示する', () => {
-    const html = renderToStaticMarkup(
+    const html = renderMarkup(
       createElement(DashboardContent, {
         appSettings: { adminEmail: null },
         concert: { ...concert, venueName: null, venueAddress: null },
@@ -102,7 +102,7 @@ describe('DashboardContent', () => {
       }),
     )
 
-    expect(html).toContain('Googleカレンダーに追加')
+    expect(html).toContain('カレンダーに追加')
     const href = html.match(
       /href="(https:\/\/calendar\.google\.com\/calendar\/render[^"]+)"/,
     )?.[1]
@@ -114,7 +114,7 @@ describe('DashboardContent', () => {
   })
 
   it('本番日が不正ならGoogleカレンダーリンクを表示しない', () => {
-    const html = renderToStaticMarkup(
+    const html = renderMarkup(
       createElement(DashboardContent, {
         appSettings: { adminEmail: null },
         concert: { ...concert, performanceDate: '2026-02-30' },
@@ -123,12 +123,12 @@ describe('DashboardContent', () => {
       }),
     )
 
-    expect(html).not.toContain('Googleカレンダーに追加')
+    expect(html).not.toContain('カレンダーに追加')
     expect(html).not.toContain('calendar.google.com')
   })
 
-  it('次の練習と出欠の間に改行付き備考と資料を受け取った順で表示する', () => {
-    const html = renderToStaticMarkup(
+  it('次の練習のあとに本番・出欠・備考・資料の順で表示する', () => {
+    const html = renderMarkup(
       createElement(DashboardContent, {
         appSettings: { adminEmail: null },
         concert,
@@ -149,12 +149,12 @@ describe('DashboardContent', () => {
     )
 
     expect(html).toContain(
-      '<p class="detail">集合は13時です\n黒服を持参してください</p>',
+      '<p class="detail pamphlet-note">集合は13時です\n黒服を持参してください</p>',
     )
-    expect(html).toContain('<ul class="link-list">')
-    expect(html.indexOf('次の練習')).toBeLessThan(html.indexOf('備考'))
+    expect(html.indexOf('次の練習')).toBeLessThan(html.indexOf('本番'))
+    expect(html.indexOf('本番')).toBeLessThan(html.indexOf('出欠の回答'))
+    expect(html.indexOf('出欠の回答')).toBeLessThan(html.indexOf('備考'))
     expect(html.indexOf('備考')).toBeLessThan(html.indexOf('資料'))
-    expect(html.indexOf('資料')).toBeLessThan(html.indexOf('出欠の回答'))
     expect(html.indexOf('演奏会のしおり')).toBeLessThan(html.indexOf('座席表'))
     expect(html).toContain(
       'href="https://example.com/guide" target="_blank" rel="noopener noreferrer"',
@@ -162,7 +162,7 @@ describe('DashboardContent', () => {
   })
 
   it.each([null, ''])('備考が %s なら備考セクションを表示しない', (note) => {
-    const html = renderToStaticMarkup(
+    const html = renderMarkup(
       createElement(DashboardContent, {
         appSettings: { adminEmail: null },
         concert: { ...concert, note },
@@ -171,12 +171,11 @@ describe('DashboardContent', () => {
       }),
     )
 
-    expect(html).not.toContain('<h2>備考</h2>')
-    expect(html).not.toContain('class="state"')
+    expect(html).not.toContain('備考')
   })
 
   it('資料が空なら資料セクションを表示しない', () => {
-    const html = renderToStaticMarkup(
+    const html = renderMarkup(
       createElement(DashboardContent, {
         appSettings: { adminEmail: null },
         concert,
@@ -185,7 +184,7 @@ describe('DashboardContent', () => {
       }),
     )
 
-    expect(html).not.toContain('<h2>資料</h2>')
-    expect(html).not.toContain('class="state"')
+    expect(html).not.toContain('>資料<')
+    expect(html).not.toContain('演奏会のしおり')
   })
 })

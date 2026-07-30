@@ -1,3 +1,4 @@
+import { Group, Stack, Text } from '@mantine/core'
 import { createFileRoute } from '@tanstack/react-router'
 import { createServerFn, useServerFn } from '@tanstack/react-start'
 import { useEffect, useId, useRef, useState } from 'react'
@@ -11,8 +12,24 @@ import {
   useAdminForm,
 } from '../../../components/admin-form'
 import { ConfirmButton } from '../../../components/confirm-button'
+import {
+  AdminList,
+  AdminListItem,
+  ControlRow,
+  MediaList,
+  SecondaryButton,
+} from '../../../components/control-row'
 import { ExternalLink } from '../../../components/external-link'
-import { EmptyState, NoConcertState } from '../../../components/states'
+import {
+  AppSelect,
+  AppTextarea,
+  AppTextInput,
+} from '../../../components/form-controls'
+import {
+  EmptyState,
+  NoConcertState,
+  PageSection,
+} from '../../../components/states'
 import { getDb } from '../../../db/client'
 import { formatDate, formatTimeRange } from '../../../lib/date'
 import { MAX_LENGTH } from '../../../lib/limits'
@@ -133,11 +150,10 @@ function AdminPracticesPage() {
   }
 
   return (
-    <section className="section">
-      <h1>練習</h1>
-      <p>
+    <PageSection title="練習" titleOrder={1}>
+      <Text c="dimmed">
         「{concert.name}」の練習です。別の演奏会は上のセレクタで切り替えます。
-      </p>
+      </Text>
 
       <div ref={newFormRef}>
         <PracticeForm
@@ -154,20 +170,19 @@ function AdminPracticesPage() {
           description="上のフォームから登録してください。"
         />
       ) : (
-        <ul className="list">
+        <AdminList>
           {data.practices.map((practice) => (
-            <li key={practice.id}>
-              <AdminPracticeItem
-                practice={practice}
-                concertId={concert.id}
-                venues={data.venues}
-                onDuplicate={() => duplicate(practice)}
-              />
-            </li>
+            <AdminPracticeItem
+              key={practice.id}
+              practice={practice}
+              concertId={concert.id}
+              venues={data.venues}
+              onDuplicate={() => duplicate(practice)}
+            />
           ))}
-        </ul>
+        </AdminList>
       )}
-    </section>
+    </PageSection>
   )
 }
 
@@ -190,12 +205,14 @@ function AdminPracticeItem({
 
   if (editing) {
     return (
-      <PracticeForm
-        practice={practice}
-        concertId={concertId}
-        venues={venues}
-        onDone={() => setEditing(false)}
-      />
+      <li>
+        <PracticeForm
+          practice={practice}
+          concertId={concertId}
+          venues={venues}
+          onDone={() => setEditing(false)}
+        />
+      </li>
     )
   }
 
@@ -203,39 +220,40 @@ function AdminPracticeItem({
   const time = formatTimeRange(practice.startTime, practice.endTime)
 
   return (
-    <div className="item">
-      <div className="item-title">
-        {formatDate(practice.date)}
-        {time && ` ${time}`}
-      </div>
-      <p className="item-note">{venue ? venue.name : '会場は未設定'}</p>
-      {practice.detail && <p className="item-note">{practice.detail}</p>}
+    <AdminListItem>
+      <Stack gap={4}>
+        <Text fw={600}>
+          {formatDate(practice.date)}
+          {time && ` ${time}`}
+        </Text>
+        <Text size="sm" c="dimmed">
+          {venue ? venue.name : '会場は未設定'}
+        </Text>
+        {practice.detail && (
+          <Text size="sm" c="dimmed">
+            {practice.detail}
+          </Text>
+        )}
 
-      <MediaSection practice={practice} />
+        <MediaSection practice={practice} />
 
-      <div className="controls">
-        <button type="button" className="secondary" onClick={onDuplicate}>
-          複製して編集
-        </button>
-        <button
-          type="button"
-          className="secondary"
-          onClick={() => setEditing(true)}
-        >
-          編集
-        </button>
-        <ConfirmButton
-          label="削除"
-          title={`${formatDate(practice.date)}の練習を削除しますか？`}
-          description={<p>{deleteWarning(practice)}</p>}
-          disabled={action.running}
-          onConfirm={() =>
-            action.run(() => remove({ data: { id: practice.id } }))
-          }
-        />
-      </div>
-      <FormError message={action.failure} />
-    </div>
+        <ControlRow failure={action.failure}>
+          <SecondaryButton onClick={onDuplicate}>複製して編集</SecondaryButton>
+          <SecondaryButton onClick={() => setEditing(true)}>
+            編集
+          </SecondaryButton>
+          <ConfirmButton
+            label="削除"
+            title={`${formatDate(practice.date)}の練習を削除しますか？`}
+            description={<p>{deleteWarning(practice)}</p>}
+            disabled={action.running}
+            onConfirm={() =>
+              action.run(() => remove({ data: { id: practice.id } }))
+            }
+          />
+        </ControlRow>
+      </Stack>
+    </AdminListItem>
   )
 }
 
@@ -249,70 +267,59 @@ function MediaSection({ practice }: { practice: PracticeAdminItem }) {
   return (
     <>
       {practice.media.length > 0 && (
-        <div>
-          <p className="item-note">録音・録画</p>
-          <ul className="media-list">
-            {practice.media.map((link, index) => (
-              <li key={link.id}>
-                <ExternalLink href={link.url}>{link.title}</ExternalLink>
-                <div className="controls">
-                  <button
-                    type="button"
-                    className="secondary"
-                    aria-label={`「${link.title}」を上へ`}
-                    disabled={index === 0 || action.running}
-                    onClick={() =>
-                      void action.run(() =>
-                        move({ data: { id: link.id, direction: 'up' } }),
-                      )
-                    }
-                  >
-                    ↑
-                  </button>
-                  <button
-                    type="button"
-                    className="secondary"
-                    aria-label={`「${link.title}」を下へ`}
-                    disabled={index === last || action.running}
-                    onClick={() =>
-                      void action.run(() =>
-                        move({ data: { id: link.id, direction: 'down' } }),
-                      )
-                    }
-                  >
-                    ↓
-                  </button>
-                  <ConfirmButton
-                    label="削除"
-                    title={`「${link.title}」を削除しますか？`}
-                    description={
-                      <p>リンクだけを消します。録音そのものは残ります。</p>
-                    }
-                    disabled={action.running}
-                    onConfirm={() =>
-                      action.run(() => remove({ data: { id: link.id } }))
-                    }
-                  />
-                </div>
-              </li>
-            ))}
-          </ul>
-        </div>
+        <MediaList title="録音・録画">
+          {practice.media.map((link, index) => (
+            <li key={link.id}>
+              <ExternalLink href={link.url}>{link.title}</ExternalLink>
+              <ControlRow>
+                <SecondaryButton
+                  aria-label={`「${link.title}」を上へ`}
+                  disabled={index === 0 || action.running}
+                  onClick={() =>
+                    void action.run(() =>
+                      move({ data: { id: link.id, direction: 'up' } }),
+                    )
+                  }
+                >
+                  ↑
+                </SecondaryButton>
+                <SecondaryButton
+                  aria-label={`「${link.title}」を下へ`}
+                  disabled={index === last || action.running}
+                  onClick={() =>
+                    void action.run(() =>
+                      move({ data: { id: link.id, direction: 'down' } }),
+                    )
+                  }
+                >
+                  ↓
+                </SecondaryButton>
+                <ConfirmButton
+                  label="削除"
+                  title={`「${link.title}」を削除しますか？`}
+                  description={
+                    <p>リンクだけを消します。録音そのものは残ります。</p>
+                  }
+                  disabled={action.running}
+                  onConfirm={() =>
+                    action.run(() => remove({ data: { id: link.id } }))
+                  }
+                />
+              </ControlRow>
+            </li>
+          ))}
+        </MediaList>
       )}
       <FormError message={action.failure} />
 
       {adding ? (
         <MediaForm practiceId={practice.id} onDone={() => setAdding(false)} />
       ) : (
-        <div className="controls">
-          <button
-            type="button"
-            className="secondary"
-            onClick={() => setAdding(true)}
-          >
+        <ControlRow>
+          <SecondaryButton onClick={() => setAdding(true)}>
             録音・録画リンクを追加
-          </button>
-        </div>
+          </SecondaryButton>
+        </ControlRow>
       )}
     </>
   )
@@ -350,7 +357,7 @@ function MediaForm({ practiceId, onDone }: MediaFormProps) {
         hint="例: 1楽章 通し"
         error={form.errors.title}
       >
-        <input
+        <AppTextInput
           id={`${id}-title`}
           value={title}
           onChange={(event) => setTitle(event.target.value)}
@@ -363,7 +370,7 @@ function MediaForm({ practiceId, onDone }: MediaFormProps) {
         hint="Google ドライブや YouTube など"
         error={form.errors.url}
       >
-        <input
+        <AppTextInput
           id={`${id}-url`}
           type="url"
           inputMode="url"
@@ -440,7 +447,7 @@ function PracticeForm({
       onCancel={practice ? onDone : undefined}
     >
       <Field id={`${id}-date`} label="日付" error={form.errors.date}>
-        <input
+        <AppTextInput
           id={`${id}-date`}
           type="date"
           value={date}
@@ -448,13 +455,13 @@ function PracticeForm({
         />
       </Field>
 
-      <div className="field-row">
+      <Group grow align="flex-start">
         <Field
           id={`${id}-start`}
           label="開始（任意）"
           error={form.errors.startTime}
         >
-          <input
+          <AppTextInput
             id={`${id}-start`}
             type="time"
             value={startTime}
@@ -467,14 +474,14 @@ function PracticeForm({
           label="終了（任意）"
           error={form.errors.endTime}
         >
-          <input
+          <AppTextInput
             id={`${id}-end`}
             type="time"
             value={endTime}
             onChange={(event) => setEndTime(event.target.value)}
           />
         </Field>
-      </div>
+      </Group>
 
       <Field
         id={`${id}-venue`}
@@ -482,7 +489,7 @@ function PracticeForm({
         hint={venues.length === 0 ? '会場を登録すると選べます' : undefined}
         error={form.errors.venueId}
       >
-        <select
+        <AppSelect
           id={`${id}-venue`}
           value={venueId}
           onChange={(event) => setVenueId(event.target.value)}
@@ -493,7 +500,7 @@ function PracticeForm({
               {venue.name}
             </option>
           ))}
-        </select>
+        </AppSelect>
       </Field>
 
       <Field
@@ -502,7 +509,7 @@ function PracticeForm({
         hint="分奏の編成、持ち物、集合場所など"
         error={form.errors.detail}
       >
-        <textarea
+        <AppTextarea
           id={`${id}-detail`}
           rows={3}
           value={detail}

@@ -1,3 +1,4 @@
+import { Anchor, Paper, PasswordInput, Stack, Text, Title } from '@mantine/core'
 import { createFileRoute, Link, useRouter } from '@tanstack/react-router'
 import { createServerFn, useServerFn } from '@tanstack/react-start'
 import { type FormEvent, useId, useState } from 'react'
@@ -12,6 +13,8 @@ import { MIN_PASSWORD_LENGTH, passwordChangeInput } from '../../../auth/input'
 import { requireAdmin } from '../../../auth/middleware'
 import { forgetCurrentSession } from '../../../auth/session-cache'
 import { AdminForm, Field, useAdminForm } from '../../../components/admin-form'
+import { AppTextInput } from '../../../components/form-controls'
+import { PageSection } from '../../../components/states'
 import { forgetConcerts } from '../../../concerts/concert-cache'
 import { getDb } from '../../../db/client'
 import { formatFullDate, jstDateOf } from '../../../lib/date'
@@ -69,14 +72,13 @@ function SettingsPage() {
   const { credentials, appSettings } = Route.useLoaderData()
 
   return (
-    <section className="section">
-      <h1>設定</h1>
+    <PageSection title="設定" titleOrder={1}>
       <AdminEmailForm initialEmail={appSettings.adminEmail} />
 
-      <p>
+      <Text c="dimmed">
         パスワードはロールごとに1本です。変更すると、そのロールで開いている全員が
         ログアウトされ、新しいパスワードが必要になります。
-      </p>
+      </Text>
 
       {ROLES.map((role) => (
         <PasswordForm
@@ -85,7 +87,7 @@ function SettingsPage() {
           credential={credentials.find((row) => row.role === role)}
         />
       ))}
-    </section>
+    </PageSection>
   )
 }
 
@@ -107,17 +109,21 @@ function AdminEmailForm({ initialEmail }: { initialEmail: string | null }) {
       failure={form.failure}
       submitting={form.submitting}
     >
-      <p className="field-hint">
+      <Text size="xs" c="dimmed">
         エキストラからの問い合わせ先として使います。空欄のまま保存すると設定を解除できます。
-      </p>
-      {saved && <p className="notice">保存しました。</p>}
+      </Text>
+      {saved && (
+        <Text c="bordeaux" size="sm">
+          保存しました。
+        </Text>
+      )}
 
       <Field
         id={`${id}-admin-email`}
         label="メールアドレス"
         error={form.errors.adminEmail}
       >
-        <input
+        <AppTextInput
           id={`${id}-admin-email`}
           type="email"
           autoComplete="email"
@@ -200,16 +206,26 @@ function PasswordForm({ role, credential }: PasswordFormProps) {
 
   if (signedOut) {
     return (
-      <div className="admin-form">
-        <h2>{ROLE_LABELS[role]}のパスワード</h2>
-        <p>
-          変更しました。いまのログインは無効になったので、新しいパスワードで
-          ログインしてください。
-        </p>
-        <p>
-          <Link to="/login">ログイン画面へ</Link>
-        </p>
-      </div>
+      <Paper
+        withBorder
+        p="md"
+        radius="md"
+        bg="var(--app-surface)"
+        style={{ borderColor: 'var(--app-border)' }}
+      >
+        <Stack gap="md">
+          <Title order={2}>{ROLE_LABELS[role]}のパスワード</Title>
+          <Text>
+            変更しました。いまのログインは無効になったので、新しいパスワードで
+            ログインしてください。
+          </Text>
+          <Text>
+            <Anchor component={Link} to="/login">
+              ログイン画面へ
+            </Anchor>
+          </Text>
+        </Stack>
+      </Paper>
     )
   }
 
@@ -220,12 +236,16 @@ function PasswordForm({ role, credential }: PasswordFormProps) {
       failure={failure}
       submitting={submitting}
     >
-      <p className="field-hint">
+      <Text size="xs" c="dimmed">
         {credential
           ? `最終更新 ${formatFullDate(jstDateOf(new Date(credential.updatedAt)))}`
           : 'まだ設定されていません'}
-      </p>
-      {changed && <p className="notice">変更しました。</p>}
+      </Text>
+      {changed && (
+        <Text c="bordeaux" size="sm">
+          変更しました。
+        </Text>
+      )}
 
       <Field
         id={`${id}-current`}
@@ -233,9 +253,8 @@ function PasswordForm({ role, credential }: PasswordFormProps) {
         hint="変更する本人であることの確認に使います"
         error={errors.currentPassword}
       >
-        <input
+        <PasswordInput
           id={`${id}-current`}
-          type="password"
           autoComplete="current-password"
           value={current}
           onChange={(event) => setCurrent(event.target.value)}
@@ -248,9 +267,8 @@ function PasswordForm({ role, credential }: PasswordFormProps) {
         hint={`${MIN_PASSWORD_LENGTH}文字以上`}
         error={errors.newPassword}
       >
-        <input
+        <PasswordInput
           id={`${id}-new`}
-          type="password"
           autoComplete="new-password"
           value={next}
           onChange={(event) => setNext(event.target.value)}
@@ -262,9 +280,8 @@ function PasswordForm({ role, credential }: PasswordFormProps) {
         label="新しいパスワード（確認）"
         error={errors.confirmPassword}
       >
-        <input
+        <PasswordInput
           id={`${id}-confirm`}
-          type="password"
           autoComplete="new-password"
           value={confirm}
           onChange={(event) => setConfirm(event.target.value)}

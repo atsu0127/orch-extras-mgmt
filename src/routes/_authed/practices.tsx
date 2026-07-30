@@ -1,9 +1,14 @@
+import { Stack } from '@mantine/core'
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
 import { z } from 'zod'
 import { requireAuth } from '../../auth/middleware'
 import { PracticeItem } from '../../components/practice-item'
-import { EmptyState, NoConcertState } from '../../components/states'
+import {
+  EmptyState,
+  NoConcertState,
+  PageSection,
+} from '../../components/states'
 import { getDb } from '../../db/client'
 import { todayInJst } from '../../lib/date'
 import { listPracticesWithMedia } from '../../practices/queries'
@@ -40,9 +45,7 @@ function PracticesPage() {
   const shown = view === 'past' ? past : upcoming
 
   return (
-    <section className="section">
-      <h1>練習日程</h1>
-
+    <PageSection title="練習日程" titleOrder={1}>
       {data.practices.length === 0 ? (
         <EmptyState
           title="練習の日程はまだ登録されていません"
@@ -50,18 +53,18 @@ function PracticesPage() {
         />
       ) : (
         <>
-          <nav className="tabs">
+          <nav className="segmented" aria-label="練習の表示切替">
             <Link
               to="/practices"
               search={(prev) => ({ ...prev, view: undefined })}
-              className={view === 'upcoming' ? 'is-active' : ''}
+              data-active={view === 'upcoming' ? 'true' : 'false'}
             >
               今後（{upcoming.length}）
             </Link>
             <Link
               to="/practices"
-              search={(prev) => ({ ...prev, view: 'past' })}
-              className={view === 'past' ? 'is-active' : ''}
+              search={(prev) => ({ ...prev, view: 'past' as const })}
+              data-active={view === 'past' ? 'true' : 'false'}
             >
               過去（{past.length}）
             </Link>
@@ -76,19 +79,21 @@ function PracticesPage() {
               }
             />
           ) : (
-            <ul className="list">
-              {shown.map((practice) => (
-                <li key={practice.id}>
-                  <PracticeItem
-                    practice={practice}
-                    concertName={concert.name}
-                  />
-                </li>
-              ))}
-            </ul>
+            <div className="panel">
+              <Stack gap={0} component="ul" p={0} style={{ listStyle: 'none' }}>
+                {shown.map((practice) => (
+                  <li key={practice.id}>
+                    <PracticeItem
+                      practice={practice}
+                      concertName={concert.name}
+                    />
+                  </li>
+                ))}
+              </Stack>
+            </div>
           )}
         </>
       )}
-    </section>
+    </PageSection>
   )
 }

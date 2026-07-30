@@ -1,28 +1,10 @@
+/*
+ * Mantine のテーマを土台にし、アプリ固有のレイアウトだけを残す。
+ * 色・角丸・フォントは src/theme.ts 側が正（ADR-0018 実用コンパクト）。
+ */
+
 :root {
   color-scheme: light dark;
-  --color-bg: #ffffff;
-  --color-fg: #1a1a1a;
-  --color-muted: #6b7280;
-  --color-surface: #ffffff;
-  --color-border: #d8dbe2;
-  --color-accent: #2f5fd0;
-  --color-accent-fg: #ffffff;
-  --color-accent-soft: #eaf0fd;
-  --color-danger: #c0392f;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --color-bg: #16181d;
-    --color-fg: #f3f4f6;
-    --color-muted: #9ca3af;
-    --color-surface: #1e2128;
-    --color-border: #353a45;
-    --color-accent: #6f9bf5;
-    --color-accent-fg: #10131a;
-    --color-accent-soft: #232b3b;
-    --color-danger: #f08b82;
-  }
 }
 
 *,
@@ -31,430 +13,441 @@
   box-sizing: border-box;
 }
 
+html {
+  min-height: 100%;
+}
+
 body {
+  margin: 0;
+  min-height: 100%;
+  background: var(--mantine-color-body);
+}
+
+[data-mantine-color-scheme="light"] {
+  --mantine-color-body: #f4f5f7;
+  --mantine-color-text: var(--mantine-color-ink-8);
+  --app-surface: #ffffff;
+  --app-border: #e5e7eb;
+  --app-muted: var(--mantine-color-ink-4);
+  --app-nav-bg: #ffffff;
+  --app-strip-bg: #111827;
+  --app-strip-fg: #f9fafb;
+  --app-panel-head: #f9fafb;
+}
+
+[data-mantine-color-scheme="dark"] {
+  --mantine-color-body: #0f1115;
+  --mantine-color-text: var(--mantine-color-ink-1);
+  --app-surface: #1a1d24;
+  --app-border: color-mix(in srgb, var(--mantine-color-ink-5) 45%, transparent);
+  --app-muted: var(--mantine-color-ink-3);
+  --app-nav-bg: #151820;
+  --app-strip-bg: #030712;
+  --app-strip-fg: #f9fafb;
+  --app-panel-head: #151820;
+}
+
+.app-shell {
   margin: 0 auto;
-  padding: 1rem;
   max-width: 42rem;
-  background-color: var(--color-bg);
-  color: var(--color-fg);
-  font-family:
-    system-ui, -apple-system, "Hiragino Kaku Gothic ProN", "Noto Sans JP",
-    sans-serif;
+  min-height: 100dvh;
+}
+
+.app-frame {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+  padding-bottom: calc(4.25rem + env(safe-area-inset-bottom, 0px));
+}
+
+.app-header {
+  z-index: 20;
+  padding: 0.65rem 1rem 0.7rem;
+  border-bottom: 1px solid var(--app-border);
+  background: var(--app-surface);
+}
+
+.app-brand {
+  color: var(--mantine-color-bordeaux-filled);
+  font-family: "Noto Serif JP", "Hiragino Mincho ProN", serif;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+}
+
+.app-main {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  flex: 1;
+  padding: 0.75rem 1rem 1.25rem;
+}
+
+.app-bottom-nav {
+  position: fixed;
+  z-index: 30;
+  left: 50%;
+  bottom: 0;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  width: 100%;
+  max-width: 42rem;
+  min-height: calc(3.75rem + env(safe-area-inset-bottom, 0px));
+  padding: 0.25rem 0.35rem env(safe-area-inset-bottom, 0px);
+  border-top: 1px solid var(--app-border);
+  background: var(--app-nav-bg);
+  transform: translateX(-50%);
+}
+
+.app-bottom-nav a {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  min-height: 2.75rem;
+  padding: 0.2rem 0.25rem;
+  border-radius: var(--mantine-radius-sm);
+  color: var(--app-muted);
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    color 150ms ease,
+    background-color 150ms ease;
+}
+
+.app-bottom-nav a:hover {
+  color: var(--mantine-color-text);
+  background: color-mix(in srgb, var(--app-border) 55%, transparent);
+}
+
+.app-bottom-nav a:focus-visible {
+  outline: 2px solid var(--mantine-color-bordeaux-filled);
+  outline-offset: 2px;
+}
+
+.app-bottom-nav a[data-active="true"] {
+  color: var(--mantine-color-bordeaux-filled);
+}
+
+.app-bottom-nav a[aria-disabled="true"],
+.app-bottom-nav a[data-disabled="true"] {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.app-bottom-nav a span {
+  overflow: hidden;
+  max-width: 100%;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.app-bottom-nav svg {
+  width: 1.35rem;
+  height: 1.35rem;
+  flex-shrink: 0;
+  stroke-width: 1.75;
+}
+
+.app-bottom-nav a[data-active="true"] svg {
+  stroke-width: 2.15;
+}
+
+/* PC: 下部ナビをやめてヘッダ横ナビへ */
+@media (min-width: 48rem) {
+  .app-frame {
+    padding-bottom: 0;
+  }
+
+  .app-header {
+    position: sticky;
+    top: 0;
+  }
+
+  .app-bottom-nav {
+    display: none;
+  }
+
+  .app-desktop-nav {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    padding-top: 0.25rem;
+  }
+
+  .app-desktop-nav a {
+    cursor: pointer;
+    transition:
+      color 150ms ease,
+      border-color 150ms ease;
+  }
+
+  .app-desktop-nav a:focus-visible {
+    outline: 2px solid var(--mantine-color-bordeaux-filled);
+    outline-offset: 3px;
+  }
+}
+
+@media (max-width: 47.99rem) {
+  .app-header {
+    position: relative;
+  }
+
+  .app-desktop-nav {
+    display: none;
+  }
+}
+
+/* ホーム専用: パンフレット／プログラム表の読みもの配置 */
+.pamphlet {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.pamphlet-hero,
+.pamphlet-section {
+  padding: 1.5rem 0.35rem;
+  border-bottom: 1px solid var(--app-border);
+  text-align: center;
+}
+
+.pamphlet-hero {
+  padding-top: 1.75rem;
+  padding-bottom: 1.75rem;
+}
+
+.pamphlet-kicker {
+  margin: 0 0 0.65rem;
+  color: var(--app-muted);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+}
+
+.pamphlet-date {
+  margin: 0;
+  font-family: "Noto Serif JP", "Hiragino Mincho ProN", serif;
+  font-size: clamp(1.85rem, 7vw, 2.35rem);
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: 0.04em;
+}
+
+.pamphlet-weekday {
+  margin: 0.35rem 0 0;
+  font-family: "Noto Serif JP", "Hiragino Mincho ProN", serif;
+  font-size: 0.9375rem;
+  color: var(--app-muted);
+}
+
+.pamphlet-time {
+  margin: 1rem 0 0;
+  font-size: 1.05rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.pamphlet-venue {
+  margin: 0.65rem 0 0;
+  font-size: 0.9375rem;
+  line-height: 1.65;
+}
+
+.pamphlet-heading {
+  font-family: "Noto Serif JP", "Hiragino Mincho ProN", serif;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.pamphlet-links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1.1rem 1.35rem;
+  margin-top: 1rem;
+}
+
+.pamphlet-details {
+  margin-top: 1rem;
+  text-align: left;
+  max-width: 22rem;
+  margin-inline: auto;
+}
+
+.pamphlet-note {
+  text-align: left;
+  max-width: 24rem;
+  margin-inline: auto;
   line-height: 1.7;
 }
 
-h1 {
-  font-size: 1.375rem;
-  margin: 0 0 0.75rem;
+/* 他タブ用の平坦パネル（ホーム以外） */
+.panel {
+  background: var(--app-surface);
+  border: 1px solid var(--app-border);
+  border-radius: var(--mantine-radius-md);
+  overflow: hidden;
 }
 
-h2 {
-  font-size: 1rem;
-  margin: 0 0 0.5rem;
+.panel-head {
+  padding: 0.45rem 0.75rem;
+  border-bottom: 1px solid var(--app-border);
+  background: var(--app-panel-head);
+  color: var(--app-muted);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
 }
 
-h3 {
-  font-size: 1rem;
-  margin: 0;
+.panel-body {
+  padding: 0.75rem;
 }
 
-p {
-  margin: 0;
-  color: var(--color-muted);
-}
-
-a {
-  color: var(--color-accent);
-}
-
-/* ヘッダ */
-
-.app-header {
+.panel-row {
   display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  margin-bottom: 1.5rem;
-  padding-bottom: 0.75rem;
-  border-bottom: 1px solid var(--color-border);
-}
-
-.app-header-account {
-  display: flex;
-  gap: 1rem;
-  align-items: baseline;
   justify-content: space-between;
-  font-size: 0.875rem;
-  color: var(--color-muted);
-}
-
-.concert-selector {
-  margin: 0;
-}
-
-.app-nav {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.375rem;
-}
-
-.app-nav a {
-  padding: 0.25rem 0.75rem;
-  border: 1px solid var(--color-border);
-  border-radius: 999px;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: 2.75rem;
+  padding: 0.65rem 0.75rem;
+  border-top: 1px solid var(--app-border);
+  color: inherit;
   font-size: 0.875rem;
   text-decoration: none;
+  cursor: pointer;
+  transition: background-color 150ms ease;
 }
 
-.app-nav a[aria-current="page"] {
-  border-color: var(--color-accent);
-  background-color: var(--color-accent-soft);
-  font-weight: 600;
+.panel-row:first-child {
+  border-top: none;
 }
 
-/* 本文の骨格 */
-
-main {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
+.panel-row:hover {
+  background: color-mix(in srgb, var(--app-border) 40%, transparent);
 }
 
-.section {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
+.panel-row:focus-visible {
+  outline: 2px solid var(--mantine-color-bordeaux-filled);
+  outline-offset: -2px;
 }
 
-.section-heading {
-  display: flex;
-  gap: 0.75rem;
-  align-items: baseline;
-  justify-content: space-between;
+.panel-row-chevron {
+  color: var(--app-muted);
+  flex-shrink: 0;
 }
 
-.stack {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
+.segmented {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.2rem;
+  padding: 0.2rem;
+  border-radius: var(--mantine-radius-md);
+  background: color-mix(in srgb, var(--app-border) 80%, transparent);
 }
 
-.list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.centered {
-  display: flex;
+.segmented a {
+  display: inline-flex;
+  align-items: center;
   justify-content: center;
-  align-items: center;
-  min-height: calc(100dvh - 2rem);
-}
-
-/* カード */
-
-.card {
-  width: 100%;
-  max-width: 24rem;
-  padding: 1.5rem;
-  border: 1px solid var(--color-border);
-  border-radius: 0.75rem;
-  background-color: var(--color-surface);
-}
-
-.item {
-  display: flex;
-  flex-direction: column;
-  gap: 0.375rem;
-  padding: 0.875rem 1rem;
-  border: 1px solid var(--color-border);
-  border-radius: 0.75rem;
-  background-color: var(--color-surface);
-}
-
-.item-title {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  align-items: baseline;
-  font-size: 1.0625rem;
-  font-weight: 600;
-}
-
-.item-note {
+  min-height: 2.5rem;
+  padding: 0.4rem 0.75rem;
+  border-radius: var(--mantine-radius-sm);
+  color: var(--app-muted);
   font-size: 0.875rem;
-  color: var(--color-muted);
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    background-color 150ms ease,
+    color 150ms ease;
 }
 
-.badge {
-  padding: 0 0.5rem;
-  border-radius: 999px;
-  background-color: var(--color-accent-soft);
-  color: var(--color-accent);
-  font-size: 0.75rem;
+.segmented a:hover {
+  color: var(--mantine-color-text);
+}
+
+.segmented a:focus-visible {
+  outline: 2px solid var(--mantine-color-bordeaux-filled);
+  outline-offset: 1px;
+}
+
+.segmented a[data-active="true"] {
+  background: var(--app-surface);
+  color: var(--mantine-color-text);
+}
+
+.practice-row {
+  display: grid;
+  grid-template-columns: 3.25rem minmax(0, 1fr);
+  gap: 0.65rem;
+  align-items: start;
+  padding: 0.7rem 0.75rem;
+  border-top: 1px solid var(--app-border);
+}
+
+.practice-row:first-child {
+  border-top: none;
+}
+
+.practice-row-date {
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.practice-row-month {
+  color: var(--app-muted);
+  font-size: 0.625rem;
   font-weight: 600;
 }
 
-.link-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-  margin: 0.25rem 0 0;
-  padding-left: 1.25rem;
+.practice-row-day {
+  font-size: 1.15rem;
+  font-weight: 700;
+  line-height: 1;
 }
 
-/* 管理画面の録音リンク。並べ替えの操作をリンクと同じ行に置く */
-.media-list {
-  display: flex;
-  flex-direction: column;
-  margin: 0.25rem 0 0;
-  padding: 0;
-  list-style: none;
+.practice-row-weekday {
+  margin-top: 0.15rem;
+  color: var(--app-muted);
+  font-size: 0.625rem;
 }
 
-.media-list li {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem;
-  padding: 0.5rem 0;
-  border-top: 1px solid var(--color-border);
+.section-label {
+  color: var(--app-muted);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
 }
 
 /* 練習の詳細。改行をそのまま見せる（設計書6.1） */
 .detail {
-  margin: 0.375rem 0 0;
+  margin: 0;
   white-space: pre-wrap;
   font: inherit;
-  color: var(--color-fg);
+  color: inherit;
 }
 
 details > summary {
   cursor: pointer;
-  font-size: 0.875rem;
-  color: var(--color-accent);
+  color: var(--mantine-color-bordeaux-filled);
 }
 
-/* タブ */
-
-.tabs {
-  display: flex;
-  gap: 0.375rem;
-}
-
-.tabs a {
-  flex: 1;
-  padding: 0.375rem;
-  border: 1px solid var(--color-border);
-  border-radius: 0.5rem;
-  text-align: center;
-  text-decoration: none;
-  font-size: 0.875rem;
-}
-
-.tabs a.is-active {
-  border-color: var(--color-accent);
-  background-color: var(--color-accent-soft);
-  font-weight: 600;
-}
-
-/* 空状態・読み込み中・エラー */
-
-.state {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  align-items: flex-start;
-  padding: 1.25rem;
-  border: 1px dashed var(--color-border);
-  border-radius: 0.75rem;
-}
-
-.state-title {
-  color: var(--color-fg);
-  font-weight: 600;
-}
-
-/* フォーム部品 */
-
-.field {
-  display: block;
-  margin: 1.25rem 0;
-  font-size: 0.875rem;
-  color: var(--color-muted);
-}
-
-.field label {
-  display: block;
-}
-
-.field input,
-.field select,
-.field textarea {
-  display: block;
-  width: 100%;
-  margin-top: 0.375rem;
-  padding: 0.625rem 0.75rem;
-  border: 1px solid var(--color-border);
-  border-radius: 0.5rem;
-  background-color: var(--color-bg);
-  color: var(--color-fg);
-  /* 16px 未満だと iOS が入力時に画面を拡大する */
-  font-size: 1rem;
-}
-
-.field textarea {
-  font-family: inherit;
-  line-height: 1.6;
-  resize: vertical;
-}
-
-.field-hint {
-  margin-top: 0.25rem;
-  font-size: 0.75rem;
-}
-
-button {
-  width: 100%;
-  padding: 0.75rem;
-  border: none;
-  border-radius: 0.5rem;
-  background-color: var(--color-accent);
-  color: var(--color-accent-fg);
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-button:disabled {
-  opacity: 0.55;
-  cursor: not-allowed;
-}
-
-.link-button {
-  width: auto;
-  padding: 0;
-  border: none;
-  background: none;
-  color: var(--color-accent);
-  font-size: inherit;
-  font-weight: normal;
-  text-decoration: underline;
-}
-
-/* 主要な導線を押しやすくする。外部サービスへ飛ぶリンクにも使う */
-.action {
-  display: inline-block;
-  padding: 0.625rem 1rem;
-  border-radius: 0.5rem;
-  background-color: var(--color-accent);
-  color: var(--color-accent-fg);
-  font-weight: 600;
-  text-align: center;
-  text-decoration: none;
-}
-
-.error {
-  color: var(--color-danger);
-}
-
-.notice {
-  color: var(--color-accent);
-  font-size: 0.875rem;
-}
-
-/* 管理画面 */
-
-.subnav a {
-  font-size: 0.8125rem;
-}
-
-.admin-form {
-  padding: 1rem;
-  border: 1px solid var(--color-border);
-  border-radius: 0.75rem;
-  background-color: var(--color-surface);
-}
-
-.admin-form > .field:first-of-type {
-  margin-top: 0.5rem;
-}
-
-.admin-form .field {
-  margin: 0.75rem 0 0;
-}
-
-/* 開始と終了のように対で入れる欄。横に並べて対であることを見せる */
-.field-row {
-  display: flex;
-  gap: 0.75rem;
-}
-
-.field-row > .field {
-  flex: 1;
-  min-width: 0;
-}
-
-.form-actions {
-  display: flex;
-  gap: 0.5rem;
-  margin-top: 1rem;
-}
-
-.form-actions button {
-  flex: 1;
-}
-
-/* 一覧の行に並べる操作。誤って押さないよう幅を内容に合わせる */
-.controls {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-top: 0.25rem;
-}
-
-.controls button {
-  width: auto;
-  padding: 0.375rem 0.875rem;
-  font-size: 0.875rem;
-}
-
-button.secondary {
-  border: 1px solid var(--color-border);
-  background-color: transparent;
-  color: var(--color-fg);
-}
-
-button.danger {
-  border: 1px solid var(--color-border);
-  background-color: transparent;
-  color: var(--color-danger);
-}
-
-dialog {
+.confirm-dialog {
   width: min(24rem, calc(100vw - 2rem));
   padding: 1.25rem;
-  border: 1px solid var(--color-border);
-  border-radius: 0.75rem;
-  background-color: var(--color-surface);
-  color: var(--color-fg);
+  border: 1px solid var(--app-border);
+  border-radius: var(--mantine-radius-md);
+  background-color: var(--app-surface);
+  color: var(--mantine-color-text);
 }
 
-dialog::backdrop {
-  background-color: rgb(0 0 0 / 50%);
-}
-
-.dialog-actions {
-  display: flex;
-  gap: 0.5rem;
-  margin-top: 1.25rem;
-}
-
-.dialog-actions button {
-  width: auto;
-  flex: 1;
+.confirm-dialog::backdrop {
+  background-color: rgb(0 0 0 / 45%);
 }

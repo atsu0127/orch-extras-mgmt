@@ -1,4 +1,5 @@
-import { formatDate, formatTimeRange } from '../lib/date'
+import { Group, Stack, Text } from '@mantine/core'
+import { departureDateParts, formatDate, formatTimeRange } from '../lib/date'
 import {
   buildGoogleMapsUrl,
   buildPracticeCalendarUrl,
@@ -11,8 +12,9 @@ type PracticeItemProps = {
   concertName: string
 }
 
-/** 練習1件の見せ方。ダッシュボードの「次の練習」と日程一覧で同じものを使う */
+/** 練習1件。ダッシュボード要約バーと揃えたコンパクトな日付列 */
 export function PracticeItem({ practice, concertName }: PracticeItemProps) {
+  const parts = departureDateParts(practice.date)
   const time = formatTimeRange(practice.startTime, practice.endTime)
   const calendarUrl = buildPracticeCalendarUrl({
     concertName,
@@ -23,57 +25,101 @@ export function PracticeItem({ practice, concertName }: PracticeItemProps) {
   })
 
   return (
-    <div className="item">
-      <div className="item-title">
-        <span>{formatDate(practice.date)}</span>
-        {time && <span className="item-note">{time}</span>}
+    <article className="practice-row">
+      <div className="practice-row-date">
+        {parts ? (
+          <>
+            <div className="practice-row-month">{parts.month}月</div>
+            <div className="practice-row-day">{parts.day}</div>
+            <div className="practice-row-weekday">{parts.weekday}</div>
+          </>
+        ) : (
+          <Text fw={700} size="sm">
+            {formatDate(practice.date)}
+          </Text>
+        )}
       </div>
 
-      {practice.venue ? (
-        <p className="item-note">
-          {practice.venue.name}
-          <br />
-          {practice.venue.address}
-          <br />
-          <ExternalLink href={buildGoogleMapsUrl(practice.venue.address)}>
-            Google Mapsで開く
-          </ExternalLink>
-          {practice.venue.note && (
-            <>
-              <br />
-              {practice.venue.note}
-            </>
+      <Stack gap={4}>
+        {time && (
+          <Text fw={700} size="sm">
+            {time}
+          </Text>
+        )}
+
+        {practice.venue ? (
+          <Text size="sm" c="dimmed">
+            {practice.venue.name}
+            <br />
+            {practice.venue.address}
+            {practice.venue.note && (
+              <>
+                <br />
+                {practice.venue.note}
+              </>
+            )}
+          </Text>
+        ) : (
+          <Text size="sm" c="dimmed">
+            会場は未定です。
+          </Text>
+        )}
+
+        <Group gap="md">
+          {practice.venue && (
+            <ExternalLink href={buildGoogleMapsUrl(practice.venue.address)}>
+              地図を開く
+            </ExternalLink>
           )}
-        </p>
-      ) : (
-        <p className="item-note">会場は未定です。</p>
-      )}
+          {calendarUrl && (
+            <ExternalLink href={calendarUrl}>予定に追加</ExternalLink>
+          )}
+        </Group>
 
-      {calendarUrl && (
-        <p>
-          <ExternalLink href={calendarUrl}>Googleカレンダーに追加</ExternalLink>
-        </p>
-      )}
+        {practice.detail && (
+          <details>
+            <summary>詳細</summary>
+            <p className="detail">{practice.detail}</p>
+          </details>
+        )}
 
-      {practice.detail && (
-        <details>
-          <summary>詳細</summary>
-          <p className="detail">{practice.detail}</p>
-        </details>
-      )}
+        {practice.media.length > 0 && (
+          <Stack gap={4}>
+            <Text size="sm" c="dimmed">
+              録音・録画
+            </Text>
+            <Stack gap={2} component="ul" pl="md" style={{ margin: 0 }}>
+              {practice.media.map((link) => (
+                <li key={link.id}>
+                  <ExternalLink href={link.url}>{link.title}</ExternalLink>
+                </li>
+              ))}
+            </Stack>
+          </Stack>
+        )}
+      </Stack>
+    </article>
+  )
+}
 
-      {practice.media.length > 0 && (
-        <div>
-          <p className="item-note">録音・録画</p>
-          <ul className="link-list">
-            {practice.media.map((link) => (
-              <li key={link.id}>
-                <ExternalLink href={link.url}>{link.title}</ExternalLink>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-    </div>
+export function OrderBadge({ value }: { value: number }) {
+  return (
+    <span
+      style={{
+        display: 'inline-grid',
+        placeItems: 'center',
+        minWidth: '1.75rem',
+        height: '1.75rem',
+        padding: '0 0.4rem',
+        borderRadius: '6px',
+        background:
+          'color-mix(in srgb, var(--mantine-color-bordeaux-filled) 12%, transparent)',
+        color: 'var(--mantine-color-bordeaux-filled)',
+        fontSize: '0.8125rem',
+        fontWeight: 700,
+      }}
+    >
+      {value}
+    </span>
   )
 }

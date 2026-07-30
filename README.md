@@ -2,7 +2,7 @@
 
 オーケストラのエキストラ（客演奏者）向け情報ポータル。練習日程、出欠の回答先、演奏会資料、地図、カレンダー、ボウイング、練習の録音を1か所にまとめて公開し、管理者がブラウザから更新できるようにする。
 
-現在の状態: **Phase 5 完了（利便性向上）**。エキストラは演奏会の備考・資料・問い合わせ先、本番と練習の地図・カレンダーを確認できる。管理者はこれらをブラウザから更新でき、練習を複製して繰り返し入力を減らせる。
+現在の状態: **Phase 6 完了（UI 刷新）**。Mantine と用途固有テーマで閲覧・管理画面を整え、エキストラは演奏会の備考・資料・問い合わせ先、本番と練習の地図・カレンダーを確認できる。管理者はこれらをブラウザから更新でき、練習を複製して繰り返し入力を減らせる。
 
 本番: <https://orch-extras-mgmt.atsu-dq9.workers.dev>
 
@@ -27,7 +27,7 @@
 
 ## 技術構成
 
-TanStack Start (React + TypeScript) を SPA モードでビルドし、Cloudflare Workers 1つとしてデプロイする。データは Cloudflare D1 (SQLite) に置き、定期実行基盤は持たない。いずれも無料プランの範囲内で運用する。
+TanStack Start (React + TypeScript) を SPA モードでビルドし、Cloudflare Workers 1つとしてデプロイする。データは Cloudflare D1 (SQLite) に置き、定期実行基盤は持たない。いずれも無料プランの範囲内で運用する。UI は Mantine を用途固有のテーマ（クールニュートラル・ボルドー、Noto Sans JP / 見出しは Noto Serif JP）で使う。
 
 画面は事前生成した SPA シェル（`dist/client/index.html`）を Cloudflare の assets binding が返し、Worker が受けるのは `/_serverFn/*` だけ。この振り分けは `wrangler.jsonc` の `assets` にある。**外すと document ごとに Worker が描画してしまい、無料プランの CPU 制限に効いてくる**（[ADR-0008](docs/adr/0008-serve-spa-shell-from-assets-binding.md)）。
 

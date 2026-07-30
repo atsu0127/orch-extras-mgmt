@@ -1,3 +1,4 @@
+import { Alert, Anchor, Button, Stack, Text, Title } from '@mantine/core'
 import type { ErrorComponentProps } from '@tanstack/react-router'
 import { Link, useRouter } from '@tanstack/react-router'
 import type { ReactNode } from 'react'
@@ -12,11 +13,12 @@ type EmptyStateProps = {
 /** データが無いときの表示。何が無いのかと、次に何をすればよいかを同じ形で見せる */
 export function EmptyState({ title, description, children }: EmptyStateProps) {
   return (
-    <div className="state">
-      <p className="state-title">{title}</p>
-      {description && <p>{description}</p>}
-      {children}
-    </div>
+    <Alert variant="light" color="ink" radius="md" title={title}>
+      <Stack gap="xs">
+        {description && <Text size="sm">{description}</Text>}
+        {children}
+      </Stack>
+    </Alert>
   )
 }
 
@@ -28,12 +30,14 @@ export function NoConcertState({ role }: { role: Role }) {
   return (
     <EmptyState title="まだ公開された演奏会がありません">
       {role === 'admin' ? (
-        <p>
-          <Link to="/admin/concerts">管理画面</Link>
+        <Text size="sm">
+          <Anchor component={Link} to="/admin/concerts">
+            管理画面
+          </Anchor>
           から演奏会を登録してください。
-        </p>
+        </Text>
       ) : (
-        <p>管理者が登録するまでお待ちください。</p>
+        <Text size="sm">管理者が登録するまでお待ちください。</Text>
       )}
     </EmptyState>
   )
@@ -41,7 +45,11 @@ export function NoConcertState({ role }: { role: Role }) {
 
 /** ルータの `defaultPendingComponent`。loader の待ち時間が長いときだけ出る */
 export function PendingState() {
-  return <output className="state">読み込み中です…</output>
+  return (
+    <output aria-live="polite">
+      <Text c="dimmed">読み込み中です…</Text>
+    </output>
+  )
 }
 
 /**
@@ -54,19 +62,46 @@ export function ErrorState({ reset }: ErrorComponentProps) {
   const router = useRouter()
 
   return (
-    <div className="state" role="alert">
-      <p className="state-title">表示できませんでした</p>
-      <p>通信が不安定なときに起こります。時間をおいてやり直してください。</p>
-      <button
-        type="button"
-        className="link-button"
-        onClick={() => {
-          reset()
-          void router.invalidate()
-        }}
-      >
-        やり直す
-      </button>
-    </div>
+    <Alert
+      variant="light"
+      color="red"
+      radius="md"
+      title="表示できませんでした"
+      role="alert"
+    >
+      <Stack gap="sm">
+        <Text size="sm">
+          通信が不安定なときに起こります。時間をおいてやり直してください。
+        </Text>
+        <Button
+          variant="light"
+          onClick={() => {
+            reset()
+            void router.invalidate()
+          }}
+        >
+          やり直す
+        </Button>
+      </Stack>
+    </Alert>
+  )
+}
+
+type PageSectionProps = {
+  title?: string
+  titleOrder?: 1 | 2 | 3
+  children: ReactNode
+}
+
+export function PageSection({
+  title,
+  titleOrder = 2,
+  children,
+}: PageSectionProps) {
+  return (
+    <Stack gap="sm" component="section">
+      {title && <Title order={titleOrder}>{title}</Title>}
+      {children}
+    </Stack>
   )
 }

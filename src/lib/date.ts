@@ -43,6 +43,22 @@ export function weekdayOf(date: string): string {
   return WEEKDAYS[index] ?? ''
 }
 
+/**
+ * 出発案内型の日付表示用。形式が違うものは null。
+ * `Date` を経由せず文字列から分解する（設計書5.4）。
+ */
+export function departureDateParts(
+  date: string,
+): { month: number; day: number; weekday: string } | null {
+  if (!DATE_PATTERN.test(date)) return null
+
+  return {
+    month: Number(date.slice(5, 7)),
+    day: Number(date.slice(8, 10)),
+    weekday: weekdayOf(date),
+  }
+}
+
 /** 開始・終了のどちらが欠けていても読める形にする。両方無ければ空文字 */
 export function formatTimeRange(
   startTime: string | null,

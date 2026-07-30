@@ -1,3 +1,4 @@
+import { Group, Stack, Text } from '@mantine/core'
 import { createFileRoute } from '@tanstack/react-router'
 import { createServerFn, useServerFn } from '@tanstack/react-start'
 import { useId, useState } from 'react'
@@ -6,13 +7,24 @@ import { requireAdmin } from '../../../auth/middleware'
 import {
   AdminForm,
   Field,
-  FormError,
   useAdminAction,
   useAdminForm,
 } from '../../../components/admin-form'
 import { ConfirmButton } from '../../../components/confirm-button'
+import {
+  AdminList,
+  AdminListItem,
+  ControlRow,
+  SecondaryButton,
+} from '../../../components/control-row'
 import { ExternalLink } from '../../../components/external-link'
-import { EmptyState, NoConcertState } from '../../../components/states'
+import { AppTextInput } from '../../../components/form-controls'
+import { OrderBadge } from '../../../components/practice-item'
+import {
+  EmptyState,
+  NoConcertState,
+  PageSection,
+} from '../../../components/states'
 import { getDb } from '../../../db/client'
 import { MAX_LENGTH } from '../../../lib/limits'
 import { DIRECTIONS } from '../../../lib/ordering'
@@ -78,11 +90,10 @@ function AdminPiecesPage() {
   if (!pieces || !concert) return <NoConcertState role={session.role} />
 
   return (
-    <section className="section">
-      <h1>曲・ボウイング</h1>
-      <p>
+    <PageSection title="曲・ボウイング" titleOrder={1}>
+      <Text c="dimmed">
         「{concert.name}」の曲です。並びがそのまま演奏順として閲覧側に出ます。
-      </p>
+      </Text>
 
       <PieceForm concertId={concert.id} />
 
@@ -92,21 +103,20 @@ function AdminPiecesPage() {
           description="上のフォームから登録してください。"
         />
       ) : (
-        <ol className="list">
+        <AdminList>
           {pieces.map((piece, index) => (
-            <li key={piece.id}>
-              <PieceItem
-                piece={piece}
-                concertId={concert.id}
-                position={index + 1}
-                first={index === 0}
-                last={index === pieces.length - 1}
-              />
-            </li>
+            <PieceItem
+              key={piece.id}
+              piece={piece}
+              concertId={concert.id}
+              position={index + 1}
+              first={index === 0}
+              last={index === pieces.length - 1}
+            />
           ))}
-        </ol>
+        </AdminList>
       )}
-    </section>
+    </PageSection>
   )
 }
 
@@ -132,74 +142,77 @@ function PieceItem({
 
   if (editing) {
     return (
-      <PieceForm
-        piece={piece}
-        concertId={concertId}
-        onDone={() => setEditing(false)}
-      />
+      <li>
+        <PieceForm
+          piece={piece}
+          concertId={concertId}
+          onDone={() => setEditing(false)}
+        />
+      </li>
     )
   }
 
   return (
-    <div className="item">
-      <div className="item-title">
-        <span className="badge">{position}</span>
-        <span>{piece.title}</span>
-      </div>
-      {piece.composer && <p className="item-note">{piece.composer}</p>}
-      {piece.bowingUrl ? (
-        // 開けるかどうかは実際に踏まないと分からないので、URL の文字列ではなくリンクを出す
-        <p>
-          <ExternalLink href={piece.bowingUrl}>ボウイングを開く</ExternalLink>
-        </p>
-      ) : (
-        <p className="item-note">ボウイングは未登録</p>
-      )}
+    <AdminListItem>
+      <Stack gap={4}>
+        <Group gap="sm" align="center">
+          <OrderBadge value={position} />
+          <Text fw={600}>{piece.title}</Text>
+        </Group>
+        {piece.composer && (
+          <Text size="sm" c="dimmed">
+            {piece.composer}
+          </Text>
+        )}
+        {piece.bowingUrl ? (
+          // 開けるかどうかは実際に踏まないと分からないので、URL の文字列ではなくリンクを出す
+          <Text size="sm">
+            <ExternalLink href={piece.bowingUrl}>ボウイングを開く</ExternalLink>
+          </Text>
+        ) : (
+          <Text size="sm" c="dimmed">
+            ボウイングは未登録
+          </Text>
+        )}
 
-      <div className="controls">
-        <button
-          type="button"
-          className="secondary"
-          aria-label={`「${piece.title}」を前へ`}
-          disabled={first || action.running}
-          onClick={() =>
-            void action.run(() =>
-              reorder({ data: { id: piece.id, direction: 'up' } }),
-            )
-          }
-        >
-          ↑
-        </button>
-        <button
-          type="button"
-          className="secondary"
-          aria-label={`「${piece.title}」を後へ`}
-          disabled={last || action.running}
-          onClick={() =>
-            void action.run(() =>
-              reorder({ data: { id: piece.id, direction: 'down' } }),
-            )
-          }
-        >
-          ↓
-        </button>
-        <button
-          type="button"
-          className="secondary"
-          onClick={() => setEditing(true)}
-        >
-          編集
-        </button>
-        <ConfirmButton
-          label="削除"
-          title={`「${piece.title}」を削除しますか？`}
-          description={<p>{deleteWarning(piece)}</p>}
-          disabled={action.running}
-          onConfirm={() => action.run(() => remove({ data: { id: piece.id } }))}
-        />
-      </div>
-      <FormError message={action.failure} />
-    </div>
+        <ControlRow failure={action.failure}>
+          <SecondaryButton
+            aria-label={`「${piece.title}」を前へ`}
+            disabled={first || action.running}
+            onClick={() =>
+              void action.run(() =>
+                reorder({ data: { id: piece.id, direction: 'up' } }),
+              )
+            }
+          >
+            ↑
+          </SecondaryButton>
+          <SecondaryButton
+            aria-label={`「${piece.title}」を後へ`}
+            disabled={last || action.running}
+            onClick={() =>
+              void action.run(() =>
+                reorder({ data: { id: piece.id, direction: 'down' } }),
+              )
+            }
+          >
+            ↓
+          </SecondaryButton>
+          <SecondaryButton onClick={() => setEditing(true)}>
+            編集
+          </SecondaryButton>
+          <ConfirmButton
+            label="削除"
+            title={`「${piece.title}」を削除しますか？`}
+            description={<p>{deleteWarning(piece)}</p>}
+            disabled={action.running}
+            onConfirm={() =>
+              action.run(() => remove({ data: { id: piece.id } }))
+            }
+          />
+        </ControlRow>
+      </Stack>
+    </AdminListItem>
   )
 }
 
@@ -243,7 +256,7 @@ function PieceForm({ piece, concertId, onDone }: PieceFormProps) {
       onCancel={piece ? onDone : undefined}
     >
       <Field id={`${id}-title`} label="曲名" error={form.errors.title}>
-        <input
+        <AppTextInput
           id={`${id}-title`}
           value={title}
           onChange={(event) => setTitle(event.target.value)}
@@ -255,7 +268,7 @@ function PieceForm({ piece, concertId, onDone }: PieceFormProps) {
         label="作曲者（任意）"
         error={form.errors.composer}
       >
-        <input
+        <AppTextInput
           id={`${id}-composer`}
           value={composer}
           onChange={(event) => setComposer(event.target.value)}
@@ -268,7 +281,7 @@ function PieceForm({ piece, concertId, onDone }: PieceFormProps) {
         hint="1曲に1つ。PDF や共有フォルダのURL"
         error={form.errors.bowingUrl}
       >
-        <input
+        <AppTextInput
           id={`${id}-bowing`}
           type="url"
           inputMode="url"
