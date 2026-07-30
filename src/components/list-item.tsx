@@ -1,4 +1,4 @@
-import { Divider, Paper, Stack } from '@mantine/core'
+import { Divider, Stack } from '@mantine/core'
 import type { ReactNode } from 'react'
 
 type ListItemProps = {
@@ -10,19 +10,14 @@ type ListItemProps = {
  */
 export function ListItem({ children }: ListItemProps) {
   return (
-    <Paper
-      p="md"
-      radius="md"
-      bg="var(--app-surface)"
+    <div
       style={{
+        padding: '0.9rem 0',
         borderTop: '1px solid var(--app-border)',
-        borderBottom: '1px solid var(--app-border)',
-        borderLeft: 'none',
-        borderRight: 'none',
       }}
     >
       {children}
-    </Paper>
+    </div>
   )
 }
 

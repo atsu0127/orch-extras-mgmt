@@ -86,6 +86,9 @@ body {
   left: 50%;
   bottom: 0;
   display: grid;
+  /* 子の数に応じて等分。無いと1列になり縦積みになる */
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
   width: 100%;
   max-width: 42rem;
   min-height: calc(4rem + env(safe-area-inset-bottom, 0px));
@@ -102,11 +105,20 @@ body {
   gap: 0.15rem;
   align-items: center;
   justify-content: center;
+  min-width: 0;
   min-height: 2.75rem;
+  padding: 0.25rem 0.35rem;
   color: var(--app-muted);
   font-size: 0.6875rem;
   font-weight: 500;
   text-decoration: none;
+}
+
+.app-bottom-nav a span {
+  overflow: hidden;
+  max-width: 100%;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .app-bottom-nav a[data-active="true"] {
@@ -117,6 +129,31 @@ body {
 .app-bottom-nav svg {
   width: 1.15rem;
   height: 1.15rem;
+  flex-shrink: 0;
+}
+
+/* PC: 下部ナビをやめてヘッダ横ナビへ。タップ領域より走査性を優先 */
+@media (min-width: 48rem) {
+  .app-frame {
+    padding-bottom: 0;
+  }
+
+  .app-bottom-nav {
+    display: none;
+  }
+
+  .app-desktop-nav {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    padding-top: 0.25rem;
+  }
+}
+
+@media (max-width: 47.99rem) {
+  .app-desktop-nav {
+    display: none;
+  }
 }
 
 .departure-board {

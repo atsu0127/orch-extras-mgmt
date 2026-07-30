@@ -61,6 +61,7 @@ export const Route = createFileRoute('/_authed')({
 
 function AuthedLayout() {
   const { session, concerts, concert } = Route.useRouteContext()
+  const showAdmin = session.role === 'admin'
 
   return (
     <div className="app-frame">
@@ -85,6 +86,15 @@ function AuthedLayout() {
           {concert && (
             <ConcertSelector concerts={concerts} selectedId={concert.id} />
           )}
+
+          <nav className="app-desktop-nav" aria-label="メイン">
+            <DesktopLink to="/" exact>
+              ホーム
+            </DesktopLink>
+            <DesktopLink to="/practices">練習日程</DesktopLink>
+            <DesktopLink to="/pieces">曲・ボウイング</DesktopLink>
+            {showAdmin && <DesktopLink to="/admin">管理</DesktopLink>}
+          </nav>
         </Stack>
       </header>
 
@@ -106,7 +116,7 @@ function AuthedLayout() {
         <BottomLink to="/pieces" label="曲・ボウイング">
           <MusicIcon />
         </BottomLink>
-        {session.role === 'admin' && (
+        {showAdmin && (
           <BottomLink to="/admin" label="管理">
             <AdminIcon />
           </BottomLink>
@@ -209,6 +219,40 @@ function BottomLink({ to, exact = false, label, children }: BottomLinkProps) {
     >
       {children}
       <span>{label}</span>
+    </Link>
+  )
+}
+
+function DesktopLink({
+  to,
+  exact = false,
+  children,
+}: {
+  to: '/' | '/practices' | '/pieces' | '/admin'
+  exact?: boolean
+  children: string
+}) {
+  return (
+    <Link
+      to={to}
+      activeOptions={{ exact }}
+      style={{
+        paddingBottom: 2,
+        borderBottom: '2px solid transparent',
+        color: 'var(--mantine-color-text)',
+        fontWeight: 500,
+        fontSize: '0.9375rem',
+        textDecoration: 'none',
+      }}
+      activeProps={{
+        style: {
+          borderBottomColor: 'var(--mantine-color-bordeaux-filled)',
+          color: 'var(--mantine-color-bordeaux-filled)',
+          fontWeight: 700,
+        },
+      }}
+    >
+      {children}
     </Link>
   )
 }

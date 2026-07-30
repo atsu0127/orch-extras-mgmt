@@ -30,7 +30,7 @@ describe('PracticeItem', () => {
       'href="https://www.google.com/maps/search/?api=1&amp;query=%E6%9D%B1%E4%BA%AC%E9%83%BD%20%E5%8D%83%E4%BB%A3%E7%94%B0%E5%8C%BA1-1%20%26%E5%88%A5%E9%A4%A8%232" target="_blank" rel="noopener noreferrer"',
     )
     expect(html.indexOf('東京都 千代田区1-1')).toBeLessThan(
-      html.indexOf('Google Mapsで開く'),
+      html.indexOf('地図を開く'),
     )
   })
 
@@ -43,7 +43,7 @@ describe('PracticeItem', () => {
     )
 
     expect(html).toContain('会場は未定です。')
-    expect(html).not.toContain('Google Mapsで開く')
+    expect(html).not.toContain('地図を開く')
     expect(html).not.toContain('google.com/maps')
   })
 
@@ -55,7 +55,7 @@ describe('PracticeItem', () => {
       }),
     )
 
-    expect(html).toContain('Googleカレンダーに追加')
+    expect(html).toContain('予定に追加')
     const href = html.match(
       /href="(https:\/\/calendar\.google\.com\/calendar\/render[^"]+)"/,
     )?.[1]
@@ -76,7 +76,7 @@ describe('PracticeItem', () => {
       }),
     )
 
-    expect(html).not.toContain('Googleカレンダーに追加')
+    expect(html).not.toContain('予定に追加')
     expect(html).not.toContain('calendar.google.com')
   })
 })
