@@ -12,11 +12,13 @@ const TIME_PATTERN = /^([01]\d|2[0-3]):[0-5]\d$/
 export const MESSAGES = {
   required: '入力してください',
   url: 'http:// または https:// で始まる URL を入力してください',
+  email: 'メールアドレスの形式で入力してください',
   date: '実在する日付を入力してください',
   time: '時刻は 00:00〜23:59 の形式で入力してください',
 } as const
 
 const tooLong = (max: number) => `${max}文字以内で入力してください`
+const email = z.email({ error: MESSAGES.email })
 
 /** 更新・削除の対象を指す id。実在するかは各操作のクエリ側で確かめる */
 export const idValue = z.number().int().positive()
@@ -45,6 +47,16 @@ export const optionalUrl = z
   .trim()
   .max(MAX_LENGTH.url, tooLong(MAX_LENGTH.url))
   .refine((value) => value === '' || isHttpUrl(value), MESSAGES.url)
+  .transform(blankToNull)
+
+export const optionalEmail = z
+  .string()
+  .trim()
+  .max(MAX_LENGTH.adminEmail, tooLong(MAX_LENGTH.adminEmail))
+  .refine(
+    (value) => value === '' || email.safeParse(value).success,
+    MESSAGES.email,
+  )
   .transform(blankToNull)
 
 export const requiredDate = z

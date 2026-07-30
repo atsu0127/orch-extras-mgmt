@@ -4,6 +4,7 @@ import {
   fieldErrors,
   MESSAGES,
   optionalDate,
+  optionalEmail,
   optionalId,
   optionalText,
   optionalTime,
@@ -41,6 +42,35 @@ describe('optionalText', () => {
 
   it('上限を超える入力を弾く', () => {
     expect(schema.safeParse('あいうえおか').success).toBe(false)
+  })
+})
+
+describe('optionalEmail', () => {
+  it('正しいメールアドレスを通す', () => {
+    expect(optionalEmail.parse('admin@example.com')).toBe('admin@example.com')
+  })
+
+  it('前後の空白を落とす', () => {
+    expect(optionalEmail.parse('  admin@example.com  ')).toBe(
+      'admin@example.com',
+    )
+  })
+
+  it('空欄を null にする', () => {
+    expect(optionalEmail.parse('')).toBeNull()
+    expect(optionalEmail.parse('   ')).toBeNull()
+  })
+
+  it('メール形式でない入力を弾く', () => {
+    const result = optionalEmail.safeParse('not-an-email')
+    expect(result.success).toBe(false)
+    expect(result.error?.issues[0]?.message).toBe(MESSAGES.email)
+  })
+
+  it('255文字の入力を弾く', () => {
+    const value = `${'a'.repeat(243)}@example.com`
+    expect(value).toHaveLength(255)
+    expect(optionalEmail.safeParse(value).success).toBe(false)
   })
 })
 
