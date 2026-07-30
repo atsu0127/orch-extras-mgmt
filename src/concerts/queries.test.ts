@@ -54,6 +54,7 @@ describe('getConcertOverview', () => {
       performanceDate: '2026-12-01',
       venueId: 1,
       attendanceUrl: 'https://example.com/attendance',
+      note: '集合は13時です\n黒服を持参してください',
     })
 
     const overview = await getConcertOverview(db, 1)
@@ -63,6 +64,7 @@ describe('getConcertOverview', () => {
       venueName: '市民ホール',
       venueAddress: '東京都1-1',
       attendanceUrl: 'https://example.com/attendance',
+      note: '集合は13時です\n黒服を持参してください',
     })
   })
 

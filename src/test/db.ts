@@ -13,6 +13,11 @@ const migrationsDir = fileURLToPath(
 /** 全テーブルが text と integer だけなので、束縛される値もこの範囲に収まる */
 type BoundValue = string | number | bigint | null
 
+type TestDbOptions = {
+  maxBindParameters?: number
+  onQuery?: () => void
+}
+
 /**
  * 単体テスト用のインメモリ DB。期限切れの除外やレート制限の集計は SQL 側で
  * 行うため、偽のリポジトリではなく本物の SQLite に対して検証する。
@@ -20,7 +25,7 @@ type BoundValue = string | number | bigint | null
  * D1 と sqlite-proxy はドライバが違うだけでクエリビルダの形は同じなので、
  * `Db` として扱う。両者で挙動が分かれる `batch` はテストで使わない。
  */
-export function createTestDb(): Db {
+export function createTestDb(options: TestDbOptions = {}): Db {
   const sqlite = new DatabaseSync(':memory:')
   // D1 は常に外部キーを強制する（`PRAGMA foreign_keys = on` と同じ）。既定が off の
   // SQLite に合わせると、CASCADE や SET NULL の効き方をテストで確かめられない
@@ -34,6 +39,13 @@ export function createTestDb(): Db {
 
   const db = drizzle(
     async (sql, params, method) => {
+      options.onQuery?.()
+      if (
+        options.maxBindParameters !== undefined &&
+        params.length > options.maxBindParameters
+      ) {
+        throw new Error('too many SQL variables')
+      }
       const statement = sqlite.prepare(sql)
       // drizzle は列名ではなく列順で結果を読む。node:sqlite の型定義は
       // setReturnArrays の効果を表現しないため、戻り値は自分で組み直す

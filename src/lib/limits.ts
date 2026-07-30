@@ -11,9 +11,14 @@ export const MAX_LENGTH = {
   venueNote: 500,
   concertName: 100,
   attendanceNote: 500,
+  concertNote: 2000,
+  resourceTitle: 100,
+  adminEmail: 254,
   practiceDetail: 2000,
   mediaTitle: 100,
   pieceTitle: 100,
   pieceComposer: 100,
   url: 2000,
 } as const
+
+export const MAX_CONCERT_RESOURCES = 5

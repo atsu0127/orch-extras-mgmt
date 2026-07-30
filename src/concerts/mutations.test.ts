@@ -1,6 +1,8 @@
 import { beforeEach, describe, expect, it } from 'vitest'
+import { createConcertResource } from '../concert-resources/mutations'
 import type { Db } from '../db/client'
 import {
+  concertResources,
   concerts,
   pieces,
   practiceMedia,
@@ -28,6 +30,7 @@ const input = {
   venueId: null,
   attendanceUrl: null,
   attendanceNote: null,
+  note: '集合は開演90分前です',
 }
 
 describe('createConcert', () => {
@@ -38,9 +41,12 @@ describe('createConcert', () => {
       {
         name: '第10回定期演奏会',
         performanceDate: '2026-09-24',
+        note: '集合は開演90分前です',
         status: 'active',
         practiceCount: 0,
         pieceCount: 0,
+        resourceCount: 0,
+        resources: [],
       },
     ])
   })
@@ -58,6 +64,7 @@ describe('updateConcert', () => {
       venueId: 1,
       attendanceUrl: 'https://example.com/attendance',
       attendanceNote: '本番1か月前までに回答してください',
+      note: '黒服を持参してください',
     })
 
     expect(await listConcertsForAdmin(db)).toMatchObject([
@@ -65,8 +72,26 @@ describe('updateConcert', () => {
         venueId: 1,
         attendanceUrl: 'https://example.com/attendance',
         attendanceNote: '本番1か月前までに回答してください',
+        note: '黒服を持参してください',
       },
     ])
+  })
+
+  it('備考入力をまだ持たない呼び出しでは既存の備考を消さない', async () => {
+    await createConcert(db, input)
+    const [concert] = await listConcertsForAdmin(db)
+    if (!concert) throw new Error('演奏会が登録できていない')
+    const { note: _note, ...inputWithoutNote } = input
+
+    await updateConcert(db, concert.id, {
+      ...inputWithoutNote,
+      name: '演奏会名だけ変更',
+    })
+
+    expect((await listConcertsForAdmin(db))[0]).toMatchObject({
+      name: '演奏会名だけ変更',
+      note: '集合は開演90分前です',
+    })
   })
 })
 
@@ -102,28 +127,51 @@ describe('deleteConcert', () => {
       { id: 1, concertId: 1, title: '曲A' },
       { id: 2, concertId: 2, title: '曲B' },
     ])
+    await db.insert(concertResources).values([
+      {
+        id: 1,
+        concertId: 1,
+        title: '消える資料',
+        url: 'https://example.com/delete',
+      },
+      {
+        id: 2,
+        concertId: 2,
+        title: '残る資料',
+        url: 'https://example.com/keep',
+      },
+    ])
   })
 
-  it('配下の練習・録音リンク・曲も消える', async () => {
+  it('配下の練習・録音リンク・曲・資料も消える', async () => {
     await deleteConcert(db, 1)
 
     expect(await db.select().from(concerts)).toMatchObject([{ id: 2 }])
     expect(await db.select().from(practices)).toMatchObject([{ id: 2 }])
     expect(await db.select().from(practiceMedia)).toMatchObject([{ id: 2 }])
     expect(await db.select().from(pieces)).toMatchObject([{ id: 2 }])
+    expect(await db.select().from(concertResources)).toMatchObject([{ id: 2 }])
   })
 
   it('一覧では消える件数が分かる', async () => {
     await db.insert(pieces).values({ id: 3, concertId: 1, title: '曲C' })
+    await createConcertResource(db, 1, {
+      title: '追加資料',
+      url: 'https://example.com/additional',
+    })
 
     const items = await listConcertsForAdmin(db)
     expect(items.find(({ id }) => id === 1)).toMatchObject({
       practiceCount: 1,
       pieceCount: 2,
+      resourceCount: 2,
+      resources: [{ title: '消える資料' }, { title: '追加資料' }],
     })
     expect(items.find(({ id }) => id === 2)).toMatchObject({
       practiceCount: 1,
       pieceCount: 1,
+      resourceCount: 1,
+      resources: [{ title: '残る資料' }],
     })
   })
 })

@@ -47,9 +47,33 @@ export const concerts = sqliteTable('concerts', {
   attendanceNote: text('attendance_note', {
     length: MAX_LENGTH.attendanceNote,
   }),
+  note: text('note', { length: MAX_LENGTH.concertNote }),
   status: text('status', { enum: CONCERT_STATUSES })
     .notNull()
     .default('active'),
+  ...timestamps(),
+})
+
+export const concertResources = sqliteTable(
+  'concert_resources',
+  {
+    id: integer('id').primaryKey({ autoIncrement: true }),
+    concertId: integer('concert_id')
+      .notNull()
+      .references(() => concerts.id, { onDelete: 'cascade' }),
+    title: text('title', { length: MAX_LENGTH.resourceTitle }).notNull(),
+    url: text('url', { length: MAX_LENGTH.url }).notNull(),
+    sortOrder: integer('sort_order').notNull().default(0),
+    ...timestamps(),
+  },
+  (t) => [
+    index('concert_resources_concert_sort_idx').on(t.concertId, t.sortOrder),
+  ],
+)
+
+export const appSettings = sqliteTable('app_settings', {
+  id: integer('id').primaryKey(),
+  adminEmail: text('admin_email', { length: MAX_LENGTH.adminEmail }),
   ...timestamps(),
 })
 
@@ -159,6 +183,10 @@ export type Venue = typeof venues.$inferSelect
 export type NewVenue = typeof venues.$inferInsert
 export type Concert = typeof concerts.$inferSelect
 export type NewConcert = typeof concerts.$inferInsert
+export type ConcertResource = typeof concertResources.$inferSelect
+export type NewConcertResource = typeof concertResources.$inferInsert
+export type AppSetting = typeof appSettings.$inferSelect
+export type NewAppSetting = typeof appSettings.$inferInsert
 export type Practice = typeof practices.$inferSelect
 export type NewPractice = typeof practices.$inferInsert
 export type PracticeMedium = typeof practiceMedia.$inferSelect
