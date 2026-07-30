@@ -67,7 +67,7 @@ describe('DashboardContent', () => {
       createElement(DashboardContent, {
         appSettings: { adminEmail: null },
         concert,
-        nextPractice,
+        nextPractice: null,
         resources: [],
       }),
     )
@@ -83,7 +83,7 @@ describe('DashboardContent', () => {
       createElement(DashboardContent, {
         appSettings: { adminEmail: null },
         concert: { ...concert, venueAddress: null },
-        nextPractice,
+        nextPractice: null,
         resources: [],
       }),
     )
@@ -127,7 +127,7 @@ describe('DashboardContent', () => {
     expect(html).not.toContain('calendar.google.com')
   })
 
-  it('次の練習と出欠の間に改行付き備考と資料を受け取った順で表示する', () => {
+  it('次の練習のあとに本番・出欠・備考・資料の順で表示する', () => {
     const html = renderMarkup(
       createElement(DashboardContent, {
         appSettings: { adminEmail: null },
@@ -151,9 +151,10 @@ describe('DashboardContent', () => {
     expect(html).toContain(
       '<p class="detail">集合は13時です\n黒服を持参してください</p>',
     )
-    expect(html.indexOf('次の練習')).toBeLessThan(html.indexOf('備考'))
+    expect(html.indexOf('次の練習')).toBeLessThan(html.indexOf('本番'))
+    expect(html.indexOf('本番')).toBeLessThan(html.indexOf('出欠の回答'))
+    expect(html.indexOf('出欠の回答')).toBeLessThan(html.indexOf('備考'))
     expect(html.indexOf('備考')).toBeLessThan(html.indexOf('資料'))
-    expect(html.indexOf('資料')).toBeLessThan(html.indexOf('出欠の回答'))
     expect(html.indexOf('演奏会のしおり')).toBeLessThan(html.indexOf('座席表'))
     expect(html).toContain(
       'href="https://example.com/guide" target="_blank" rel="noopener noreferrer"',

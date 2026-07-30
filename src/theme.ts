@@ -30,6 +30,10 @@ const ink: MantineColorsTuple = [
   '#1A1714',
 ]
 
+const sans =
+  '"IBM Plex Sans JP", "Noto Sans JP", "Hiragino Sans", "Hiragino Kaku Gothic ProN", sans-serif'
+const display = `"Shippori Mincho", "Hiragino Mincho ProN", ${sans}`
+
 export const theme = createTheme({
   primaryColor: 'bordeaux',
   primaryShade: { light: 7, dark: 4 },
@@ -37,14 +41,12 @@ export const theme = createTheme({
     bordeaux,
     ink,
   },
-  fontFamily:
-    '"Noto Sans JP", "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans CJK JP", sans-serif',
+  fontFamily: sans,
   headings: {
-    fontFamily:
-      '"Noto Sans JP", "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans CJK JP", sans-serif',
+    fontFamily: display,
     fontWeight: '600',
     sizes: {
-      h1: { fontSize: '1.375rem', lineHeight: '1.4' },
+      h1: { fontSize: '1.5rem', lineHeight: '1.35' },
       h2: { fontSize: '1.125rem', lineHeight: '1.4' },
       h3: { fontSize: '1rem', lineHeight: '1.4' },
     },
@@ -95,6 +97,12 @@ export const theme = createTheme({
       },
     },
     TextInput: {
+      defaultProps: {
+        size: 'md',
+        radius: 'sm',
+      },
+    },
+    PasswordInput: {
       defaultProps: {
         size: 'md',
         radius: 'sm',

@@ -1,12 +1,4 @@
-import {
-  Anchor,
-  Box,
-  Button,
-  Group,
-  NativeSelect,
-  Stack,
-  Text,
-} from '@mantine/core'
+import { Box, Button, NativeSelect, Stack, Text } from '@mantine/core'
 import {
   createFileRoute,
   Link,
@@ -17,6 +9,7 @@ import {
   useRouter,
 } from '@tanstack/react-router'
 import { useServerFn } from '@tanstack/react-start'
+import type { ReactNode } from 'react'
 import { useState } from 'react'
 import { z } from 'zod'
 import { logout } from '../../auth/functions'
@@ -70,34 +63,30 @@ function AuthedLayout() {
   const { session, concerts, concert } = Route.useRouteContext()
 
   return (
-    <Stack gap="lg">
-      <Box
-        component="header"
-        pb="md"
-        style={{ borderBottom: '1px solid var(--app-border)' }}
-      >
-        <Stack gap="md">
-          <Group justify="space-between" align="baseline" gap="md">
-            <Text size="sm" c="dimmed">
-              {ROLE_LABELS[session.role]}としてログイン中
-            </Text>
+    <div className="app-frame">
+      <header className="app-header">
+        <Stack gap="sm">
+          <Box
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'baseline',
+              gap: '0.75rem',
+            }}
+          >
+            <span className="app-brand">エキストラ情報ポータル</span>
             <LogoutButton />
-          </Group>
+          </Box>
+
+          <Text size="xs" c="dimmed">
+            {ROLE_LABELS[session.role]}としてログイン中
+          </Text>
 
           {concert && (
             <ConcertSelector concerts={concerts} selectedId={concert.id} />
           )}
-
-          <Group gap="md" wrap="wrap" component="nav" aria-label="メイン">
-            <NavLink to="/" exact>
-              ホーム
-            </NavLink>
-            <NavLink to="/practices">練習日程</NavLink>
-            <NavLink to="/pieces">曲・ボウイング</NavLink>
-            {session.role === 'admin' && <NavLink to="/admin">管理</NavLink>}
-          </Group>
         </Stack>
-      </Box>
+      </header>
 
       {/*
         演奏会が無いときの表示は各画面に任せる。ここで差し替えると、
@@ -106,7 +95,24 @@ function AuthedLayout() {
       <Box component="main" className="app-main">
         <Outlet />
       </Box>
-    </Stack>
+
+      <nav className="app-bottom-nav" aria-label="メイン">
+        <BottomLink to="/" exact label="ホーム">
+          <HomeIcon />
+        </BottomLink>
+        <BottomLink to="/practices" label="練習日程">
+          <CalendarIcon />
+        </BottomLink>
+        <BottomLink to="/pieces" label="曲・ボウイング">
+          <MusicIcon />
+        </BottomLink>
+        {session.role === 'admin' && (
+          <BottomLink to="/admin" label="管理">
+            <AdminIcon />
+          </BottomLink>
+        )}
+      </nav>
+    </div>
   )
 }
 
@@ -184,33 +190,87 @@ function LogoutButton() {
   )
 }
 
-type NavLinkProps = {
+type BottomLinkProps = {
   to: '/' | '/practices' | '/pieces' | '/admin'
   exact?: boolean
-  children: string
+  label: string
+  children: ReactNode
 }
 
-function NavLink({ to, exact = false, children }: NavLinkProps) {
+function BottomLink({ to, exact = false, label, children }: BottomLinkProps) {
   return (
-    <Anchor
-      component={Link}
+    <Link
       to={to}
       activeOptions={{ exact }}
-      fw={500}
-      underline="hover"
-      c="var(--mantine-color-text)"
-      style={{
-        paddingBottom: 2,
-        borderBottom: '2px solid transparent',
-      }}
-      activeProps={{
-        style: {
-          borderBottomColor: 'var(--mantine-color-bordeaux-filled)',
-          color: 'var(--mantine-color-bordeaux-filled)',
-        },
-      }}
+      aria-label={label}
+      // data-active で見た目を切り替える。activeProps の型が Mantine 非依存の Link 向き
+      activeProps={{ 'data-active': 'true' }}
+      inactiveProps={{ 'data-active': 'false' }}
     >
       {children}
-    </Anchor>
+      <span>{label}</span>
+    </Link>
+  )
+}
+
+function HomeIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+    >
+      <title>ホーム</title>
+      <path d="M3 11.5 12 4l9 7.5" />
+      <path d="M5.5 10v10h13V10" />
+    </svg>
+  )
+}
+
+function CalendarIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+    >
+      <title>練習日程</title>
+      <rect x="3" y="5" width="18" height="16" rx="2" />
+      <path d="M7 3v4M17 3v4M3 10h18" />
+    </svg>
+  )
+}
+
+function MusicIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+    >
+      <title>曲・ボウイング</title>
+      <path d="M9 18V5l11-2v13" />
+      <circle cx="6" cy="18" r="3" />
+      <circle cx="17" cy="16" r="3" />
+    </svg>
+  )
+}
+
+function AdminIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+    >
+      <title>管理</title>
+      <path d="M4 20h16" />
+      <path d="M7 20V10l5-6 5 6v10" />
+      <path d="M10 20v-5h4v5" />
+    </svg>
   )
 }
