@@ -225,7 +225,7 @@ function BottomLink({
       inactiveProps={{ 'data-active': 'false' }}
     >
       {children}
-      <span>{label}</span>
+      <span aria-hidden="true">{label}</span>
     </Link>
   )
 }
@@ -264,10 +264,16 @@ function DesktopLink({
   )
 }
 
+/** 装飾アイコン。ラベルは親リンクの aria-label / 可視テキストが担う */
 function HomeIcon() {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden>
-      <title>ホーム</title>
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      aria-hidden="true"
+      focusable="false"
+    >
       <path d="M4 10.5 12 4l8 6.5V20a1 1 0 0 1-1 1h-5v-6H10v6H5a1 1 0 0 1-1-1v-9.5z" />
     </svg>
   )
@@ -275,8 +281,13 @@ function HomeIcon() {
 
 function CalendarIcon() {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden>
-      <title>練習</title>
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      aria-hidden="true"
+      focusable="false"
+    >
       <rect x="4" y="5" width="16" height="15" rx="1" />
       <path d="M8 3v4M16 3v4M4 10h16" />
     </svg>
@@ -285,8 +296,13 @@ function CalendarIcon() {
 
 function MusicIcon() {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden>
-      <title>曲</title>
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      aria-hidden="true"
+      focusable="false"
+    >
       <path d="M9 18V6l10-2v12" />
       <circle cx="7" cy="18" r="2.5" />
       <circle cx="17" cy="16" r="2.5" />
@@ -296,8 +312,13 @@ function MusicIcon() {
 
 function AdminIcon() {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden>
-      <title>管理</title>
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      aria-hidden="true"
+      focusable="false"
+    >
       <circle cx="12" cy="12" r="3" />
       <path d="M12 3.5v2.2M12 18.3v2.2M4.9 6.5l1.6 1.6M17.5 15.9l1.6 1.6M3.5 12h2.2M18.3 12h2.2M4.9 17.5l1.6-1.6M17.5 8.1l1.6-1.6" />
     </svg>
