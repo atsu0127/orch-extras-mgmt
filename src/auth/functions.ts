@@ -3,7 +3,8 @@ import { createServerFn } from '@tanstack/react-start'
 import { z } from 'zod'
 import type { Db } from '../db/client'
 import { getDb } from '../db/client'
-import { credentials, ROLES, type Role } from '../db/schema'
+import { credentials } from '../db/schema'
+import { ROLES, type Role } from '../lib/roles'
 import { getClientIp } from './client-ip'
 import {
   clearSessionCookie,

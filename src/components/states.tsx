@@ -1,6 +1,7 @@
 import type { ErrorComponentProps } from '@tanstack/react-router'
-import { useRouter } from '@tanstack/react-router'
+import { Link, useRouter } from '@tanstack/react-router'
 import type { ReactNode } from 'react'
+import type { Role } from '../lib/roles'
 
 type EmptyStateProps = {
   title: string
@@ -16,6 +17,25 @@ export function EmptyState({ title, description, children }: EmptyStateProps) {
       {description && <p>{description}</p>}
       {children}
     </div>
+  )
+}
+
+/**
+ * 演奏会が1件も無いときの表示（設計書7.1）。演奏会を選ばないと成り立たない画面が
+ * それぞれ出す。管理者には作成への導線を見せる。
+ */
+export function NoConcertState({ role }: { role: Role }) {
+  return (
+    <EmptyState title="まだ公開された演奏会がありません">
+      {role === 'admin' ? (
+        <p>
+          <Link to="/admin/concerts">管理画面</Link>
+          から演奏会を登録してください。
+        </p>
+      ) : (
+        <p>管理者が登録するまでお待ちください。</p>
+      )}
+    </EmptyState>
   )
 }
 

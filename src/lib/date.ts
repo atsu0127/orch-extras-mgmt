@@ -9,9 +9,14 @@ const WEEKDAYS = ['日', '月', '火', '水', '木', '金', '土'] as const
 
 const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/
 
+/** UTC で持っている時刻を日本時間の暦日 `YYYY-MM-DD` にする */
+export function jstDateOf(instant: Date): string {
+  return new Date(instant.getTime() + JST_OFFSET_MS).toISOString().slice(0, 10)
+}
+
 /** 日本時間の「今日」を `YYYY-MM-DD` で返す。実行環境のタイムゾーンに依存しない */
 export function todayInJst(now: Date = new Date()): string {
-  return new Date(now.getTime() + JST_OFFSET_MS).toISOString().slice(0, 10)
+  return jstDateOf(now)
 }
 
 /** `2026-08-01` → `8月1日(土)`。形式が違うものはそのまま返す */

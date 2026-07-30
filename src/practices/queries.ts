@@ -88,6 +88,46 @@ export async function listPracticesWithMedia(
   return rows.map((row) => toEntry(row, media))
 }
 
+export type PracticeAdminItem = {
+  id: number
+  date: string
+  startTime: string | null
+  endTime: string | null
+  venueId: number | null
+  detail: string | null
+  media: Array<PracticeMediaLink>
+}
+
+/**
+ * 管理画面の一覧。会場は id だけ返す。名前は会場の選択肢から引けるので、
+ * join を1つ減らせる（設計書5.3のサブリクエスト上限）
+ */
+export async function listPracticesForAdmin(
+  db: Db,
+  concertId: number,
+): Promise<Array<PracticeAdminItem>> {
+  const rows = await db
+    .select({
+      id: practices.id,
+      date: practices.date,
+      startTime: practices.startTime,
+      endTime: practices.endTime,
+      venueId: practices.venueId,
+      detail: practices.detail,
+    })
+    .from(practices)
+    .where(eq(practices.concertId, concertId))
+    .orderBy(asc(practices.date), asc(practices.startTime), asc(practices.id))
+
+  if (rows.length === 0) return []
+
+  const media = await listMediaByPractice(
+    db,
+    rows.map((row) => row.id),
+  )
+  return rows.map((row) => ({ ...row, media: media.get(row.id) ?? [] }))
+}
+
 async function listMediaByPractice(
   db: Db,
   practiceIds: ReadonlyArray<number>,

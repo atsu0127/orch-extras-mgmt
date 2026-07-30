@@ -1,4 +1,5 @@
-import { expect, type Page, test } from '@playwright/test'
+import { expect, test } from '@playwright/test'
+import { signIn } from './helpers'
 
 // パスワードは secret なので環境変数から受け取る。未設定ならログインを伴う検証は飛ばす
 const adminPassword = process.env.E2E_ADMIN_PASSWORD
@@ -65,8 +66,3 @@ test.describe('admin としてログインする', () => {
     await expect(page).toHaveURL(/\/login$/)
   })
 })
-
-async function signIn(page: Page, password: string) {
-  await page.getByLabel('パスワード').fill(password)
-  await page.getByRole('button', { name: 'ログイン' }).click()
-}

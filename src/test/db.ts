@@ -22,6 +22,9 @@ type BoundValue = string | number | bigint | null
  */
 export function createTestDb(): Db {
   const sqlite = new DatabaseSync(':memory:')
+  // D1 は常に外部キーを強制する（`PRAGMA foreign_keys = on` と同じ）。既定が off の
+  // SQLite に合わせると、CASCADE や SET NULL の効き方をテストで確かめられない
+  sqlite.exec('PRAGMA foreign_keys = ON')
   const migrations = readdirSync(migrationsDir)
     .filter((name) => name.endsWith('.sql'))
     .sort()

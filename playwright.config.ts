@@ -5,9 +5,14 @@ import { defineConfig, devices } from '@playwright/test'
 const deployedBaseURL = process.env.E2E_BASE_URL
 const baseURL = deployedBaseURL ?? 'http://localhost:3000'
 
+// パスワードを書き換える検証を含めるときは並行して走らせられない。ロールごとに
+// パスワードは1本なので、書き換えている間は他のテストのログインが通らなくなる
+const changesPassword = process.env.E2E_PASSWORD_CHANGE === '1'
+
 export default defineConfig({
   testDir: './e2e',
-  fullyParallel: true,
+  fullyParallel: !changesPassword,
+  ...(changesPassword ? { workers: 1 } : {}),
   forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI ? 1 : 0,
   reporter: process.env.CI ? 'github' : 'list',

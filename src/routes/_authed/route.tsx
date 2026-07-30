@@ -15,12 +15,12 @@ import {
   forgetCurrentSession,
   loadCurrentSession,
 } from '../../auth/session-cache'
-import { EmptyState } from '../../components/states'
 import { forgetConcerts, loadConcerts } from '../../concerts/concert-cache'
 import { readRememberedConcert, rememberConcert } from '../../concerts/cookie'
 import type { ConcertOption } from '../../concerts/queries'
 import { resolveConcertId } from '../../concerts/selection'
 import { formatFullDate, todayInJst } from '../../lib/date'
+import { ROLE_LABELS } from '../../lib/roles'
 
 export const Route = createFileRoute('/_authed')({
   validateSearch: z.object({
@@ -57,11 +57,6 @@ export const Route = createFileRoute('/_authed')({
   component: AuthedLayout,
 })
 
-const ROLE_LABELS = {
-  admin: '管理者',
-  extra: 'エキストラ',
-} as const
-
 function AuthedLayout() {
   const { session, concerts, concert } = Route.useRouteContext()
 
@@ -85,20 +80,12 @@ function AuthedLayout() {
         </nav>
       </header>
 
+      {/*
+        演奏会が無いときの表示は各画面に任せる。ここで差し替えると、
+        演奏会を作る画面にも入れなくなる
+      */}
       <main>
-        {concert ? (
-          <Outlet />
-        ) : (
-          <EmptyState title="まだ公開された演奏会がありません">
-            {session.role === 'admin' ? (
-              <p>
-                <Link to="/admin">管理画面</Link>から演奏会を登録してください。
-              </p>
-            ) : (
-              <p>管理者が登録するまでお待ちください。</p>
-            )}
-          </EmptyState>
-        )}
+        <Outlet />
       </main>
     </>
   )

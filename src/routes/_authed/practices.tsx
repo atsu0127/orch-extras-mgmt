@@ -3,7 +3,7 @@ import { createServerFn } from '@tanstack/react-start'
 import { z } from 'zod'
 import { requireAuth } from '../../auth/middleware'
 import { PracticeItem } from '../../components/practice-item'
-import { EmptyState } from '../../components/states'
+import { EmptyState, NoConcertState } from '../../components/states'
 import { getDb } from '../../db/client'
 import { todayInJst } from '../../lib/date'
 import { listPracticesWithMedia } from '../../practices/queries'
@@ -31,9 +31,10 @@ export const Route = createFileRoute('/_authed/practices')({
 })
 
 function PracticesPage() {
+  const { session } = Route.useRouteContext()
   const data = Route.useLoaderData()
   const { view = 'upcoming' } = Route.useSearch()
-  if (!data) return null
+  if (!data) return <NoConcertState role={session.role} />
 
   const { upcoming, past } = splitPractices(data.practices, data.today)
   const shown = view === 'past' ? past : upcoming

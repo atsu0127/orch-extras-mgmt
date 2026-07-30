@@ -2,7 +2,7 @@
 
 オーケストラのエキストラ（客演奏者）向け情報ポータル。練習日程と出欠の回答先、ボウイング、練習の録音を1か所にまとめて公開し、管理者がブラウザから更新できるようにする。
 
-現在の状態: **Phase 3 完了（閲覧機能）**。ログインすると演奏会を切り替えながら、練習日程・曲・ボウイング・録音リンクを閲覧できる。管理画面の中身とリンク切れ検知はこれから。
+現在の状態: **Phase 4 完了（管理機能）**。ログインすると演奏会を切り替えながら練習日程・曲・ボウイング・録音リンクを閲覧でき、管理者はブラウザから会場・演奏会・練習・録音リンク・曲・パスワードを更新できる。リンク切れ検知はこれから。
 
 本番: <https://orch-extras-mgmt.atsu-dq9.workers.dev>
 
@@ -75,6 +75,12 @@ E2E のうちログインを伴うものは、パスワードを環境変数で�
 E2E_ADMIN_PASSWORD=<.dev.vars の値> E2E_EXTRA_PASSWORD=<.dev.vars の値> pnpm test:e2e
 ```
 
+パスワードを実際に書き換える検証（変更後に旧パスワードで入れないこと、開いているセッションが落ちること）は、さらに `E2E_PASSWORD_CHANGE=1` を付けたときだけ動く。ロールごとにパスワードは1本しかないので、このときは全テストが直列で走る。テストは最後に元のパスワードへ戻すが、途中で落ちた場合は `pnpm db:seed` で戻す。
+
+```bash
+E2E_ADMIN_PASSWORD=... E2E_EXTRA_PASSWORD=... E2E_PASSWORD_CHANGE=1 pnpm test:e2e
+```
+
 デプロイ先を E2E で確認したい場合は接続先を指定する。
 
 ```bash
@@ -106,8 +112,18 @@ pnpm exec wrangler d1 execute DB --local --command "SELECT 1"  # 中身を見る
 スマートフォン優先のカードUI。テーマは OS 設定に追従する。画面とロールの対応は[設計書](docs/design.md)の7章が正。
 
 - `src/routes/_authed/` — ログイン必須の画面。`route.tsx` がヘッダ（演奏会セレクタとナビゲーション）と `main` を持つ
+- `src/routes/_authed/admin/` — 管理画面。`route.tsx` が管理内のナビゲーションを持つ。画面ごとにサーバ関数と入力欄を1ファイルにまとめている
 - `src/components/` — 空状態・読み込み中・エラー・外部リンク・練習1件の表示。読み込み中とエラーは `src/router.tsx` で既定に設定してあるので、画面ごとに書かなくてよい
-- `src/concerts/` `src/practices/` `src/pieces/` — 画面が使うデータ。`queries.ts` が DB を受け取る素の関数、`functions.ts` がそれを包むサーバ関数という分け方にしている。単体テストは `queries.ts` 側に書く
+- `src/concerts/` `src/practices/` `src/pieces/` `src/venues/` — 画面が使うデータ。`queries.ts` が読み取り、`mutations.ts` が更新、どちらも DB を受け取る素の関数。`functions.ts` がそれを包むサーバ関数という分け方にしている。単体テストは `queries.ts` / `mutations.ts` 側に書く
+- `src/lib/` — 画面とサーバの両方が使う小物（文字数上限、ロール、日付、入力検証、並べ替え）
+
+**画面から `src/db/schema.ts` を import しないこと**。スキーマを読むと drizzle がクライアントのバンドルに載る。画面にも出てくる定数は `src/lib/limits.ts` や `src/lib/roles.ts` のように `src/lib/` に置き、スキーマ側がそれを読む向きにしている。
+
+### 管理画面のフォーム
+
+- `src/components/admin-form.tsx` — 入力欄（`Field`）、外枠（`AdminForm`）、検証と保存と再読み込みをまとめた `useAdminForm` / `useAdminAction`。検証は画面とサーバ関数で同じ zod スキーマを使う
+- `src/components/confirm-button.tsx` — 削除の確認。ネイティブの `<dialog>` を使う（[ADR-0010](docs/adr/0010-confirm-deletions-with-native-dialog.md)）。連鎖して消えるものを文言で伝える
+- 並び順を持つもの（録音リンク、曲）は `sort_order` を 0 からの連番で保ち、上下の入れ替えで2行だけ書き換える（[ADR-0011](docs/adr/0011-keep-sort-order-dense.md)）。計算は `src/lib/ordering.ts`
 
 選択中の演奏会は URL のクエリ `?concert=<id>` が正。指定が無ければ Cookie `oem_concert` → 進行中の直近 → 最新作成の順で解決し、結果をクエリに書き戻す（[ADR-0009](docs/adr/0009-canonicalize-selected-concert-in-url.md)）。
 
@@ -117,13 +133,15 @@ pnpm exec wrangler d1 execute DB --local --command "SELECT 1"  # 中身を見る
 
 ロールごとの共有パスワード2本で入る。仕様は[設計書](docs/design.md)の8章が正。
 
-- `src/auth/` — パスワードのハッシュ、セッション、Cookie、認可 middleware、レート制限
+- `src/auth/` — パスワードのハッシュ、セッション、Cookie、認可 middleware、レート制限、パスワードの変更（`credentials.ts`）
 - `src/routes/_authed/` — ログイン必須の画面。`_authed/admin/` はさらに管理者のみ
 - `src/start.ts` — 全サーバ関数への CSRF 対策と、Worker が返すレスポンスへのセキュリティヘッダ
 - `public/_headers` — 静的ファイルへのセキュリティヘッダ（assets binding は Worker を通らない）
 
 **新しくサーバ関数を書くときは必ず `requireAuth` か `requireAdmin` を通すこと**。SPA モードなので
 画面側のガードには強制力がない。CSRF 対策は `src/start.ts` で全体に掛かっているので個別の対応は要らない。
+
+パスワードは `/admin/settings` から変更する。どちらのロールを変えるときも管理者の現在のパスワードを要求し（[ADR-0013](docs/adr/0013-require-admin-password-to-change-passwords.md)）、変更したロールのセッションは全件失効させる。管理者を変えると操作中のセッションも落ちるので、ログインし直すことになる。
 
 ## 環境変数
 

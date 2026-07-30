@@ -206,6 +206,25 @@ main {
   padding-left: 1.25rem;
 }
 
+/* 管理画面の録音リンク。並べ替えの操作をリンクと同じ行に置く */
+.media-list {
+  display: flex;
+  flex-direction: column;
+  margin: 0.25rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.media-list li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.5rem 0;
+  border-top: 1px solid var(--color-border);
+}
+
 /* 練習の詳細。改行をそのまま見せる（設計書6.1） */
 .detail {
   margin: 0.375rem 0 0;
@@ -269,8 +288,13 @@ details > summary {
   color: var(--color-muted);
 }
 
+.field label {
+  display: block;
+}
+
 .field input,
-.field select {
+.field select,
+.field textarea {
   display: block;
   width: 100%;
   margin-top: 0.375rem;
@@ -281,6 +305,17 @@ details > summary {
   color: var(--color-fg);
   /* 16px 未満だと iOS が入力時に画面を拡大する */
   font-size: 1rem;
+}
+
+.field textarea {
+  font-family: inherit;
+  line-height: 1.6;
+  resize: vertical;
+}
+
+.field-hint {
+  margin-top: 0.25rem;
+  font-size: 0.75rem;
 }
 
 button {
@@ -325,4 +360,101 @@ button:disabled {
 
 .error {
   color: var(--color-danger);
+}
+
+.notice {
+  color: var(--color-accent);
+  font-size: 0.875rem;
+}
+
+/* 管理画面 */
+
+.subnav a {
+  font-size: 0.8125rem;
+}
+
+.admin-form {
+  padding: 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: 0.75rem;
+  background-color: var(--color-surface);
+}
+
+.admin-form > .field:first-of-type {
+  margin-top: 0.5rem;
+}
+
+.admin-form .field {
+  margin: 0.75rem 0 0;
+}
+
+/* 開始と終了のように対で入れる欄。横に並べて対であることを見せる */
+.field-row {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.field-row > .field {
+  flex: 1;
+  min-width: 0;
+}
+
+.form-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.form-actions button {
+  flex: 1;
+}
+
+/* 一覧の行に並べる操作。誤って押さないよう幅を内容に合わせる */
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+}
+
+.controls button {
+  width: auto;
+  padding: 0.375rem 0.875rem;
+  font-size: 0.875rem;
+}
+
+button.secondary {
+  border: 1px solid var(--color-border);
+  background-color: transparent;
+  color: var(--color-fg);
+}
+
+button.danger {
+  border: 1px solid var(--color-border);
+  background-color: transparent;
+  color: var(--color-danger);
+}
+
+dialog {
+  width: min(24rem, calc(100vw - 2rem));
+  padding: 1.25rem;
+  border: 1px solid var(--color-border);
+  border-radius: 0.75rem;
+  background-color: var(--color-surface);
+  color: var(--color-fg);
+}
+
+dialog::backdrop {
+  background-color: rgb(0 0 0 / 50%);
+}
+
+.dialog-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1.25rem;
+}
+
+.dialog-actions button {
+  width: auto;
+  flex: 1;
 }
