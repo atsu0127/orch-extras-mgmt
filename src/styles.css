@@ -222,10 +222,11 @@ body {
 
   .app-header-inner {
     display: grid;
-    grid-template-columns: auto minmax(0, 1fr) auto auto;
+    /* nav は縮めない。minmax(0,1fr) だと日本語が1文字折り返し（縦書きに見える） */
+    grid-template-columns: auto max-content minmax(8rem, 1fr) auto;
     grid-template-areas: "brand nav concert actions";
     align-items: center;
-    column-gap: 1.25rem;
+    column-gap: 1rem;
     row-gap: 0;
     width: 100%;
     max-width: var(--app-content-max);
@@ -255,7 +256,9 @@ body {
 
   .app-concert-select {
     grid-area: concert;
-    width: min(17rem, 26vw);
+    width: 100%;
+    min-width: 0;
+    max-width: 17rem;
     justify-self: end;
   }
 
@@ -281,22 +284,24 @@ body {
     display: flex;
     align-items: stretch;
     align-self: stretch;
+    flex-wrap: nowrap;
     gap: 0.15rem;
-    min-width: 0;
-    margin-left: 0.5rem;
+    margin-left: 0.35rem;
   }
 
   .app-desktop-nav a {
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    flex: 0 0 auto;
     min-height: 3.5rem;
-    padding: 0 0.9rem;
+    padding: 0 0.85rem;
     border-bottom: 2px solid transparent;
     color: var(--app-muted);
     font-weight: 600;
     font-size: 0.9375rem;
     text-decoration: none;
+    white-space: nowrap;
     cursor: pointer;
     transition:
       color 150ms ease,
@@ -327,6 +332,32 @@ body {
   /* 管理はフォーム列が窮屈にならないよう本文を少し広げる */
   .app-main:has(.admin-subnav) {
     max-width: 68rem;
+  }
+}
+
+/* 狭い PC: ナビを2行目に逃がして縦折りを防ぐ */
+@media (min-width: 48rem) and (max-width: 64rem) {
+  .app-header-inner {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-areas:
+      "brand concert actions"
+      "nav nav nav";
+    row-gap: 0;
+    padding-top: 0.35rem;
+  }
+
+  .app-desktop-nav {
+    margin-left: 0;
+    border-top: 1px solid var(--app-border);
+  }
+
+  .app-desktop-nav a {
+    min-height: 2.75rem;
+    padding: 0 0.75rem;
+  }
+
+  .app-role {
+    display: none;
   }
 }
 

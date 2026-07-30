@@ -7,13 +7,14 @@ export const Route = createFileRoute('/_authed/admin')({
   component: AdminLayout,
 })
 
+/**
+ * 管理の画面切替はこのサブナビだけにする。
+ * 管理トップの一覧メニューと二重にしない（PC/モバイル共通）。
+ */
 function AdminLayout() {
   return (
     <>
       <nav className="admin-subnav" aria-label="管理">
-        <AdminNavLink to="/admin" exact>
-          管理トップ
-        </AdminNavLink>
         <AdminNavLink to="/admin/concerts">演奏会</AdminNavLink>
         <AdminNavLink to="/admin/practices">練習</AdminNavLink>
         <AdminNavLink to="/admin/pieces">曲</AdminNavLink>
@@ -27,21 +28,18 @@ function AdminLayout() {
 
 type AdminNavLinkProps = {
   to:
-    | '/admin'
     | '/admin/concerts'
     | '/admin/practices'
     | '/admin/pieces'
     | '/admin/venues'
     | '/admin/settings'
-  exact?: boolean
   children: string
 }
 
-function AdminNavLink({ to, exact = false, children }: AdminNavLinkProps) {
+function AdminNavLink({ to, children }: AdminNavLinkProps) {
   return (
     <Link
       to={to}
-      activeOptions={{ exact }}
       activeProps={{ 'data-active': 'true' }}
       inactiveProps={{ 'data-active': 'false' }}
     >

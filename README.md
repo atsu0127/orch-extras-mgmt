@@ -115,7 +115,7 @@ pnpm exec wrangler d1 execute DB --local --command "SELECT 1"  # 中身を見る
 スマートフォン優先のカードUI。テーマは OS 設定に追従する。画面とロールの対応は[設計書](docs/design.md)の7章が正。
 
 - `src/routes/_authed/` — ログイン必須の画面。`route.tsx` がヘッダ（演奏会セレクタとナビゲーション）と `main` を持つ
-- `src/routes/_authed/admin/` — 管理画面。`route.tsx` が管理内のナビゲーションを持つ。画面ごとにサーバ関数と入力欄を1ファイルにまとめている
+- `src/routes/_authed/admin/` — 管理画面。`route.tsx` が管理内サブナビを持ち、`/` は演奏会へ誘導する。画面ごとにサーバ関数と入力欄を1ファイルにまとめている
 - `src/components/` — 空状態・読み込み中・エラー・外部リンク・練習1件の表示。読み込み中とエラーは `src/router.tsx` で既定に設定してあるので、画面ごとに書かなくてよい
 - `src/concerts/` `src/practices/` `src/pieces/` `src/venues/` — 画面が使うデータ。`queries.ts` が読み取り、`mutations.ts` が更新、どちらも DB を受け取る素の関数。`functions.ts` がそれを包むサーバ関数という分け方にしている。単体テストは `queries.ts` / `mutations.ts` 側に書く
 - `src/lib/` — 画面とサーバの両方が使う小物（文字数上限、ロール、日付、入力検証、並べ替え）
