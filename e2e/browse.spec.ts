@@ -33,6 +33,14 @@ test.describe('エキストラの閲覧導線', () => {
     ).toHaveAttribute('href', new RegExp(`^mailto:${E2E_FIXTURE.adminEmail}`))
     await expect(page.getByText('次の練習')).toBeVisible()
     await expect(page.getByText('18:30〜21:00')).toBeVisible()
+    await expect(page.getByText(E2E_FIXTURE.announcementTitle)).toBeVisible()
+    await expect(page.getByText(E2E_FIXTURE.announcementBody)).toBeVisible()
+    await expect(
+      page.getByRole('link', { name: '関連リンクを開く' }),
+    ).toHaveAttribute('href', E2E_FIXTURE.announcementUrl)
+    await expect(
+      page.getByText(E2E_FIXTURE.olderAnnouncementTitle),
+    ).toBeVisible()
     await page.locator('.pamphlet-hero details summary').click()
     await expect(
       page.getByText(E2E_FIXTURE.upcomingPracticeDetail),

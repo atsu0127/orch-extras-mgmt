@@ -15,13 +15,16 @@ const DUPLICATE_DATE = '2099-03-22'
 const PIECE_TITLE = 'E2E序曲'
 const PIECE_COMPOSER = 'E2E作曲家'
 const PIECE_BOWING = 'https://example.com/e2e/bowing'
+const ANNOUNCEMENT_TITLE = 'E2Eお知らせ'
+const ANNOUNCEMENT_BODY = 'E2E用の本文です'
+const ANNOUNCEMENT_URL = 'https://example.com/e2e/announcement'
 
 test.describe('管理者の登録・編集導線', () => {
   test.skip(!adminPassword, 'E2E_ADMIN_PASSWORD が未設定')
   // 同じ D1 に書き込むため直列。途中失敗で汚れた状態を次へ持ち越さない
   test.describe.configure({ mode: 'serial' })
 
-  test('会場・演奏会・資料・練習・曲を登録し、複製と閲覧反映を確認できる', async ({
+  test('会場・演奏会・資料・練習・曲・お知らせを登録し、複製と閲覧反映を確認できる', async ({
     page,
   }) => {
     await page.goto('/login')
@@ -117,10 +120,25 @@ test.describe('管理者の登録・編集導線', () => {
     await pieceForm.getByRole('button', { name: '保存' }).click()
     await expect(page.getByText(PIECE_TITLE, { exact: true })).toBeVisible()
 
+    await page.goto('/admin/announcements')
+    const announcementForm = adminForm(page, 'お知らせを追加')
+    await announcementForm.getByLabel('タイトル').fill(ANNOUNCEMENT_TITLE)
+    await announcementForm.getByLabel('本文').fill(ANNOUNCEMENT_BODY)
+    await announcementForm.getByLabel('関連URL（任意）').fill(ANNOUNCEMENT_URL)
+    await announcementForm.getByRole('button', { name: '保存' }).click()
+    await expect(
+      page.getByText(ANNOUNCEMENT_TITLE, { exact: true }),
+    ).toBeVisible()
+
     await page.getByRole('link', { name: 'ホーム' }).click()
     await selectConcert(page, CONCERT)
     await expect(page.getByRole('heading', { name: CONCERT })).toBeVisible()
     await expect(page.getByText(CONCERT_NOTE)).toBeVisible()
+    await expect(page.getByText(ANNOUNCEMENT_TITLE)).toBeVisible()
+    await expect(page.getByText(ANNOUNCEMENT_BODY)).toBeVisible()
+    await expect(
+      page.getByRole('link', { name: '関連リンクを開く' }),
+    ).toHaveAttribute('href', ANNOUNCEMENT_URL)
     await expect(
       page.getByRole('link', { name: RESOURCE_TITLE }),
     ).toHaveAttribute('href', RESOURCE_URL)

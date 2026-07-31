@@ -117,6 +117,7 @@ function clearData(): Array<string> {
     'DELETE FROM practice_media;',
     'DELETE FROM pieces;',
     'DELETE FROM concert_resources;',
+    'DELETE FROM announcements;',
     'DELETE FROM practices;',
     'DELETE FROM link_checks;',
     'DELETE FROM concerts;',
@@ -126,7 +127,7 @@ function clearData(): Array<string> {
     'DELETE FROM app_settings;',
     'DELETE FROM credentials;',
     `DELETE FROM sqlite_sequence WHERE name IN (
-  'practice_media', 'pieces', 'concert_resources', 'practices',
+  'practice_media', 'pieces', 'concert_resources', 'announcements', 'practices',
   'link_checks', 'concerts', 'venues', 'login_attempts'
 );`,
   ]
@@ -159,6 +160,11 @@ VALUES (1, 1, ${text(f.recordingTitle)}, ${text(f.recordingUrl)}, 0, ${text(now)
 VALUES
   (1, 1, ${text(f.pieceWithBowing)}, ${text(f.pieceWithBowingComposer)}, 0, ${text(f.pieceWithBowingUrl)}, ${text(now)}, ${text(now)}),
   (2, 1, ${text(f.pieceWithoutBowing)}, ${text(f.pieceWithoutBowingComposer)}, 1, NULL, ${text(now)}, ${text(now)});`,
+
+    `INSERT INTO announcements (id, concert_id, title, body, url, created_at, updated_at)
+VALUES
+  (1, 1, ${text(f.olderAnnouncementTitle)}, ${text(f.olderAnnouncementBody)}, NULL, ${text('2026-07-20T03:00:00.000Z')}, ${text('2026-07-20T03:00:00.000Z')}),
+  (2, 1, ${text(f.announcementTitle)}, ${text(f.announcementBody)}, ${text(f.announcementUrl)}, ${text('2026-07-30T03:00:00.000Z')}, ${text('2026-07-30T03:00:00.000Z')});`,
   ]
 }
 

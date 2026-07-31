@@ -22,4 +22,10 @@ export const E2E_FIXTURE = {
   pieceWithBowingUrl: 'https://example.com/bowing/1',
   pieceWithoutBowing: 'フィンランディア',
   pieceWithoutBowingComposer: 'シベリウス',
+  announcementTitle: 'ボウイングを更新しました',
+  announcementBody:
+    '弦パートのボウイングを差し替えました。練習前に確認してください。',
+  announcementUrl: 'https://example.com/bowing/1',
+  olderAnnouncementTitle: '練習会場の案内',
+  olderAnnouncementBody: '次回は市民会館の大練習室です。',
 } as const
