@@ -219,7 +219,7 @@ function ConcertItem({ concert, venues }: ConcertItemProps) {
         </Text>
         <Text size="sm" c="dimmed">
           {concert.attendanceUrl ? '出欠の回答先あり' : '出欠の回答先は未設定'}
-          {` / 練習 ${concert.practiceCount} 件 / 曲 ${concert.pieceCount} 件 / 資料 ${concert.resourceCount} 件`}
+          {` / 練習 ${concert.practiceCount} 件 / 曲 ${concert.pieceCount} 件 / 資料 ${concert.resourceCount} 件 / お知らせ ${concert.announcementCount} 件`}
         </Text>
 
         <ResourceSection concert={concert} />
@@ -566,11 +566,14 @@ function ConcertForm({ concert, venues, onDone }: ConcertFormProps) {
 
 function deleteWarning(concert: ConcertAdminItem): string {
   if (
-    concert.practiceCount + concert.pieceCount + concert.resourceCount ===
+    concert.practiceCount +
+      concert.pieceCount +
+      concert.resourceCount +
+      concert.announcementCount ===
     0
   ) {
-    return 'この演奏会に練習と曲と資料は登録されていません。元に戻せません。'
+    return 'この演奏会に練習と曲と資料とお知らせは登録されていません。元に戻せません。'
   }
 
-  return `練習 ${concert.practiceCount} 件（付いている録音リンクを含む）、曲 ${concert.pieceCount} 件、資料リンク ${concert.resourceCount} 件も一緒に消えます。元に戻せません。残しておくだけならアーカイブを使ってください。`
+  return `練習 ${concert.practiceCount} 件（付いている録音リンクを含む）、曲 ${concert.pieceCount} 件、資料リンク ${concert.resourceCount} 件、お知らせ ${concert.announcementCount} 件も一緒に消えます。元に戻せません。残しておくだけならアーカイブを使ってください。`
 }
