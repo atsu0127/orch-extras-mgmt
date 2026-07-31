@@ -2,6 +2,7 @@ import { Button, Stack, Text, Title } from '@mantine/core'
 import { createFileRoute } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
 import { z } from 'zod'
+import { listAnnouncementsForConcert } from '../../announcements/queries'
 import { requireAuth } from '../../auth/middleware'
 import { ExternalLink } from '../../components/external-link'
 import { EmptyState, NoConcertState } from '../../components/states'
@@ -16,6 +17,7 @@ import {
   formatDate,
   formatFullDate,
   formatTimeRange,
+  jstDateOf,
   todayInJst,
 } from '../../lib/date'
 import {
@@ -32,14 +34,16 @@ const getDashboard = createServerFn({ method: 'GET' })
   .validator(z.object({ concertId: z.number().int().positive() }))
   .handler(async ({ data }) => {
     const db = getDb()
-    const [concert, nextPractice, appSettings, resources] = await Promise.all([
-      getConcertOverview(db, data.concertId),
-      getNextPractice(db, data.concertId, todayInJst()),
-      getAppSettings(db),
-      listConcertResources(db, data.concertId),
-    ])
+    const [concert, nextPractice, appSettings, resources, announcements] =
+      await Promise.all([
+        getConcertOverview(db, data.concertId),
+        getNextPractice(db, data.concertId, todayInJst()),
+        getAppSettings(db),
+        listConcertResources(db, data.concertId),
+        listAnnouncementsForConcert(db, data.concertId),
+      ])
 
-    return { concert, nextPractice, appSettings, resources }
+    return { concert, nextPractice, appSettings, resources, announcements }
   })
 
 export const Route = createFileRoute('/_authed/')({
@@ -68,6 +72,13 @@ type DashboardContentProps = {
     title: string
     url: string
   }>
+  announcements: Array<{
+    id: number
+    title: string
+    body: string
+    url: string | null
+    createdAt: string
+  }>
 }
 
 /** ホームだけパンフレット型。他タブのコンパクト表現とは分ける */
@@ -76,6 +87,7 @@ export function DashboardContent({
   nextPractice,
   appSettings,
   resources,
+  announcements,
 }: DashboardContentProps) {
   const performanceCalendarUrl = concert.performanceDate
     ? buildPerformanceCalendarUrl({
@@ -88,28 +100,86 @@ export function DashboardContent({
       })
     : null
 
+  const [latestAnnouncement, ...olderAnnouncements] = announcements
+
   return (
     <div className="pamphlet">
       <div className="pamphlet-board">
-        {nextPractice ? (
-          <NextPracticeProgram
-            practice={nextPractice}
-            concertName={concert.name}
-          />
-        ) : (
-          <section
-            className="pamphlet-hero"
-            aria-labelledby="next-practice-title"
-          >
-            <p className="pamphlet-kicker" id="next-practice-title">
-              次の練習
-            </p>
-            <EmptyState
-              title="今後の練習の予定はありません"
-              description="終わった練習は日程一覧から見られます。"
+        <div className="pamphlet-main">
+          {nextPractice ? (
+            <NextPracticeProgram
+              practice={nextPractice}
+              concertName={concert.name}
             />
-          </section>
-        )}
+          ) : (
+            <section
+              className="pamphlet-hero"
+              aria-labelledby="next-practice-title"
+            >
+              <p className="pamphlet-kicker" id="next-practice-title">
+                次の練習
+              </p>
+              <EmptyState
+                title="今後の練習の予定はありません"
+                description="終わった練習は日程一覧から見られます。"
+              />
+            </section>
+          )}
+
+          {latestAnnouncement && (
+            <section
+              className="pamphlet-section pamphlet-announcements"
+              aria-labelledby="announcements-title"
+            >
+              <p className="pamphlet-kicker" id="announcements-title">
+                お知らせ
+              </p>
+              <article className="pamphlet-announcement pamphlet-announcement--latest">
+                <p className="pamphlet-announcement-date">
+                  {formatDate(
+                    jstDateOf(new Date(latestAnnouncement.createdAt)),
+                  )}
+                </p>
+                <Title
+                  order={2}
+                  className="pamphlet-heading pamphlet-announcement-title"
+                >
+                  {latestAnnouncement.title}
+                </Title>
+                <p className="detail pamphlet-note">
+                  {latestAnnouncement.body}
+                </p>
+                {latestAnnouncement.url && (
+                  <div className="pamphlet-links">
+                    <ExternalLink href={latestAnnouncement.url}>
+                      関連リンクを開く
+                    </ExternalLink>
+                  </div>
+                )}
+              </article>
+              {olderAnnouncements.length > 0 && (
+                <Stack gap="md" mt="md" className="pamphlet-announcement-list">
+                  {olderAnnouncements.map((item) => (
+                    <article key={item.id} className="pamphlet-announcement">
+                      <p className="pamphlet-announcement-date">
+                        {formatDate(jstDateOf(new Date(item.createdAt)))}
+                      </p>
+                      <Text fw={600}>{item.title}</Text>
+                      <p className="detail pamphlet-note">{item.body}</p>
+                      {item.url && (
+                        <div className="pamphlet-links">
+                          <ExternalLink href={item.url}>
+                            関連リンクを開く
+                          </ExternalLink>
+                        </div>
+                      )}
+                    </article>
+                  ))}
+                </Stack>
+              )}
+            </section>
+          )}
+        </div>
 
         <div className="pamphlet-aside">
           <section

@@ -71,6 +71,23 @@ export const concertResources = sqliteTable(
   ],
 )
 
+export const announcements = sqliteTable(
+  'announcements',
+  {
+    id: integer('id').primaryKey({ autoIncrement: true }),
+    concertId: integer('concert_id')
+      .notNull()
+      .references(() => concerts.id, { onDelete: 'cascade' }),
+    title: text('title', { length: MAX_LENGTH.announcementTitle }).notNull(),
+    body: text('body', { length: MAX_LENGTH.announcementBody }).notNull(),
+    url: text('url', { length: MAX_LENGTH.url }),
+    ...timestamps(),
+  },
+  (t) => [
+    index('announcements_concert_created_idx').on(t.concertId, t.createdAt),
+  ],
+)
+
 export const appSettings = sqliteTable('app_settings', {
   id: integer('id').primaryKey(),
   adminEmail: text('admin_email', { length: MAX_LENGTH.adminEmail }),
@@ -185,6 +202,8 @@ export type Concert = typeof concerts.$inferSelect
 export type NewConcert = typeof concerts.$inferInsert
 export type ConcertResource = typeof concertResources.$inferSelect
 export type NewConcertResource = typeof concertResources.$inferInsert
+export type Announcement = typeof announcements.$inferSelect
+export type NewAnnouncement = typeof announcements.$inferInsert
 export type AppSetting = typeof appSettings.$inferSelect
 export type NewAppSetting = typeof appSettings.$inferInsert
 export type Practice = typeof practices.$inferSelect

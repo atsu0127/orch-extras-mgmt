@@ -16,6 +16,7 @@ import { Route as AuthedAdminRouteRouteImport } from './routes/_authed/admin/rou
 import { Route as AuthedPiecesRouteImport } from './routes/_authed/pieces'
 import { Route as AuthedPracticesRouteImport } from './routes/_authed/practices'
 import { Route as AuthedAdminIndexRouteImport } from './routes/_authed/admin/index'
+import { Route as AuthedAdminAnnouncementsRouteImport } from './routes/_authed/admin/announcements'
 import { Route as AuthedAdminConcertsRouteImport } from './routes/_authed/admin/concerts'
 import { Route as AuthedAdminPiecesRouteImport } from './routes/_authed/admin/pieces'
 import { Route as AuthedAdminPracticesRouteImport } from './routes/_authed/admin/practices'
@@ -56,6 +57,12 @@ const AuthedAdminIndexRoute = AuthedAdminIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AuthedAdminRouteRoute,
 } as any)
+const AuthedAdminAnnouncementsRoute =
+  AuthedAdminAnnouncementsRouteImport.update({
+    id: '/announcements',
+    path: '/announcements',
+    getParentRoute: () => AuthedAdminRouteRoute,
+  } as any)
 const AuthedAdminConcertsRoute = AuthedAdminConcertsRouteImport.update({
   id: '/concerts',
   path: '/concerts',
@@ -88,6 +95,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AuthedAdminRouteRouteWithChildren
   '/pieces': typeof AuthedPiecesRoute
   '/practices': typeof AuthedPracticesRoute
+  '/admin/announcements': typeof AuthedAdminAnnouncementsRoute
   '/admin/concerts': typeof AuthedAdminConcertsRoute
   '/admin/pieces': typeof AuthedAdminPiecesRoute
   '/admin/practices': typeof AuthedAdminPracticesRoute
@@ -100,6 +108,7 @@ export interface FileRoutesByTo {
   '/pieces': typeof AuthedPiecesRoute
   '/practices': typeof AuthedPracticesRoute
   '/': typeof AuthedIndexRoute
+  '/admin/announcements': typeof AuthedAdminAnnouncementsRoute
   '/admin/concerts': typeof AuthedAdminConcertsRoute
   '/admin/pieces': typeof AuthedAdminPiecesRoute
   '/admin/practices': typeof AuthedAdminPracticesRoute
@@ -115,6 +124,7 @@ export interface FileRoutesById {
   '/_authed/pieces': typeof AuthedPiecesRoute
   '/_authed/practices': typeof AuthedPracticesRoute
   '/_authed/': typeof AuthedIndexRoute
+  '/_authed/admin/announcements': typeof AuthedAdminAnnouncementsRoute
   '/_authed/admin/concerts': typeof AuthedAdminConcertsRoute
   '/_authed/admin/pieces': typeof AuthedAdminPiecesRoute
   '/_authed/admin/practices': typeof AuthedAdminPracticesRoute
@@ -130,6 +140,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/pieces'
     | '/practices'
+    | '/admin/announcements'
     | '/admin/concerts'
     | '/admin/pieces'
     | '/admin/practices'
@@ -142,6 +153,7 @@ export interface FileRouteTypes {
     | '/pieces'
     | '/practices'
     | '/'
+    | '/admin/announcements'
     | '/admin/concerts'
     | '/admin/pieces'
     | '/admin/practices'
@@ -156,6 +168,7 @@ export interface FileRouteTypes {
     | '/_authed/pieces'
     | '/_authed/practices'
     | '/_authed/'
+    | '/_authed/admin/announcements'
     | '/_authed/admin/concerts'
     | '/_authed/admin/pieces'
     | '/_authed/admin/practices'
@@ -220,6 +233,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedAdminIndexRouteImport
       parentRoute: typeof AuthedAdminRouteRoute
     }
+    '/_authed/admin/announcements': {
+      id: '/_authed/admin/announcements'
+      path: '/announcements'
+      fullPath: '/admin/announcements'
+      preLoaderRoute: typeof AuthedAdminAnnouncementsRouteImport
+      parentRoute: typeof AuthedAdminRouteRoute
+    }
     '/_authed/admin/concerts': {
       id: '/_authed/admin/concerts'
       path: '/concerts'
@@ -259,6 +279,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthedAdminRouteRouteChildren {
+  AuthedAdminAnnouncementsRoute: typeof AuthedAdminAnnouncementsRoute
   AuthedAdminConcertsRoute: typeof AuthedAdminConcertsRoute
   AuthedAdminPiecesRoute: typeof AuthedAdminPiecesRoute
   AuthedAdminPracticesRoute: typeof AuthedAdminPracticesRoute
@@ -268,6 +289,7 @@ interface AuthedAdminRouteRouteChildren {
 }
 
 const AuthedAdminRouteRouteChildren: AuthedAdminRouteRouteChildren = {
+  AuthedAdminAnnouncementsRoute: AuthedAdminAnnouncementsRoute,
   AuthedAdminConcertsRoute: AuthedAdminConcertsRoute,
   AuthedAdminPiecesRoute: AuthedAdminPiecesRoute,
   AuthedAdminPracticesRoute: AuthedAdminPracticesRoute,

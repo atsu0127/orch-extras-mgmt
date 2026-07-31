@@ -2,6 +2,7 @@ import { countDistinct, desc, eq, sql } from 'drizzle-orm'
 import { listConcertResourcesByConcert } from '../concert-resources/queries'
 import type { Db } from '../db/client'
 import {
+  announcements,
   type ConcertResource,
   type ConcertStatus,
   concerts,
@@ -63,6 +64,7 @@ export type ConcertAdminItem = {
   practiceCount: number
   pieceCount: number
   resourceCount: number
+  announcementCount: number
   resources: Array<ConcertResource>
 }
 
@@ -83,10 +85,12 @@ export async function listConcertsForAdmin(
       // join を2本重ねると行が掛け算になるので、distinct で数える
       practiceCount: countDistinct(practices.id),
       pieceCount: countDistinct(pieces.id),
+      announcementCount: countDistinct(announcements.id),
     })
     .from(concerts)
     .leftJoin(practices, eq(practices.concertId, concerts.id))
     .leftJoin(pieces, eq(pieces.concertId, concerts.id))
+    .leftJoin(announcements, eq(announcements.concertId, concerts.id))
     .groupBy(concerts.id)
     .orderBy(
       sql`${concerts.performanceDate} is null`,

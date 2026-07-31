@@ -446,9 +446,31 @@ body {
   flex-direction: column;
 }
 
+.pamphlet-main,
 .pamphlet-aside {
   display: flex;
   flex-direction: column;
+}
+
+.pamphlet-announcement-date {
+  margin: 0 0 0.35rem;
+  color: var(--app-muted);
+  font-size: 0.8125rem;
+}
+
+.pamphlet-announcement--latest .pamphlet-announcement-title {
+  font-size: 1.25rem;
+}
+
+.pamphlet-announcement-list {
+  text-align: left;
+  max-width: 24rem;
+  margin-inline: auto;
+}
+
+.pamphlet-announcement-list .pamphlet-announcement {
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--app-border);
 }
 
 .pamphlet-hero,
@@ -544,14 +566,24 @@ body {
     border-bottom: 1px solid var(--app-border);
   }
 
-  .pamphlet-board > .pamphlet-hero,
+  .pamphlet-board > .pamphlet-main,
   .pamphlet-board > .pamphlet-aside {
     border-bottom: none;
   }
 
-  .pamphlet-board > .pamphlet-hero {
-    padding: 2rem 1.75rem 2rem 0.75rem;
+  .pamphlet-board > .pamphlet-main {
+    padding: 0 1.75rem 0 0.75rem;
     border-right: 1px solid var(--app-border);
+  }
+
+  .pamphlet-main .pamphlet-hero,
+  .pamphlet-main .pamphlet-section {
+    padding-inline: 0;
+  }
+
+  .pamphlet-main .pamphlet-hero:last-child,
+  .pamphlet-main .pamphlet-section:last-child {
+    border-bottom: none;
   }
 
   .pamphlet-aside .pamphlet-section {

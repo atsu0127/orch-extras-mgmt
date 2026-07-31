@@ -64,6 +64,7 @@ const ADMIN_DESKTOP_LINKS = [
   { to: '/admin/concerts' as const, label: '演奏会' },
   { to: '/admin/practices' as const, label: '練習の編集' },
   { to: '/admin/pieces' as const, label: '曲の編集' },
+  { to: '/admin/announcements' as const, label: 'お知らせ' },
   { to: '/admin/venues' as const, label: '会場' },
   { to: '/admin/settings' as const, label: '設定' },
 ]
@@ -75,6 +76,7 @@ type AppPath =
   | '/admin/concerts'
   | '/admin/practices'
   | '/admin/pieces'
+  | '/admin/announcements'
   | '/admin/venues'
   | '/admin/settings'
 

@@ -46,6 +46,7 @@ describe('createConcert', () => {
         practiceCount: 0,
         pieceCount: 0,
         resourceCount: 0,
+        announcementCount: 0,
         resources: [],
       },
     ])
@@ -165,12 +166,14 @@ describe('deleteConcert', () => {
       practiceCount: 1,
       pieceCount: 2,
       resourceCount: 2,
+      announcementCount: 0,
       resources: [{ title: '消える資料' }, { title: '追加資料' }],
     })
     expect(items.find(({ id }) => id === 2)).toMatchObject({
       practiceCount: 1,
       pieceCount: 1,
       resourceCount: 1,
+      announcementCount: 0,
       resources: [{ title: '残る資料' }],
     })
   })

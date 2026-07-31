@@ -19,6 +19,7 @@ function AdminLayout() {
         <AdminNavLink to="/admin/concerts">演奏会</AdminNavLink>
         <AdminNavLink to="/admin/practices">練習の編集</AdminNavLink>
         <AdminNavLink to="/admin/pieces">曲の編集</AdminNavLink>
+        <AdminNavLink to="/admin/announcements">お知らせ</AdminNavLink>
         <AdminNavLink to="/admin/venues">会場</AdminNavLink>
         <AdminNavLink to="/admin/settings">設定</AdminNavLink>
       </nav>
@@ -32,6 +33,7 @@ type AdminNavLinkProps = {
     | '/admin/concerts'
     | '/admin/practices'
     | '/admin/pieces'
+    | '/admin/announcements'
     | '/admin/venues'
     | '/admin/settings'
   children: string

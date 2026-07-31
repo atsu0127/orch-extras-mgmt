@@ -6,7 +6,7 @@ alwaysApply: false
 
 # D1 とマイグレーション
 
-テーブル定義は `docs/design.md` の6章が正。11テーブルの列・制約・索引はそこに合わせる。
+テーブル定義は `docs/design.md` の6章が正。12テーブルの列・制約・索引はそこに合わせる。
 
 ## クエリ本数を意識する
 
@@ -47,7 +47,7 @@ db.select({ practiceCount: countDistinct(practices.id) })
 
 ## 削除の意味づけを守る
 
-- `concerts` の削除は配下の `practices` / `practice_media` / `pieces` / `concert_resources` も削除する（CASCADE）
+- `concerts` の削除は配下の `practices` / `practice_media` / `pieces` / `concert_resources` / `announcements` も削除する（CASCADE）
 - `venues` の削除では練習を残し、会場を未設定にする（SET NULL）。過去の練習記録を失わないため
 - `link_checks` は適用済みマイグレーションを戻さず残している未使用テーブル。今回の実装ではデータを作らず、Cron 掃除も行わない
 

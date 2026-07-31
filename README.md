@@ -2,14 +2,14 @@
 
 オーケストラのエキストラ（客演奏者）向け情報ポータル。練習日程、出欠の回答先、演奏会資料、地図、カレンダー、ボウイング、練習の録音を1か所にまとめて公開し、管理者がブラウザから更新できるようにする。
 
-現在の状態: **Phase 9 完了**。本番で受け入れ確認済み。実データと問い合わせ先メールは管理画面から運用する。受け入れで見つかった UI 改善（外部リンクの視認性・管理画面の行アクション）も反映済み。
+現在の状態: **Phase 10 実装済み**。演奏会ごとのお知らせを管理・閲覧できる。初回リリース（Phase 0〜9）は完了済み。
 
 本番: <https://orch-extras-mgmt.atsu-dq9.workers.dev>
 
 ## ドキュメント
 
 - [設計書](docs/design.md) — 機能仕様、データモデル、認証設計、外部サービス導線の仕様。決定の一覧は14章
-- [タスク一覧](docs/tasks.md) — リリースまでの作業とフェーズ、受け入れ条件
+- [タスク一覧](docs/tasks.md) — 次期改善の作業、依存、受け入れ条件。初回リリース分は[アーカイブ](docs/archive/tasks-initial-release.md)
 - [ADR](docs/adr/) — 実装中に行った設計判断の記録（[MADR](https://adr.github.io/madr/) の minimal 版）
 - [セキュリティ点検（T8-1）](docs/security-review-t8.md) — サーバ関数の認可・入力検証・秘密情報の点検記録
 - [受け入れ確認ガイド（T8-4）](docs/acceptance-guide.md) — 本番でのチェック手順
@@ -21,6 +21,7 @@
 - 練習ごとの録音・録画リンク
 - 曲ごとのボウイングリンク
 - 演奏会の備考と最大5件の資料リンク
+- 演奏会ごとのお知らせ（最新順、最大10件）
 - 管理者への `mailto:` 問い合わせ
 - 本番・練習会場の Google Maps と Google カレンダー導線
 - 練習の複製入力
@@ -134,8 +135,9 @@ pnpm exec wrangler d1 execute DB --local --command "SELECT 1"  # 中身を見る
 1. **会場** — 練習・本番で使う場所
 2. **演奏会** — 名前・状態・本番日・本番会場・出欠URL・備考
 3. **演奏会資料** — 最大5件。並べ替えて表示順を決める
-4. **練習** — 日付・時刻・会場・詳細。終わった練習には録音リンクを付ける
-5. **曲** — タイトル・作曲者・ボウイングURL。演奏順に並べる
+4. **お知らせ** — 最大10件。新しいものがホームの先頭に出る
+5. **練習** — 日付・時刻・会場・詳細。終わった練習には録音リンクを付ける
+6. **曲** — タイトル・作曲者・ボウイングURL。演奏順に並べる
 
 練習の繰り返し入力は「複製して編集」で日付以外を引き継げる（録音は引き継がない）。
 
@@ -154,7 +156,7 @@ pnpm exec wrangler d1 execute DB --local --command "SELECT 1"  # 中身を見る
 - `src/routes/_authed/` — ログイン必須の画面。`route.tsx` がヘッダ（演奏会セレクタとナビゲーション）と `main` を持つ
 - `src/routes/_authed/admin/` — 管理画面。`route.tsx` が管理内サブナビを持ち、`/` は演奏会へ誘導する。画面ごとにサーバ関数と入力欄を1ファイルにまとめている
 - `src/components/` — 空状態・読み込み中・エラー・外部リンク・練習1件の表示。読み込み中とエラーは `src/router.tsx` で既定に設定してあるので、画面ごとに書かなくてよい
-- `src/concerts/` `src/practices/` `src/pieces/` `src/venues/` — 画面が使うデータ。`queries.ts` が読み取り、`mutations.ts` が更新、どちらも DB を受け取る素の関数。`functions.ts` がそれを包むサーバ関数という分け方にしている。単体テストは `queries.ts` / `mutations.ts` 側に書く
+- `src/concerts/` `src/practices/` `src/pieces/` `src/venues/` `src/announcements/` — 画面が使うデータ。`queries.ts` が読み取り、`mutations.ts` が更新、どちらも DB を受け取る素の関数。`functions.ts` がそれを包むサーバ関数という分け方にしている（お知らせは route 内にサーバ関数を置く）。単体テストは `queries.ts` / `mutations.ts` 側に書く
 - `src/lib/` — 画面とサーバの両方が使う小物（文字数上限、ロール、日付、入力検証、並べ替え）
 
 **画面から `src/db/schema.ts` を import しないこと**。スキーマを読むと drizzle がクライアントのバンドルに載る。画面にも出てくる定数は `src/lib/limits.ts` や `src/lib/roles.ts` のように `src/lib/` に置き、スキーマ側がそれを読む向きにしている。
