@@ -1,4 +1,5 @@
 import { Text } from '@mantine/core'
+import { IconExternalLink } from '@tabler/icons-react'
 import { createFileRoute } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
 import { z } from 'zod'
@@ -58,7 +59,7 @@ function PiecesPage() {
                   </Text>
                 </span>
                 <span className="panel-row-chevron" aria-hidden>
-                  ›
+                  <IconExternalLink size={18} stroke={1.75} />
                 </span>
               </a>
             ) : (

@@ -20,7 +20,7 @@ TanStack Start (React + TypeScript) を SPA モードでビルドし、Cloudflar
 
 - ランタイムは mise で固定（`mise.toml`）。Vite 8 / TypeScript 7 / React 19
 - Lint と整形は Biome（`biome.json`）
-- 単体テストは Vitest（`src/**/*.test.ts`、node 環境、Start プラグインは読み込まない）
+- 単体テストは Vitest（`src/**/*.test.ts` / `src/**/*.test.tsx`、node 環境、Start プラグインは読み込まない）
 - E2E は Playwright（`e2e/`、モバイル幅）。`E2E_BASE_URL` でデプロイ先にも向けられる
 - Worker のエントリは自前の `src/server.ts`（Start の fetch をラップして公開）
 

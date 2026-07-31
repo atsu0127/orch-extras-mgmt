@@ -10,6 +10,10 @@ import {
   useAdminAction,
   useAdminForm,
 } from '../../../components/admin-form'
+import {
+  AdminManagedLinkRow,
+  AdminRowActions,
+} from '../../../components/admin-row-actions'
 import { ConfirmButton } from '../../../components/confirm-button'
 import {
   AdminList,
@@ -319,43 +323,37 @@ function ResourceItem({ resource, first, last }: ResourceItemProps) {
 
   return (
     <li>
-      <ExternalLink href={resource.url}>{resource.title}</ExternalLink>
-      <ControlRow failure={action.failure}>
-        <SecondaryButton onClick={() => setEditing(true)}>編集</SecondaryButton>
-        <SecondaryButton
-          aria-label={`「${resource.title}」を上へ`}
-          disabled={first || action.running}
-          onClick={() =>
-            void action.run(() =>
-              move({ data: { id: resource.id, direction: 'up' } }),
-            )
-          }
-        >
-          ↑
-        </SecondaryButton>
-        <SecondaryButton
-          aria-label={`「${resource.title}」を下へ`}
-          disabled={last || action.running}
-          onClick={() =>
-            void action.run(() =>
-              move({ data: { id: resource.id, direction: 'down' } }),
-            )
-          }
-        >
-          ↓
-        </SecondaryButton>
-        <ConfirmButton
-          label="削除"
-          title={`「${resource.title}」を削除しますか？`}
-          description={
-            <p>リンクだけを消します。リンク先の外部ファイルは残ります。</p>
-          }
-          disabled={action.running}
-          onConfirm={() =>
-            action.run(() => remove({ data: { id: resource.id } }))
-          }
-        />
-      </ControlRow>
+      <AdminManagedLinkRow
+        link={<ExternalLink href={resource.url}>{resource.title}</ExternalLink>}
+        actions={
+          <AdminRowActions
+            failure={action.failure}
+            disabled={action.running}
+            onEdit={() => setEditing(true)}
+            onMoveUp={() =>
+              void action.run(() =>
+                move({ data: { id: resource.id, direction: 'up' } }),
+              )
+            }
+            onMoveDown={() =>
+              void action.run(() =>
+                move({ data: { id: resource.id, direction: 'down' } }),
+              )
+            }
+            canMoveUp={!first}
+            canMoveDown={!last}
+            moveUpLabel={`「${resource.title}」を上へ`}
+            moveDownLabel={`「${resource.title}」を下へ`}
+            deleteTitle={`「${resource.title}」を削除しますか？`}
+            deleteDescription={
+              <p>リンクだけを消します。リンク先の外部ファイルは残ります。</p>
+            }
+            onDelete={() =>
+              action.run(() => remove({ data: { id: resource.id } }))
+            }
+          />
+        }
+      />
     </li>
   )
 }

@@ -10,13 +10,8 @@ import {
   useAdminAction,
   useAdminForm,
 } from '../../../components/admin-form'
-import { ConfirmButton } from '../../../components/confirm-button'
-import {
-  AdminList,
-  AdminListItem,
-  ControlRow,
-  SecondaryButton,
-} from '../../../components/control-row'
+import { AdminRowActions } from '../../../components/admin-row-actions'
+import { AdminList, AdminListItem } from '../../../components/control-row'
 import { ExternalLink } from '../../../components/external-link'
 import { AppTextInput } from '../../../components/form-controls'
 import { OrderBadge } from '../../../components/practice-item'
@@ -175,42 +170,28 @@ function PieceItem({
           </Text>
         )}
 
-        <ControlRow failure={action.failure}>
-          <SecondaryButton
-            aria-label={`「${piece.title}」を前へ`}
-            disabled={first || action.running}
-            onClick={() =>
-              void action.run(() =>
-                reorder({ data: { id: piece.id, direction: 'up' } }),
-              )
-            }
-          >
-            ↑
-          </SecondaryButton>
-          <SecondaryButton
-            aria-label={`「${piece.title}」を後へ`}
-            disabled={last || action.running}
-            onClick={() =>
-              void action.run(() =>
-                reorder({ data: { id: piece.id, direction: 'down' } }),
-              )
-            }
-          >
-            ↓
-          </SecondaryButton>
-          <SecondaryButton onClick={() => setEditing(true)}>
-            編集
-          </SecondaryButton>
-          <ConfirmButton
-            label="削除"
-            title={`「${piece.title}」を削除しますか？`}
-            description={<p>{deleteWarning(piece)}</p>}
-            disabled={action.running}
-            onConfirm={() =>
-              action.run(() => remove({ data: { id: piece.id } }))
-            }
-          />
-        </ControlRow>
+        <AdminRowActions
+          failure={action.failure}
+          disabled={action.running}
+          onEdit={() => setEditing(true)}
+          onMoveUp={() =>
+            void action.run(() =>
+              reorder({ data: { id: piece.id, direction: 'up' } }),
+            )
+          }
+          onMoveDown={() =>
+            void action.run(() =>
+              reorder({ data: { id: piece.id, direction: 'down' } }),
+            )
+          }
+          canMoveUp={!first}
+          canMoveDown={!last}
+          moveUpLabel={`「${piece.title}」を前へ`}
+          moveDownLabel={`「${piece.title}」を後へ`}
+          deleteTitle={`「${piece.title}」を削除しますか？`}
+          deleteDescription={<p>{deleteWarning(piece)}</p>}
+          onDelete={() => action.run(() => remove({ data: { id: piece.id } }))}
+        />
       </Stack>
     </AdminListItem>
   )
