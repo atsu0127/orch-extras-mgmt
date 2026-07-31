@@ -429,12 +429,14 @@ secret は `wrangler secret put` で設定する。ローカル開発では `.de
 
 E2E はローカルの D1（wrangler のローカルモード）に対して実行する。パスワードは `E2E_ADMIN_PASSWORD` / `E2E_EXTRA_PASSWORD` で渡し、未設定のテストは飛ばす。
 
-3のうちパスワードを実際に書き換えるものは `E2E_PASSWORD_CHANGE=1` を付けたときだけ動かす。`E2E_BASE_URL` で本番を向いている場合は動かさない。ロールごとにパスワードは1本しかないため、この検証を含めるときは直列に実行する。
+ローカル実行では Playwright の `globalSetup` が `pnpm db:migrate` と `pnpm db:seed:reset` を行い、固定フィクスチャへ戻す。`db:seed --reset` はローカル専用で、`--remote` との併用は拒否する。通常の `pnpm db:seed` は空のときだけサンプルを入れる挙動のままとする。
+
+3のうちパスワードを実際に書き換えるものは `E2E_PASSWORD_CHANGE=1` を付けたときだけ動かす。`E2E_BASE_URL` で本番を向いている場合は動かさない。ロールごとにパスワードは1本しかないため、この検証を含めるときは直列に実行する。CI では付けない。
 
 ## 12. CI/CD と環境
 
 - 環境は本番のみ。プレビュー環境は必要になってから検討する
-- GitHub Actions: PR で Lint・型チェック・Vitest を実行する。E2E が整備できた段階で Playwright も PR の検査に加える
+- GitHub Actions: PR で Lint・型チェック・Vitest・Playwright（主要導線。パスワード変更は除く）を実行する
 - main ブランチへのマージで `wrangler d1 migrations apply`（本番）→ `wrangler deploy` を実行する
 - デプロイに使う Cloudflare API トークンは GitHub Secrets に置く
 - マイグレーションは前方互換を保つ（列の削除やリネームは、追加→移行→削除の順に分ける）。バックアップは D1 の `wrangler d1 export` を必要時に手動で取る
@@ -482,3 +484,4 @@ E2E はローカルの D1（wrangler のローカルモード）に対して実�
 | ダッシュボードは次の練習を最上位に置く | 開いてすぐ日時・会場・地図へ届く。本番と出欠も第一画面に残す | [ADR-0017](./adr/0017-departure-board-dashboard-layout.md) |
 | 閲覧 UI は実用コンパクト（ホームはパンフレット配置）、下部ナビはアイコン＋短いラベル | 一覧は密度優先、ホームはプログラム表の読みやすさ。タブ識別を速くする | [ADR-0018](./adr/0018-compact-utility-visual-language.md) |
 | PC幅は上部アプリバー型シェル、本文幅を広げ、ホームは2カラム | 主ナビが少ない情報ポータルでは横タブが一般的。スマホの優先順は維持する | [ADR-0019](./adr/0019-desktop-top-app-bar-shell.md) |
+| E2E はローカル D1 を `--reset` で固定フィクスチャへ戻す | 再実行で結果が変わらないようにする。テスト専用 API は増やさない | [ADR-0020](./adr/0020-reset-local-d1-for-e2e-fixtures.md) |

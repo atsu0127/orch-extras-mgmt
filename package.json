@@ -16,6 +16,7 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "wrangler d1 migrations apply DB --local",
     "db:seed": "node --import tsx scripts/seed.ts",
+    "db:seed:reset": "node --import tsx scripts/seed.ts --reset",
     "typecheck": "tsc --noEmit",
     "lint": "biome check .",
     "lint:fix": "biome check --write .",
