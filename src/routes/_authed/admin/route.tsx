@@ -1,4 +1,3 @@
-import { Anchor, Group, Stack } from '@mantine/core'
 import { createFileRoute, Link, Outlet, redirect } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/_authed/admin')({
@@ -8,57 +7,44 @@ export const Route = createFileRoute('/_authed/admin')({
   component: AdminLayout,
 })
 
+/**
+ * モバイル向けの管理内ナビ。
+ * PC ではヘッダに管理セクションを載せるため、このサブナビは隠す（styles.css）。
+ * ラベルは閲覧側の「練習」「曲」と区別する。
+ */
 function AdminLayout() {
   return (
-    <Stack gap="lg">
-      <Group gap="md" wrap="wrap" component="nav" aria-label="管理">
-        <AdminNavLink to="/admin" exact>
-          管理トップ
-        </AdminNavLink>
+    <>
+      <nav className="admin-subnav" aria-label="管理">
         <AdminNavLink to="/admin/concerts">演奏会</AdminNavLink>
-        <AdminNavLink to="/admin/practices">練習</AdminNavLink>
-        <AdminNavLink to="/admin/pieces">曲</AdminNavLink>
+        <AdminNavLink to="/admin/practices">練習の編集</AdminNavLink>
+        <AdminNavLink to="/admin/pieces">曲の編集</AdminNavLink>
         <AdminNavLink to="/admin/venues">会場</AdminNavLink>
         <AdminNavLink to="/admin/settings">設定</AdminNavLink>
-      </Group>
+      </nav>
       <Outlet />
-    </Stack>
+    </>
   )
 }
 
 type AdminNavLinkProps = {
   to:
-    | '/admin'
     | '/admin/concerts'
     | '/admin/practices'
     | '/admin/pieces'
     | '/admin/venues'
     | '/admin/settings'
-  exact?: boolean
   children: string
 }
 
-function AdminNavLink({ to, exact = false, children }: AdminNavLinkProps) {
+function AdminNavLink({ to, children }: AdminNavLinkProps) {
   return (
-    <Anchor
-      component={Link}
+    <Link
       to={to}
-      activeOptions={{ exact }}
-      fw={500}
-      underline="hover"
-      c="var(--mantine-color-text)"
-      style={{
-        paddingBottom: 2,
-        borderBottom: '2px solid transparent',
-      }}
-      activeProps={{
-        style: {
-          borderBottomColor: 'var(--mantine-color-bordeaux-filled)',
-          color: 'var(--mantine-color-bordeaux-filled)',
-        },
-      }}
+      activeProps={{ 'data-active': 'true' }}
+      inactiveProps={{ 'data-active': 'false' }}
     >
       {children}
-    </Anchor>
+    </Link>
   )
 }

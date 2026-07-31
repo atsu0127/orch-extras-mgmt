@@ -84,6 +84,7 @@ export const theme = createTheme({
     xl: '2rem',
   },
   other: {
+    // スマホ既定。PC 幅は styles.css の --app-content-max が正（ADR-0019）
     appMaxWidth: '42rem',
   },
   components: {

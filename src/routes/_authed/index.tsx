@@ -90,70 +90,92 @@ export function DashboardContent({
 
   return (
     <div className="pamphlet">
-      {nextPractice ? (
-        <NextPracticeProgram
-          practice={nextPractice}
-          concertName={concert.name}
-        />
-      ) : (
-        <EmptyState
-          title="今後の練習の予定はありません"
-          description="終わった練習は日程一覧から見られます。"
-        />
-      )}
-
-      <section className="pamphlet-section" aria-labelledby="performance-title">
-        <p className="pamphlet-kicker">本番</p>
-        <Title order={2} id="performance-title" className="pamphlet-heading">
-          {concert.name}
-        </Title>
-        <Text size="sm" c="dimmed" mt={6}>
-          {concert.performanceDate
-            ? formatFullDate(concert.performanceDate)
-            : '本番日は未設定'}
-          {concert.venueName && (
-            <>
-              <br />
-              {concert.venueName}
-            </>
-          )}
-        </Text>
-        <div className="pamphlet-links">
-          {concert.venueAddress && (
-            <ExternalLink href={buildGoogleMapsUrl(concert.venueAddress)}>
-              Google Mapsで開く
-            </ExternalLink>
-          )}
-          {performanceCalendarUrl && (
-            <ExternalLink href={performanceCalendarUrl}>
-              カレンダーに追加
-            </ExternalLink>
-          )}
-        </div>
-      </section>
-
-      <section className="pamphlet-section" aria-labelledby="attendance-title">
-        <p className="pamphlet-kicker" id="attendance-title">
-          出欠の回答
-        </p>
-        {concert.attendanceUrl ? (
-          <Stack gap="sm" align="center">
-            <ExternalLink href={concert.attendanceUrl} action>
-              出欠を回答する
-            </ExternalLink>
-            {concert.attendanceNote && (
-              <Text size="sm" c="dimmed">
-                {concert.attendanceNote}
-              </Text>
-            )}
-          </Stack>
-        ) : (
-          <EmptyState
-            title="出欠の回答先はまだ設定されていません"
-            description="決まり次第ここに表示されます。"
+      <div className="pamphlet-board">
+        {nextPractice ? (
+          <NextPracticeProgram
+            practice={nextPractice}
+            concertName={concert.name}
           />
+        ) : (
+          <section
+            className="pamphlet-hero"
+            aria-labelledby="next-practice-title"
+          >
+            <p className="pamphlet-kicker" id="next-practice-title">
+              次の練習
+            </p>
+            <EmptyState
+              title="今後の練習の予定はありません"
+              description="終わった練習は日程一覧から見られます。"
+            />
+          </section>
         )}
-      </section>
+
+        <div className="pamphlet-aside">
+          <section
+            className="pamphlet-section"
+            aria-labelledby="performance-title"
+          >
+            <p className="pamphlet-kicker">本番</p>
+            <Title
+              order={2}
+              id="performance-title"
+              className="pamphlet-heading"
+            >
+              {concert.name}
+            </Title>
+            <Text size="sm" c="dimmed" mt={6}>
+              {concert.performanceDate
+                ? formatFullDate(concert.performanceDate)
+                : '本番日は未設定'}
+              {concert.venueName && (
+                <>
+                  <br />
+                  {concert.venueName}
+                </>
+              )}
+            </Text>
+            <div className="pamphlet-links">
+              {concert.venueAddress && (
+                <ExternalLink href={buildGoogleMapsUrl(concert.venueAddress)}>
+                  Google Mapsで開く
+                </ExternalLink>
+              )}
+              {performanceCalendarUrl && (
+                <ExternalLink href={performanceCalendarUrl}>
+                  カレンダーに追加
+                </ExternalLink>
+              )}
+            </div>
+          </section>
+
+          <section
+            className="pamphlet-section"
+            aria-labelledby="attendance-title"
+          >
+            <p className="pamphlet-kicker" id="attendance-title">
+              出欠の回答
+            </p>
+            {concert.attendanceUrl ? (
+              <Stack gap="sm" align="center">
+                <ExternalLink href={concert.attendanceUrl} action>
+                  出欠を回答する
+                </ExternalLink>
+                {concert.attendanceNote && (
+                  <Text size="sm" c="dimmed">
+                    {concert.attendanceNote}
+                  </Text>
+                )}
+              </Stack>
+            ) : (
+              <EmptyState
+                title="出欠の回答先はまだ設定されていません"
+                description="決まり次第ここに表示されます。"
+              />
+            )}
+          </section>
+        </div>
+      </div>
 
       {concert.note && (
         <section className="pamphlet-section" aria-labelledby="note-title">
