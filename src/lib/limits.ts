@@ -18,9 +18,15 @@ export const MAX_LENGTH = {
   mediaTitle: 100,
   pieceTitle: 100,
   pieceComposer: 100,
+  announcementTitle: 100,
+  announcementBody: 1000,
   url: 2000,
 } as const
 
 export const MAX_CONCERT_RESOURCES = 5
 
 export const CONCERT_RESOURCE_LIMIT_MESSAGE = `資料は${MAX_CONCERT_RESOURCES}件まで登録できます`
+
+export const MAX_ANNOUNCEMENTS = 10
+
+export const ANNOUNCEMENT_LIMIT_MESSAGE = `お知らせは${MAX_ANNOUNCEMENTS}件まで登録できます`
