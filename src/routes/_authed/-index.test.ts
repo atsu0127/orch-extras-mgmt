@@ -69,6 +69,7 @@ describe('DashboardContent', () => {
         concert,
         nextPractice: null,
         resources: [],
+        announcements: [],
       }),
     )
 
@@ -85,6 +86,7 @@ describe('DashboardContent', () => {
         concert: { ...concert, venueAddress: null },
         nextPractice: null,
         resources: [],
+        announcements: [],
       }),
     )
 
@@ -99,6 +101,7 @@ describe('DashboardContent', () => {
         concert: { ...concert, venueName: null, venueAddress: null },
         nextPractice: null,
         resources: [],
+        announcements: [],
       }),
     )
 
@@ -120,6 +123,7 @@ describe('DashboardContent', () => {
         concert: { ...concert, performanceDate: '2026-02-30' },
         nextPractice: null,
         resources: [],
+        announcements: [],
       }),
     )
 
@@ -127,7 +131,7 @@ describe('DashboardContent', () => {
     expect(html).not.toContain('calendar.google.com')
   })
 
-  it('次の練習のあとに本番・出欠・備考・資料の順で表示する', () => {
+  it('次の練習のあとにお知らせ・本番・出欠・備考・資料の順で表示する', () => {
     const html = renderMarkup(
       createElement(DashboardContent, {
         appSettings: { adminEmail: null },
@@ -145,19 +149,42 @@ describe('DashboardContent', () => {
             url: 'https://example.com/seats',
           },
         ],
+        announcements: [
+          {
+            id: 2,
+            title: '新しいお知らせ',
+            body: '最新の本文',
+            url: 'https://example.com/latest',
+            createdAt: '2026-07-30T12:00:00.000Z',
+          },
+          {
+            id: 1,
+            title: '古いお知らせ',
+            body: '過去の本文',
+            url: null,
+            createdAt: '2026-07-20T12:00:00.000Z',
+          },
+        ],
       }),
     )
 
     expect(html).toContain(
       '<p class="detail pamphlet-note">集合は13時です\n黒服を持参してください</p>',
     )
-    expect(html.indexOf('次の練習')).toBeLessThan(html.indexOf('本番'))
+    expect(html.indexOf('次の練習')).toBeLessThan(html.indexOf('お知らせ'))
+    expect(html.indexOf('お知らせ')).toBeLessThan(html.indexOf('本番'))
+    expect(html.indexOf('新しいお知らせ')).toBeLessThan(
+      html.indexOf('古いお知らせ'),
+    )
     expect(html.indexOf('本番')).toBeLessThan(html.indexOf('出欠の回答'))
     expect(html.indexOf('出欠の回答')).toBeLessThan(html.indexOf('備考'))
     expect(html.indexOf('備考')).toBeLessThan(html.indexOf('資料'))
     expect(html.indexOf('演奏会のしおり')).toBeLessThan(html.indexOf('座席表'))
     expect(html).toContain(
       'href="https://example.com/guide" target="_blank" rel="noopener noreferrer"',
+    )
+    expect(html).toContain(
+      'href="https://example.com/latest" target="_blank" rel="noopener noreferrer"',
     )
   })
 
@@ -168,6 +195,7 @@ describe('DashboardContent', () => {
         concert: { ...concert, note },
         nextPractice,
         resources: [],
+        announcements: [],
       }),
     )
 
@@ -181,10 +209,26 @@ describe('DashboardContent', () => {
         concert,
         nextPractice,
         resources: [],
+        announcements: [],
       }),
     )
 
     expect(html).not.toContain('>資料<')
     expect(html).not.toContain('演奏会のしおり')
+  })
+
+  it('お知らせが空ならお知らせセクションを表示しない', () => {
+    const html = renderMarkup(
+      createElement(DashboardContent, {
+        appSettings: { adminEmail: null },
+        concert,
+        nextPractice,
+        resources: [],
+        announcements: [],
+      }),
+    )
+
+    expect(html).not.toContain('>お知らせ<')
+    expect(html).not.toContain('新しいお知らせ')
   })
 })
