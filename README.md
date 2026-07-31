@@ -67,18 +67,19 @@ pnpm exec playwright install chromium
 | `pnpm db:generate` | スキーマの変更からマイグレーション SQL を生成する |
 | `pnpm db:migrate` | ローカル D1 にマイグレーションを適用する |
 | `pnpm db:seed` | ローカル D1 に初期データを投入する（何度でも実行できる） |
+| `pnpm db:seed:reset` | ローカル D1 を空にしてから固定の確認用データを入れ直す（E2E 用） |
 | `pnpm cf-typegen` | `wrangler.jsonc` から binding の型を再生成する |
 | `pnpm deploy` | ビルドして本番へデプロイする |
 
 `wrangler.jsonc` を変更したら `pnpm cf-typegen` を実行して `worker-configuration.d.ts` を更新する。
 
-E2E のうちログインを伴うものは、パスワードを環境変数で渡したときだけ動く。渡さなければその分は飛ばされる。
+E2E 起動時（`E2E_BASE_URL` 未設定）は `globalSetup` が `pnpm db:migrate` と `pnpm db:seed:reset` を走らせ、毎回同じ初期状態にする。ログインを伴うものは、パスワードを環境変数で渡したときだけ動く。渡さなければその分は飛ばされる。
 
 ```bash
 E2E_ADMIN_PASSWORD=<.dev.vars の値> E2E_EXTRA_PASSWORD=<.dev.vars の値> pnpm test:e2e
 ```
 
-パスワードを実際に書き換える検証（変更後に旧パスワードで入れないこと、開いているセッションが落ちること）は、さらに `E2E_PASSWORD_CHANGE=1` を付けたときだけ動く。ロールごとにパスワードは1本しかないので、このときは全テストが直列で走る。テストは最後に元のパスワードへ戻すが、途中で落ちた場合は `pnpm db:seed` で戻す。
+パスワードを実際に書き換える検証（変更後に旧パスワードで入れないこと、開いているセッションが落ちること）は、さらに `E2E_PASSWORD_CHANGE=1` を付けたときだけ動く。ロールごとにパスワードは1本しかないので、このときは全テストが直列で走る。CI では付けない。テストは最後に元のパスワードへ戻すが、途中で落ちた場合は `pnpm db:seed:reset` で戻す。
 
 ```bash
 E2E_ADMIN_PASSWORD=... E2E_EXTRA_PASSWORD=... E2E_PASSWORD_CHANGE=1 pnpm test:e2e
@@ -108,7 +109,7 @@ pnpm exec wrangler d1 execute DB --local --command "SELECT 1"  # 中身を見る
 
 ### 初期データ
 
-`pnpm db:seed` が `.dev.vars` の値から両ロールのパスワードを投入する。何度実行してもよく、2回目以降はパスワードだけを更新する。確認用の演奏会・練習・曲は、データベースが空のときだけ入る。
+`pnpm db:seed` が `.dev.vars` の値から両ロールのパスワードを投入する。何度実行してもよく、2回目以降はパスワードだけを更新する。確認用の演奏会・練習・曲は、データベースが空のときだけ入る。E2E 用に毎回同じ状態へ戻すときは `pnpm db:seed:reset` を使う（ローカル専用）。
 
 ## 画面
 
