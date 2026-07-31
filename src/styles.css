@@ -644,7 +644,23 @@ body {
 }
 
 .panel-row-chevron {
-  color: var(--app-muted);
+  color: var(--mantine-color-bordeaux-filled);
+  flex-shrink: 0;
+  display: inline-flex;
+}
+
+.external-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-weight: 600;
+}
+
+.external-link-label {
+  min-width: 0;
+}
+
+.external-link-icon {
   flex-shrink: 0;
 }
 
