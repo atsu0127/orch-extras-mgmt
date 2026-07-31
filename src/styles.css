@@ -664,6 +664,27 @@ body {
   flex-shrink: 0;
 }
 
+.admin-managed-link-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem 0.75rem;
+}
+
+.admin-managed-link-row-link {
+  min-width: 0;
+  flex: 1 1 10rem;
+}
+
+.admin-managed-link-row-actions {
+  flex: 0 1 auto;
+}
+
+.admin-managed-link-row-actions .admin-row-actions {
+  margin-top: 0;
+}
+
 .segmented {
   display: grid;
   grid-template-columns: 1fr 1fr;

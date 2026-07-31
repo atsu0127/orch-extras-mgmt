@@ -1,4 +1,3 @@
-import { createElement } from 'react'
 import { describe, expect, it } from 'vitest'
 import { renderMarkup } from '../test/render'
 import { ExternalLink } from './external-link'
@@ -6,10 +5,7 @@ import { ExternalLink } from './external-link'
 describe('ExternalLink', () => {
   it('通常リンクは常時下線・外部アイコン・noopener 付きで開く', () => {
     const html = renderMarkup(
-      createElement(ExternalLink, {
-        href: 'https://example.com/doc',
-        children: '資料A',
-      }),
+      <ExternalLink href="https://example.com/doc">資料A</ExternalLink>,
     )
 
     expect(html).toContain(
@@ -22,11 +18,9 @@ describe('ExternalLink', () => {
 
   it('action はボタン風にし、外部アイコンを付ける', () => {
     const html = renderMarkup(
-      createElement(ExternalLink, {
-        href: 'https://example.com/attend',
-        action: true,
-        children: '出欠を回答する',
-      }),
+      <ExternalLink href="https://example.com/attend" action>
+        出欠を回答する
+      </ExternalLink>,
     )
 
     expect(html).toContain('href="https://example.com/attend"')

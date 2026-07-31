@@ -11,6 +11,10 @@ import {
   useAdminAction,
   useAdminForm,
 } from '../../../components/admin-form'
+import {
+  AdminManagedLinkRow,
+  AdminRowActions,
+} from '../../../components/admin-row-actions'
 import { ConfirmButton } from '../../../components/confirm-button'
 import {
   AdminList,
@@ -270,42 +274,35 @@ function MediaSection({ practice }: { practice: PracticeAdminItem }) {
         <MediaList title="録音・録画">
           {practice.media.map((link, index) => (
             <li key={link.id}>
-              <ExternalLink href={link.url}>{link.title}</ExternalLink>
-              <ControlRow>
-                <SecondaryButton
-                  aria-label={`「${link.title}」を上へ`}
-                  disabled={index === 0 || action.running}
-                  onClick={() =>
-                    void action.run(() =>
-                      move({ data: { id: link.id, direction: 'up' } }),
-                    )
-                  }
-                >
-                  ↑
-                </SecondaryButton>
-                <SecondaryButton
-                  aria-label={`「${link.title}」を下へ`}
-                  disabled={index === last || action.running}
-                  onClick={() =>
-                    void action.run(() =>
-                      move({ data: { id: link.id, direction: 'down' } }),
-                    )
-                  }
-                >
-                  ↓
-                </SecondaryButton>
-                <ConfirmButton
-                  label="削除"
-                  title={`「${link.title}」を削除しますか？`}
-                  description={
-                    <p>リンクだけを消します。録音そのものは残ります。</p>
-                  }
-                  disabled={action.running}
-                  onConfirm={() =>
-                    action.run(() => remove({ data: { id: link.id } }))
-                  }
-                />
-              </ControlRow>
+              <AdminManagedLinkRow
+                link={<ExternalLink href={link.url}>{link.title}</ExternalLink>}
+                actions={
+                  <AdminRowActions
+                    disabled={action.running}
+                    onMoveUp={() =>
+                      void action.run(() =>
+                        move({ data: { id: link.id, direction: 'up' } }),
+                      )
+                    }
+                    onMoveDown={() =>
+                      void action.run(() =>
+                        move({ data: { id: link.id, direction: 'down' } }),
+                      )
+                    }
+                    canMoveUp={index > 0}
+                    canMoveDown={index < last}
+                    moveUpLabel={`「${link.title}」を上へ`}
+                    moveDownLabel={`「${link.title}」を下へ`}
+                    deleteTitle={`「${link.title}」を削除しますか？`}
+                    deleteDescription={
+                      <p>リンクだけを消します。録音そのものは残ります。</p>
+                    }
+                    onDelete={() =>
+                      action.run(() => remove({ data: { id: link.id } }))
+                    }
+                  />
+                }
+              />
             </li>
           ))}
         </MediaList>
