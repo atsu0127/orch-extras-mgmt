@@ -196,6 +196,7 @@ body {
 }
 
 .app-concert-select {
+  position: relative;
   width: 100%;
 }
 
@@ -316,7 +317,7 @@ body {
 
   .app-desktop-nav a:focus-visible {
     outline: 2px solid var(--mantine-color-bordeaux-filled);
-    outline-offset: -2px;
+    outline-offset: 2px;
   }
 
   .app-desktop-nav a[data-active="true"] {
@@ -329,8 +330,7 @@ body {
     padding: 1.5rem 1.5rem 2.5rem;
   }
 
-  /* 管理はフォーム列が窮屈にならないよう本文を少し広げる */
-  .app-main:has(.admin-subnav) {
+  .app-main--admin {
     max-width: 68rem;
   }
 }
@@ -408,7 +408,7 @@ body {
 
 .admin-subnav a:focus-visible {
   outline: 2px solid var(--mantine-color-bordeaux-filled);
-  outline-offset: -2px;
+  outline-offset: 2px;
 }
 
 .admin-subnav a[data-active="true"] {
@@ -418,6 +418,11 @@ body {
 }
 
 @media (min-width: 48rem) {
+  /* PC はヘッダに管理セクションを載せるのでサブナビは不要 */
+  .app-frame--admin .admin-subnav {
+    display: none;
+  }
+
   .admin-subnav {
     margin: 0 0 1rem;
     padding: 0;

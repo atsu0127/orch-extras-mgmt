@@ -8,16 +8,17 @@ export const Route = createFileRoute('/_authed/admin')({
 })
 
 /**
- * 管理の画面切替はこのサブナビだけにする。
- * 管理トップの一覧メニューと二重にしない（PC/モバイル共通）。
+ * モバイル向けの管理内ナビ。
+ * PC ではヘッダに管理セクションを載せるため、このサブナビは隠す（styles.css）。
+ * ラベルは閲覧側の「練習」「曲」と区別する。
  */
 function AdminLayout() {
   return (
     <>
       <nav className="admin-subnav" aria-label="管理">
         <AdminNavLink to="/admin/concerts">演奏会</AdminNavLink>
-        <AdminNavLink to="/admin/practices">練習</AdminNavLink>
-        <AdminNavLink to="/admin/pieces">曲</AdminNavLink>
+        <AdminNavLink to="/admin/practices">練習の編集</AdminNavLink>
+        <AdminNavLink to="/admin/pieces">曲の編集</AdminNavLink>
         <AdminNavLink to="/admin/venues">会場</AdminNavLink>
         <AdminNavLink to="/admin/settings">設定</AdminNavLink>
       </nav>

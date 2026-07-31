@@ -7,6 +7,7 @@ import {
   retainSearchParams,
   useNavigate,
   useRouter,
+  useRouterState,
 } from '@tanstack/react-router'
 import { useServerFn } from '@tanstack/react-start'
 import type { ReactNode } from 'react'
@@ -59,12 +60,33 @@ export const Route = createFileRoute('/_authed')({
   component: AuthedLayout,
 })
 
+const ADMIN_DESKTOP_LINKS = [
+  { to: '/admin/concerts' as const, label: '演奏会' },
+  { to: '/admin/practices' as const, label: '練習の編集' },
+  { to: '/admin/pieces' as const, label: '曲の編集' },
+  { to: '/admin/venues' as const, label: '会場' },
+  { to: '/admin/settings' as const, label: '設定' },
+]
+
+type AppPath =
+  | '/'
+  | '/practices'
+  | '/pieces'
+  | '/admin/concerts'
+  | '/admin/practices'
+  | '/admin/pieces'
+  | '/admin/venues'
+  | '/admin/settings'
+
 function AuthedLayout() {
   const { session, concerts, concert } = Route.useRouteContext()
   const showAdmin = session.role === 'admin'
+  const isAdminPath = useRouterState({
+    select: (state) => state.location.pathname.startsWith('/admin'),
+  })
 
   return (
-    <div className="app-frame">
+    <div className={`app-frame${isAdminPath ? ' app-frame--admin' : ''}`}>
       <header className="app-header">
         <div className="app-header-inner">
           <div className="app-header-bar">
@@ -77,13 +99,34 @@ function AuthedLayout() {
             </div>
           </div>
 
+          {/*
+            PC の管理中は閲覧タブを隠して管理セクションを1段に載せる。
+            モバイルは下部ナビ＋サブナビのまま（admin/route.tsx）。
+          */}
           <nav className="app-desktop-nav" aria-label="メイン">
-            <DesktopLink to="/" exact>
-              ホーム
-            </DesktopLink>
-            <DesktopLink to="/practices">練習</DesktopLink>
-            <DesktopLink to="/pieces">曲</DesktopLink>
-            {showAdmin && <DesktopLink to="/admin">管理</DesktopLink>}
+            {isAdminPath && showAdmin ? (
+              <>
+                <DesktopLink to="/" exact>
+                  閲覧へ
+                </DesktopLink>
+                {ADMIN_DESKTOP_LINKS.map((link) => (
+                  <DesktopLink key={link.to} to={link.to}>
+                    {link.label}
+                  </DesktopLink>
+                ))}
+              </>
+            ) : (
+              <>
+                <DesktopLink to="/" exact>
+                  ホーム
+                </DesktopLink>
+                <DesktopLink to="/practices">練習</DesktopLink>
+                <DesktopLink to="/pieces">曲</DesktopLink>
+                {showAdmin && (
+                  <AdminEntryLink variant="desktop">管理</AdminEntryLink>
+                )}
+              </>
+            )}
           </nav>
 
           {concert && (
@@ -98,7 +141,10 @@ function AuthedLayout() {
         演奏会が無いときの表示は各画面に任せる。ここで差し替えると、
         演奏会を作る画面にも入れなくなる
       */}
-      <Box component="main" className="app-main">
+      <Box
+        component="main"
+        className={`app-main${isAdminPath ? ' app-main--admin' : ''}`}
+      >
         <Outlet />
       </Box>
 
@@ -113,9 +159,9 @@ function AuthedLayout() {
           <MusicIcon />
         </BottomLink>
         {showAdmin && (
-          <BottomLink to="/admin" label="管理" ariaLabel="管理">
+          <AdminEntryLink variant="bottom">
             <AdminIcon />
-          </BottomLink>
+          </AdminEntryLink>
         )}
       </nav>
     </div>
@@ -196,8 +242,40 @@ function LogoutButton() {
   )
 }
 
+/** /admin/* 全体を選択中にする管理入口。to は演奏会（リダイレクトを避ける） */
+function AdminEntryLink({
+  variant,
+  children,
+}: {
+  variant: 'desktop' | 'bottom'
+  children: ReactNode
+}) {
+  const active = useRouterState({
+    select: (state) => state.location.pathname.startsWith('/admin'),
+  })
+
+  if (variant === 'bottom') {
+    return (
+      <Link
+        to="/admin/concerts"
+        aria-label="管理"
+        data-active={active ? 'true' : 'false'}
+      >
+        {children}
+        <span aria-hidden="true">管理</span>
+      </Link>
+    )
+  }
+
+  return (
+    <Link to="/admin/concerts" data-active={active ? 'true' : 'false'}>
+      {children}
+    </Link>
+  )
+}
+
 type BottomLinkProps = {
-  to: '/' | '/practices' | '/pieces' | '/admin'
+  to: AppPath
   exact?: boolean
   label: string
   ariaLabel: string
@@ -231,7 +309,7 @@ function DesktopLink({
   exact = false,
   children,
 }: {
-  to: '/' | '/practices' | '/pieces' | '/admin'
+  to: AppPath
   exact?: boolean
   children: string
 }) {

@@ -57,7 +57,8 @@ test.describe('admin としてログインする', () => {
     await expect(page.getByText('管理者としてログイン中')).toBeVisible()
 
     await page.goto('/admin')
-    await expect(page.getByRole('heading', { name: '管理画面' })).toBeVisible()
+    await expect(page).toHaveURL(/\/admin\/concerts(\?concert=\d+)?$/)
+    await expect(page.getByRole('heading', { name: '演奏会' })).toBeVisible()
 
     await page.getByRole('button', { name: 'ログアウト' }).click()
     await expect(page).toHaveURL(/\/login$/)
