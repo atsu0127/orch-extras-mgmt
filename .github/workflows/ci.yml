@@ -28,3 +28,16 @@ jobs:
       - run: pnpm typecheck
 
       - run: pnpm test
+
+      # E2E は globalSetup がローカル D1 を migrate + seed:reset する（設計書11・12章）
+      - name: Install Playwright Chromium
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Run Playwright
+        env:
+          CI: true
+          E2E_ADMIN_PASSWORD: local-admin-password
+          E2E_EXTRA_PASSWORD: local-extra-password
+        run: |
+          cp .dev.vars.example .dev.vars
+          pnpm test:e2e
