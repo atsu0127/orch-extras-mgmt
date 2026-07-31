@@ -94,13 +94,17 @@ test.describe('管理者の登録・編集導線', () => {
     await expect(duplicateForm.getByLabel('日付')).toHaveValue('')
     await duplicateForm.getByLabel('日付').fill(DUPLICATE_DATE)
     await duplicateForm.getByRole('button', { name: '保存' }).click()
-    await expect(page.getByText('3月15日')).toBeVisible()
-    await expect(page.getByText('3月22日')).toBeVisible()
 
+    const originalItem = page
+      .locator('li')
+      .filter({ hasText: '3月15日' })
+      .filter({ hasText: PRACTICE_DETAIL })
     const duplicatedItem = page
       .locator('li')
       .filter({ hasText: '3月22日' })
       .filter({ hasText: PRACTICE_DETAIL })
+    await expect(originalItem).toBeVisible()
+    await expect(duplicatedItem).toBeVisible()
     await expect(
       duplicatedItem.getByRole('link', { name: 'E2E録音' }),
     ).toHaveCount(0)
@@ -111,7 +115,7 @@ test.describe('管理者の登録・編集導線', () => {
     await pieceForm.getByLabel('作曲者（任意）').fill(PIECE_COMPOSER)
     await pieceForm.getByLabel('ボウイングURL（任意）').fill(PIECE_BOWING)
     await pieceForm.getByRole('button', { name: '保存' }).click()
-    await expect(page.getByText(PIECE_TITLE)).toBeVisible()
+    await expect(page.getByText(PIECE_TITLE, { exact: true })).toBeVisible()
 
     await page.getByRole('link', { name: 'ホーム' }).click()
     await selectConcert(page, CONCERT)
@@ -120,11 +124,17 @@ test.describe('管理者の登録・編集導線', () => {
     await expect(
       page.getByRole('link', { name: RESOURCE_TITLE }),
     ).toHaveAttribute('href', RESOURCE_URL)
+    await expect(page.getByText('19:00〜21:00')).toBeVisible()
+    await page.locator('.pamphlet-hero details summary').click()
     await expect(page.getByText(PRACTICE_DETAIL)).toBeVisible()
 
     await page.getByRole('link', { name: '練習日程' }).click()
-    await expect(page.getByText('3月15日')).toBeVisible()
-    await expect(page.getByText('3月22日')).toBeVisible()
+    await expect(
+      page
+        .getByRole('navigation', { name: '練習の表示切替' })
+        .getByText(/今後（2）/),
+    ).toBeVisible()
+    await expect(page.getByText('19:00〜21:00')).toHaveCount(2)
 
     await page.getByRole('link', { name: '曲・ボウイング' }).click()
     await expect(

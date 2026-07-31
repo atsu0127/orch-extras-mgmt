@@ -17,7 +17,10 @@ test.describe('エキストラの閲覧導線', () => {
     await expect(
       page.getByRole('heading', { name: E2E_FIXTURE.concertName }),
     ).toBeVisible()
-    await expect(page.getByText(E2E_FIXTURE.venueName)).toBeVisible()
+    const performance = page.locator('section').filter({
+      has: page.getByRole('heading', { name: E2E_FIXTURE.concertName }),
+    })
+    await expect(performance.getByText(E2E_FIXTURE.venueName)).toBeVisible()
     await expect(page.getByText(E2E_FIXTURE.concertNote)).toBeVisible()
     await expect(
       page.getByRole('link', { name: E2E_FIXTURE.resourceTitle }),
@@ -29,6 +32,8 @@ test.describe('エキストラの閲覧導線', () => {
       page.getByRole('link', { name: '管理者へ問い合わせる' }),
     ).toHaveAttribute('href', new RegExp(`^mailto:${E2E_FIXTURE.adminEmail}`))
     await expect(page.getByText('次の練習')).toBeVisible()
+    await expect(page.getByText('18:30〜21:00')).toBeVisible()
+    await page.locator('.pamphlet-hero details summary').click()
     await expect(
       page.getByText(E2E_FIXTURE.upcomingPracticeDetail),
     ).toBeVisible()
@@ -38,14 +43,19 @@ test.describe('エキストラの閲覧導線', () => {
     await page.getByRole('link', { name: '練習日程' }).click()
     await expect(page.getByRole('heading', { name: '練習日程' })).toBeVisible()
 
+    const upcoming = page.locator('article').filter({ hasText: '18:30〜21:00' })
+    await expect(upcoming.getByText(E2E_FIXTURE.venueName)).toBeVisible()
+    await upcoming.getByText('詳細').click()
     await expect(
-      page.getByText(E2E_FIXTURE.upcomingPracticeDetail),
+      upcoming.getByText(E2E_FIXTURE.upcomingPracticeDetail),
     ).toBeVisible()
 
     await page.getByRole('link', { name: /過去/ }).click()
-    await expect(page.getByText(E2E_FIXTURE.pastPracticeDetail)).toBeVisible()
+    const past = page.locator('article').filter({ hasText: '13:00〜17:00' })
+    await past.getByText('詳細').click()
+    await expect(past.getByText(E2E_FIXTURE.pastPracticeDetail)).toBeVisible()
     await expect(
-      page.getByRole('link', { name: E2E_FIXTURE.recordingTitle }),
+      past.getByRole('link', { name: E2E_FIXTURE.recordingTitle }),
     ).toHaveAttribute('href', E2E_FIXTURE.recordingUrl)
   })
 
