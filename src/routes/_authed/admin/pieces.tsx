@@ -71,6 +71,11 @@ const removePiece = createServerFn({ method: 'POST' })
   .validator(z.object({ id: idValue }))
   .handler(({ data }) => deletePiece(getDb(), data.id))
 
+/** 演奏会を切り替えたとき追加フォームの入力を残さない（AGENTS.md） */
+export function pieceCreateFormKey(concertId: number): string {
+  return String(concertId)
+}
+
 export const Route = createFileRoute('/_authed/admin/pieces')({
   loaderDeps: ({ search }) => ({ concert: search.concert }),
   loader: ({ deps }) =>
@@ -91,7 +96,7 @@ function AdminPiecesPage() {
         「{concert.name}」の曲です。並びがそのまま演奏順として閲覧側に出ます。
       </Text>
 
-      <PieceForm concertId={concert.id} />
+      <PieceForm key={pieceCreateFormKey(concert.id)} concertId={concert.id} />
 
       {pieces.length === 0 ? (
         <EmptyState

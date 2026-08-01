@@ -1,5 +1,5 @@
 import { Button, Group, Stack, Title } from '@mantine/core'
-import { type ReactNode, useRef, useState } from 'react'
+import { type ReactNode, useId, useRef, useState } from 'react'
 
 type ConfirmButtonProps = {
   label: string
@@ -25,6 +25,7 @@ export function ConfirmButton({
   onConfirm,
 }: ConfirmButtonProps) {
   const dialog = useRef<HTMLDialogElement>(null)
+  const titleId = useId()
   const [running, setRunning] = useState(false)
 
   async function confirm() {
@@ -50,9 +51,9 @@ export function ConfirmButton({
         {label}
       </Button>
 
-      <dialog ref={dialog} className="confirm-dialog">
+      <dialog ref={dialog} className="confirm-dialog" aria-labelledby={titleId}>
         <Stack gap="md">
-          <Title order={2} size="h3">
+          <Title id={titleId} order={2} size="h3">
             {title}
           </Title>
           {description}

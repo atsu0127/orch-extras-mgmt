@@ -43,7 +43,7 @@ function AdminNavLink({ to, children }: AdminNavLinkProps) {
   return (
     <Link
       to={to}
-      activeProps={{ 'data-active': 'true' }}
+      activeProps={{ 'data-active': 'true', 'aria-current': 'page' }}
       inactiveProps={{ 'data-active': 'false' }}
     >
       {children}

@@ -22,6 +22,7 @@ describe('AdminRowActions', () => {
     expect(html).toContain('aria-label="「資料A」を下へ"')
     expect(html).toContain('編集')
     expect(html).toContain('削除')
+    expect(html).toContain('aria-labelledby=')
     expect(html).not.toContain('>↑<')
     expect(html).not.toContain('>↓<')
   })
