@@ -7,6 +7,7 @@ export type PieceFields = {
   title: string
   composer: string | null
   bowingUrl: string | null
+  scoreWithoutBowingUrl: string | null
 }
 
 /** 演奏順の末尾に足す。プログラムは前から順に決まっていくことが多い */

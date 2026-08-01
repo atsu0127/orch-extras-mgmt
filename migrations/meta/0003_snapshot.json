@@ -60,10 +60,7 @@
       "indexes": {
         "announcements_concert_created_idx": {
           "name": "announcements_concert_created_idx",
-          "columns": [
-            "concert_id",
-            "created_at"
-          ],
+          "columns": ["concert_id", "created_at"],
           "isUnique": false
         }
       },
@@ -72,12 +69,8 @@
           "name": "announcements_concert_id_concerts_id_fk",
           "tableFrom": "announcements",
           "tableTo": "concerts",
-          "columnsFrom": [
-            "concert_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["concert_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -181,10 +174,7 @@
       "indexes": {
         "concert_resources_concert_sort_idx": {
           "name": "concert_resources_concert_sort_idx",
-          "columns": [
-            "concert_id",
-            "sort_order"
-          ],
+          "columns": ["concert_id", "sort_order"],
           "isUnique": false
         }
       },
@@ -193,12 +183,8 @@
           "name": "concert_resources_concert_id_concerts_id_fk",
           "tableFrom": "concert_resources",
           "tableTo": "concerts",
-          "columnsFrom": [
-            "concert_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["concert_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -288,12 +274,8 @@
           "name": "concerts_venue_id_venues_id_fk",
           "tableFrom": "concerts",
           "tableTo": "venues",
-          "columnsFrom": [
-            "venue_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["venue_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -396,10 +378,7 @@
       "indexes": {
         "link_checks_target_unique": {
           "name": "link_checks_target_unique",
-          "columns": [
-            "target_type",
-            "target_id"
-          ],
+          "columns": ["target_type", "target_id"],
           "isUnique": true
         }
       },
@@ -444,10 +423,7 @@
       "indexes": {
         "login_attempts_ip_attempted_at_idx": {
           "name": "login_attempts_ip_attempted_at_idx",
-          "columns": [
-            "ip",
-            "attempted_at"
-          ],
+          "columns": ["ip", "attempted_at"],
           "isUnique": false
         }
       },
@@ -527,10 +503,7 @@
       "indexes": {
         "pieces_concert_sort_idx": {
           "name": "pieces_concert_sort_idx",
-          "columns": [
-            "concert_id",
-            "sort_order"
-          ],
+          "columns": ["concert_id", "sort_order"],
           "isUnique": false
         }
       },
@@ -539,12 +512,8 @@
           "name": "pieces_concert_id_concerts_id_fk",
           "tableFrom": "pieces",
           "tableTo": "concerts",
-          "columnsFrom": [
-            "concert_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["concert_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -610,10 +579,7 @@
       "indexes": {
         "practice_media_practice_sort_idx": {
           "name": "practice_media_practice_sort_idx",
-          "columns": [
-            "practice_id",
-            "sort_order"
-          ],
+          "columns": ["practice_id", "sort_order"],
           "isUnique": false
         }
       },
@@ -622,12 +588,8 @@
           "name": "practice_media_practice_id_practices_id_fk",
           "tableFrom": "practice_media",
           "tableTo": "practices",
-          "columnsFrom": [
-            "practice_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["practice_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -706,10 +668,7 @@
       "indexes": {
         "practices_concert_date_idx": {
           "name": "practices_concert_date_idx",
-          "columns": [
-            "concert_id",
-            "date"
-          ],
+          "columns": ["concert_id", "date"],
           "isUnique": false
         }
       },
@@ -718,12 +677,8 @@
           "name": "practices_concert_id_concerts_id_fk",
           "tableFrom": "practices",
           "tableTo": "concerts",
-          "columnsFrom": [
-            "concert_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["concert_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -731,12 +686,8 @@
           "name": "practices_venue_id_venues_id_fk",
           "tableFrom": "practices",
           "tableTo": "venues",
-          "columnsFrom": [
-            "venue_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["venue_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -787,9 +738,7 @@
       "indexes": {
         "sessions_expires_at_idx": {
           "name": "sessions_expires_at_idx",
-          "columns": [
-            "expires_at"
-          ],
+          "columns": ["expires_at"],
           "isUnique": false
         }
       },

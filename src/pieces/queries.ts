@@ -7,6 +7,7 @@ export type PieceEntry = {
   title: string
   composer: string | null
   bowingUrl: string | null
+  scoreWithoutBowingUrl: string | null
 }
 
 /** 演奏順（sort_order）に並べる。同じ順序が入っていたら登録順で決める */
@@ -20,6 +21,7 @@ export function listPiecesForConcert(
       title: pieces.title,
       composer: pieces.composer,
       bowingUrl: pieces.bowingUrl,
+      scoreWithoutBowingUrl: pieces.scoreWithoutBowingUrl,
     })
     .from(pieces)
     .where(eq(pieces.concertId, concertId))
