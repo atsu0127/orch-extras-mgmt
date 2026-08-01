@@ -30,3 +30,16 @@ export const CONCERT_RESOURCE_LIMIT_MESSAGE = `資料は${MAX_CONCERT_RESOURCES}
 export const MAX_ANNOUNCEMENTS = 10
 
 export const ANNOUNCEMENT_LIMIT_MESSAGE = `お知らせは${MAX_ANNOUNCEMENTS}件まで登録できます`
+
+/** 練習一括作成の1回あたり上限（docs/practice-bulk-create/design.md） */
+export const MAX_BULK_PRACTICES = 30
+
+export const BULK_PRACTICE_LIMIT_MESSAGE = `一度に登録できる練習は${MAX_BULK_PRACTICES}件までです`
+
+export const BULK_PRACTICE_VENUE_ADDRESS_CONFLICT_MESSAGE =
+  '同じ新規会場名で住所が食い違っています'
+
+export const BULK_PRACTICE_UNKNOWN_VENUE_MESSAGE =
+  '選択した会場が見つかりません'
+
+export const BULK_PRACTICE_UNKNOWN_CONCERT_MESSAGE = '演奏会が見つかりません'
