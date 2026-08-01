@@ -26,7 +26,7 @@
 | --- | --- | --- | --- |
 | サークルスクエア同期 | [design.md](./circle-square-sync/design.md) | [tasks.md](./circle-square-sync/tasks.md) | 設計済み・調査待ち（T1） |
 
-お知らせ・会場 CRUD・ダッシュボード等の既存機能は、まだ個別ディレクトリ未作成。仕様は [archive/initial/design.md](./archive/initial/design.md) を参照。
+お知らせ・会場 CRUD・ダッシュボード等の既存機能は、まだ個別ディレクトリ未作成。仕様は [archive/initial/design.md](./archive/initial/design.md) を凍結参照する。
 
 ## その他
 

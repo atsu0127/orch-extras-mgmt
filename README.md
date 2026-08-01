@@ -153,7 +153,7 @@ pnpm exec wrangler d1 execute DB --local --command "SELECT 1"  # 中身を見る
 
 ## 画面
 
-スマートフォン優先のカードUI。テーマは OS 設定に追従する。画面とロールの対応は当面[初期案アーカイブの設計書7章](docs/archive/initial/design.md)を参照。
+スマートフォン優先のカードUI。テーマは OS 設定に追従する。画面とロールの対応は当面[初期案アーカイブの設計書7章](docs/archive/initial/design.md)を凍結参照する。
 
 - `src/routes/_authed/` — ログイン必須の画面。`route.tsx` がヘッダ（演奏会セレクタとナビゲーション）と `main` を持つ
 - `src/routes/_authed/admin/` — 管理画面。`route.tsx` が管理内サブナビを持ち、`/` は演奏会へ誘導する。画面ごとにサーバ関数と入力欄を1ファイルにまとめている

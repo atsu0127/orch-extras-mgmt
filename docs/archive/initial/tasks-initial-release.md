@@ -46,7 +46,7 @@ Phase 0 (土台) → Phase 1 (データ) → Phase 2 (認証) → Phase 3 (閲�
 - [x] **A-2** Cloudflare の API トークンを発行する（権限: Workers Scripts 編集、D1 編集、Workers KV 読み取り）。CI のデプロイに使う
 - [x] **A-4** GitHub リポジトリの Secrets に `CLOUDFLARE_API_TOKEN` と `CLOUDFLARE_ACCOUNT_ID` を登録する
 - [x] **A-5** 本番の `PASSWORD_PEPPER` を生成し、管理者用・エキストラ用の初期パスワードを決める。**Phase 2 の完了時に必要**（それ以前はローカルの `.dev.vars` の仮の値で足りる）。パスワードは T4-7 の設定画面で後から変更できるが、pepper を変えると既存のハッシュが検証できなくなるので一度決めたら固定する
-- [ ] **A-6**（任意）独自ドメインを使うか決める。使わない場合は `*.workers.dev` のURLで運用する
+- **A-6**（任意）独自ドメイン — 生きているチェックは [platform/design.md](../../platform/design.md) の運用節。この表では更新しない
 - [x] **A-7** 問い合わせ先として表示する管理者メールアドレスを決める（リリース後に `/admin/settings` から登録する。個人アドレスで可）
 
 ## Phase 0: 土台づくり（完了）
