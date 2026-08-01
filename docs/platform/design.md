@@ -165,3 +165,4 @@
 | 外部リンク視認性＋管理行操作のアイコン化 | 受け入れ改善を共通部品で直す | [ADR-0021](../adr/0021-visible-external-links-and-compact-admin-row-actions.md) |
 | 演奏会お知らせは通知・既読なし | ホーム再訪の理由を最小構成で | [ADR-0022](../adr/0022-add-concert-announcements-without-notifications.md) |
 | 設計・タスクは機能ディレクトリ単位 | 初期案の単一 design/tasks をやめ、機能ごとに正を置く | [ADR-0023](../adr/0023-feature-directory-design-and-tasks.md) |
+| CS 自動同期を見送り練習一括作成にする | API/CSV 不可・iCal は会場不足。ポータル内で登録負荷を下げる | [ADR-0024](../adr/0024-prefer-bulk-practice-create-over-circle-square-sync.md) |

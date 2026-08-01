@@ -2,7 +2,7 @@
 
 オーケストラのエキストラ（客演奏者）向け情報ポータル。練習日程、出欠の回答先、演奏会資料、地図、カレンダー、ボウイング、練習の録音を1か所にまとめて公開し、管理者がブラウザから更新できるようにする。
 
-現在の状態: **Phase 10 実装済み**。演奏会ごとのお知らせを管理・閲覧できる。初回リリース（Phase 0〜9）は完了済み。次期は[サークルスクエア同期](docs/circle-square-sync/)（取得手段の調査から）。
+現在の状態: **Phase 10 実装済み**。演奏会ごとのお知らせを管理・閲覧できる。練習の一括追加（[practice-bulk-create](docs/practice-bulk-create/)、[ADR-0024](docs/adr/0024-prefer-bulk-practice-create-over-circle-square-sync.md)）も利用できる。
 
 本番: <https://orch-extras-mgmt.atsu-dq9.workers.dev>
 
@@ -10,7 +10,7 @@
 
 - [ドキュメント案内](docs/README.md) — 正の設計・タスクの場所と機能一覧
 - [プラットフォーム設計](docs/platform/design.md) — 技術基盤、認証、無料枠、CI、ADR 索引
-- [サークルスクエア同期](docs/circle-square-sync/) — 次期機能の設計とタスク（調査待ち）
+- [練習の一括作成](docs/practice-bulk-create/) — 管理画面で練習をまとめて追加（完了）
 - [初期案アーカイブ](docs/archive/initial/) — 初回リリース〜Phase 10 の総合 design/tasks（凍結参照・編集しない）
 - [ADR](docs/adr/) — 実装中に行った設計判断の記録（[MADR](https://adr.github.io/madr/) の minimal 版）
 - [セキュリティ点検（T8-1）](docs/security-review-t8.md) — サーバ関数の認可・入力検証・秘密情報の点検記録
@@ -27,6 +27,7 @@
 - 管理者への `mailto:` 問い合わせ
 - 本番・練習会場の Google Maps と Google カレンダー導線
 - 練習の複製入力
+- 練習の一括追加（会場の既存選択／その場での新規登録）
 - 演奏会単位の管理と切り替え
 - 管理者は更新可、エキストラは参照のみ。個人情報は保持せず、ロールごとの共有パスワードで認証する
 
