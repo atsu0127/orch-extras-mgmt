@@ -58,6 +58,7 @@ function PracticesPage() {
               to="/practices"
               search={(prev) => ({ ...prev, view: undefined })}
               data-active={view === 'upcoming' ? 'true' : 'false'}
+              aria-current={view === 'upcoming' ? 'page' : undefined}
             >
               今後（{upcoming.length}）
             </Link>
@@ -65,6 +66,7 @@ function PracticesPage() {
               to="/practices"
               search={(prev) => ({ ...prev, view: 'past' as const })}
               data-active={view === 'past' ? 'true' : 'false'}
+              aria-current={view === 'past' ? 'page' : undefined}
             >
               過去（{past.length}）
             </Link>

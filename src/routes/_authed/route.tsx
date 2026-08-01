@@ -262,6 +262,7 @@ function AdminEntryLink({
         to="/admin/concerts"
         aria-label="管理"
         data-active={active ? 'true' : 'false'}
+        aria-current={active ? 'page' : undefined}
       >
         {children}
         <span aria-hidden="true">管理</span>
@@ -270,7 +271,11 @@ function AdminEntryLink({
   }
 
   return (
-    <Link to="/admin/concerts" data-active={active ? 'true' : 'false'}>
+    <Link
+      to="/admin/concerts"
+      data-active={active ? 'true' : 'false'}
+      aria-current={active ? 'page' : undefined}
+    >
       {children}
     </Link>
   )
@@ -297,7 +302,7 @@ function BottomLink({
       activeOptions={{ exact }}
       aria-label={ariaLabel}
       // data-active で見た目を切り替える。activeProps の型が Mantine 非依存の Link 向き
-      activeProps={{ 'data-active': 'true' }}
+      activeProps={{ 'data-active': 'true', 'aria-current': 'page' }}
       inactiveProps={{ 'data-active': 'false' }}
     >
       {children}
@@ -321,7 +326,7 @@ function DesktopLink({
       activeOptions={{ exact }}
       // 下部ナビと同じく data-active で切り替える。style の activeProps は
       // 非アクティブ時に下線が残ることがある（ADR-0019）
-      activeProps={{ 'data-active': 'true' }}
+      activeProps={{ 'data-active': 'true', 'aria-current': 'page' }}
       inactiveProps={{ 'data-active': 'false' }}
     >
       {children}

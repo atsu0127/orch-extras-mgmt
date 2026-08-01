@@ -157,17 +157,26 @@ export function useAdminForm<Input, Output, Result>({
       resultFailure = actionResultFailure(result, getResultFailure)
       if (resultFailure) {
         setFailure(resultFailure)
-        await refresh()
+        try {
+          await refresh()
+        } catch {
+          // 業務エラー表示を優先。refresh 失敗で上書きしない
+        }
         return
       }
-
-      await refresh()
-      onSaved?.()
     } catch {
-      if (!resultFailure) setFailure(FAILURE_MESSAGE)
+      setFailure(FAILURE_MESSAGE)
+      return
     } finally {
       setSubmitting(false)
     }
+
+    try {
+      await refresh()
+    } catch {
+      // 保存は成功している。一覧再取得だけ失敗しても保存失敗扱いにしない
+    }
+    onSaved?.()
   }
 
   /** 送信時に入力欄の値を集める。React の state から組み立てる部分だけを画面側に残す */
@@ -194,11 +203,17 @@ export function useAdminAction() {
     setRunning(true)
     try {
       await action()
-      await refresh()
     } catch {
       setFailure(FAILURE_MESSAGE)
+      return
     } finally {
       setRunning(false)
+    }
+
+    try {
+      await refresh()
+    } catch {
+      // 操作は成功。refresh 失敗で失敗メッセージを出さない
     }
   }
 

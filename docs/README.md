@@ -33,3 +33,4 @@
 
 - [受け入れ確認ガイド](./acceptance-guide.md)
 - [セキュリティ点検（T8-1）](./security-review-t8.md)
+- [improve-react 計画](./improve-react/README.md)（React 監査の実行用計画。機能の正ではない）

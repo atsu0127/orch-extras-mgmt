@@ -14,6 +14,7 @@ describe('ExternalLink', () => {
     expect(html).toContain('data-underline="always"')
     expect(html).toContain('external-link-icon')
     expect(html).toContain('資料A')
+    expect(html).toContain('新しいタブで開く')
   })
 
   it('action はボタン風にし、外部アイコンを付ける', () => {
@@ -28,5 +29,6 @@ describe('ExternalLink', () => {
     expect(html).toContain('rel="noopener noreferrer"')
     expect(html).toContain('出欠を回答する')
     expect(html).toContain('external-link-icon')
+    expect(html).toContain('新しいタブで開く')
   })
 })

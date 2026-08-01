@@ -71,6 +71,11 @@ const removePiece = createServerFn({ method: 'POST' })
   .validator(z.object({ id: idValue }))
   .handler(({ data }) => deletePiece(getDb(), data.id))
 
+/** 演奏会を切り替えたとき追加フォームの入力を残さない（AGENTS.md） */
+export function pieceCreateFormKey(concertId: number): string {
+  return String(concertId)
+}
+
 export const Route = createFileRoute('/_authed/admin/pieces')({
   loaderDeps: ({ search }) => ({ concert: search.concert }),
   loader: ({ deps }) =>
@@ -91,7 +96,7 @@ function AdminPiecesPage() {
         「{concert.name}」の曲です。並びがそのまま演奏順として閲覧側に出ます。
       </Text>
 
-      <PieceForm concertId={concert.id} />
+      <PieceForm key={pieceCreateFormKey(concert.id)} concertId={concert.id} />
 
       {pieces.length === 0 ? (
         <EmptyState
@@ -187,6 +192,7 @@ function PieceItem({
           failure={action.failure}
           disabled={action.running}
           onEdit={() => setEditing(true)}
+          editAriaLabel={`「${piece.title}」を編集`}
           onMoveUp={() =>
             void action.run(() =>
               reorder({ data: { id: piece.id, direction: 'up' } }),
@@ -202,6 +208,7 @@ function PieceItem({
           moveUpLabel={`「${piece.title}」を前へ`}
           moveDownLabel={`「${piece.title}」を後へ`}
           deleteTitle={`「${piece.title}」を削除しますか？`}
+          deleteAriaLabel={`「${piece.title}」を削除`}
           deleteDescription={<p>{deleteWarning(piece)}</p>}
           onDelete={() => action.run(() => remove({ data: { id: piece.id } }))}
         />
