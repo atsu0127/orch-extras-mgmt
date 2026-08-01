@@ -88,8 +88,12 @@
 - [x] スマホ幅で管理の主要操作（登録・編集）ができる
 - [x] OS のライト／ダークの両方で文字が読める
 
-## 確認が終わったら
+## 確認が終わったら（当時の手順・実施済み）
 
-1. `docs/archive/initial/tasks-initial-release.md` の受け入れチェックリストをすべて `[x]` にする（本受け入れは完了済み）
-2. 進捗に Phase 8 完了を追記する
-3. A-7 のチェックを入れる（メールを設定済みなら）
+本受け入れは完了済み。当時は次を行った。
+
+1. [archive/initial/tasks-initial-release.md](./archive/initial/tasks-initial-release.md) の受け入れチェックリストをすべて `[x]` にした
+2. 進捗に Phase 8 完了を追記した
+3. A-7（管理者メール）を設定済みにした
+
+以降の任意判断（独自ドメイン A-6 など）は [platform/design.md](./platform/design.md) の運用節を参照。

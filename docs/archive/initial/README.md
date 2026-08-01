@@ -2,7 +2,7 @@
 
 初回リリース（Phase 0〜9）と Phase 10（お知らせ）までを、単一の `design.md` / `tasks.md` で進めていたときの文書です。
 
-**実装判断の正ではありません。** 横断仕様の正は [platform/design.md](../../platform/design.md)、機能仕様の正は各機能ディレクトリ（例: [circle-square-sync](../../circle-square-sync/)）です。文書構成の説明は [docs/README.md](../../README.md) を参照してください。
+**実装判断の正ではありません（凍結参照）。** 横断仕様の正は [platform/design.md](../../platform/design.md)、機能仕様の正は各機能ディレクトリ（例: [circle-square-sync](../../circle-square-sync/)）です。ここは編集せず、変えるときは platform / 機能 design へ移してから更新します。文書構成の説明は [docs/README.md](../../README.md) を参照してください。
 
 | ファイル | 内容 |
 | --- | --- |

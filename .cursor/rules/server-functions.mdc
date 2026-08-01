@@ -6,7 +6,7 @@ alwaysApply: false
 
 # サーバ関数の作法
 
-仕様は `docs/platform/design.md` の認証節と、入力長の詳細は当面 `docs/archive/initial/design.md` の6.3が正。
+認証・認可の要約と変更時の正は `docs/platform/design.md` の認証節。入力長など未切り出しの表は当面 `docs/archive/initial/design.md` の6.3 / 6.1 を凍結参照する（編集しない）。
 
 ## 認可はサーバ関数側で強制する
 
@@ -26,7 +26,7 @@ export const listPractices = createServerFn()
 ## 入力は必ず zod で検証する
 
 URL は `http://` または `https://` で始まるものだけ許可し（`javascript:` などを排除）、2000文字以内。
-文字列の長さ上限は当面 `docs/archive/initial/design.md` 6.1 の表に従う。
+文字列の長さ上限は当面 `docs/archive/initial/design.md` 6.1 の表を凍結参照する。
 
 ## binding と秘密情報はリクエストごとに読む
 

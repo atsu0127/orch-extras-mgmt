@@ -98,7 +98,7 @@ E2E_BASE_URL=https://orch-extras-mgmt.atsu-dq9.workers.dev pnpm test:e2e
 
 ## データベース
 
-Cloudflare D1 を binding 名 `DB` で使う。テーブル定義の詳細は当面[初期案アーカイブの設計書6章](docs/archive/initial/design.md)を参照（正の切り出しは機能追加時に行う）。横断方針は[プラットフォーム設計](docs/platform/design.md)。
+Cloudflare D1 を binding 名 `DB` で使う。テーブル定義の詳細は当面[初期案アーカイブの設計書6章](docs/archive/initial/design.md)を凍結参照する（編集しない）。横断方針は[プラットフォーム設計](docs/platform/design.md)。
 
 - スキーマは `src/db/schema.ts`（Drizzle ORM）
 - `pnpm db:generate` が `migrations/` に SQL を生成し、適用は `wrangler d1 migrations apply` が行う

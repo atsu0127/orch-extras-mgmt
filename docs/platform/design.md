@@ -4,7 +4,7 @@
 
 横断仕様（技術基盤・認証・運用・決定索引）の正。機能固有の仕様は `docs/<feature>/design.md` を正とする。文書の置き方は [docs/README.md](../README.md) を参照。
 
-初回リリース〜Phase 10 までの総合設計は [archive/initial/design.md](../archive/initial/design.md) に退避している（実装判断の正ではない）。未切り出しの画面・データモデル詳細は、該当機能を触るまでそこを参照してよい。
+初回リリース〜Phase 10 までの総合設計は [archive/initial/design.md](../archive/initial/design.md) に退避している。**実装判断の正ではなく凍結参照**（編集しない。変えるときは platform / 機能 design へ移してから更新する）。
 
 ## 1. 目的とスコープ（要約）
 
@@ -83,19 +83,21 @@
 
 ### 3.5 データモデルの所在
 
-現行スキーマの詳細は [archive/initial/design.md の6章](../archive/initial/design.md) を参照する。テーブルや列を増やす機能は、当該機能の `design.md` に差分を書き、必要ならこの文書へ要約を足す。
+現行スキーマの列定義は [archive/initial/design.md の6章](../archive/initial/design.md) に残している。**archive は凍結参照**（編集しない）。列や制約を変えるときは、先に当該機能の `design.md` か本文書へ移してから更新する。ルールや README で「archive が正」とは書かず、「未切り出しの凍結参照」と扱う。
 
 ## 4. 認証・認可
 
-詳細の正は当初 [archive/initial/design.md の8章](../archive/initial/design.md) にあり、以下はエージェントが常に守る要約である。変更するときは archive ではなく、この章を更新する。
+要約を本節に置き、**変更するときは本節を更新する**（archive の8章は凍結参照。食い違う場合は本節を正とする）。
+
+未切り出しの細部（例: Cookie 名・間引き間隔の数値）は [archive/initial/design.md の8章](../archive/initial/design.md) を読んでよいが、それを変える必要が出たら本節へ移してから直す。
 
 - ログインはパスワード1欄。admin / extra 両方のハッシュと照合し、一致したロールで入る
-- ハッシュは `HMAC-SHA256(password, PEPPER)` を `hmac-sha256$v1$<hex>` で保存。`PEPPER` は Workers secret
-- セッション Cookie は `__Host-oem_session`（HttpOnly / Secure / SameSite=Lax）。生トークンは Cookie のみ、DB には SHA-256
+- ハッシュは `HMAC-SHA256(password, PEPPER)` を `hmac-sha256$v1$<hex>` で保存。`PEPPER` は Workers secret。定数時間比較
+- 新しいパスワードは12文字以上。変更時は管理者の現在パスワードを要求し、変更したロールの全セッションを失効させる（[ADR-0013](../adr/0013-require-admin-password-to-change-passwords.md)）
+- セッション Cookie は `__Host-oem_session`（HttpOnly / Secure / SameSite=Lax）。生トークンは Cookie のみ、DB には SHA-256。有効期限 30 日
+- 同一 IP で直近5分の失敗が10回に達したら試行を拒否する。期限切れセッションと古い `login_attempts` の掃除はログイン成功時。専用 Cron は持たない
 - **すべてのサーバ関数**が `requireAuth` または `requireAdmin` を通る。読み取りも例外にしない
 - CSRF: `Sec-Fetch-Site`（無ければ `Origin`）検証を全サーバ関数に掛ける（[ADR-0006](../adr/0006-apply-csrf-middleware-to-all-server-functions.md)）
-- ログインレート制限と、期限切れセッション / 古い `login_attempts` の掃除はログイン成功時に行う。専用 Cron は持たない
-- パスワード変更は管理者の現在パスワードを要求する（[ADR-0013](../adr/0013-require-admin-password-to-change-passwords.md)）
 
 ## 5. 環境変数・シークレット
 
@@ -117,11 +119,17 @@
 
 ## 7. 画面・機能仕様の所在
 
-ルーティング、デザイン方針、お知らせ、問い合わせ、地図、カレンダーなどの機能仕様は、切り出し済みなら `docs/<feature>/design.md`、未切り出しなら [archive/initial/design.md](../archive/initial/design.md) の該当章を参照する。
+ルーティング、デザイン方針、お知らせ、問い合わせ、地図、カレンダーなどの機能仕様は、切り出し済みなら `docs/<feature>/design.md`、未切り出しなら [archive/initial/design.md](../archive/initial/design.md) を凍結参照する。
 
-## 8. 決定記録（索引）
+## 8. 運用上の任意判断（引き継ぎ）
 
-実装中の判断は `docs/adr/` に ADR として記録し、ここには索引の1行を置く。運用は [ADR-0000](../adr/0000-use-markdown-architectural-decision-records.md) が正。
+初期案 tasks から引き継いだ、コード外の任意判断。
+
+- [ ] **A-6** 独自ドメインを使うか決める。使わない場合は現在の `*.workers.dev` URLで運用を続ける
+
+## 9. 決定記録（索引）
+
+実装中の判断は `docs/adr/` に ADR として記録し、ここには索引の1行を置く。運用は [ADR-0000](../adr/0000-use-markdown-architectural-decision-records.md) が正。archive 側の旧14章は履歴であり更新しない。
 
 | 決定 | 理由 | 詳細 |
 | --- | --- | --- |
@@ -156,4 +164,4 @@
 | E2E はローカル D1 を `--reset` | 再実行で結果が変わらない | [ADR-0020](../adr/0020-reset-local-d1-for-e2e-fixtures.md) |
 | 外部リンク視認性＋管理行操作のアイコン化 | 受け入れ改善を共通部品で直す | [ADR-0021](../adr/0021-visible-external-links-and-compact-admin-row-actions.md) |
 | 演奏会お知らせは通知・既読なし | ホーム再訪の理由を最小構成で | [ADR-0022](../adr/0022-add-concert-announcements-without-notifications.md) |
-| 設計・タスクは機能ディレクトリ単位 | 初期案の単一 design/tasks をやめ、機能ごとに正を置く | — |
+| 設計・タスクは機能ディレクトリ単位 | 初期案の単一 design/tasks をやめ、機能ごとに正を置く | [ADR-0023](../adr/0023-feature-directory-design-and-tasks.md) |

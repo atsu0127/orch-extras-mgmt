@@ -6,7 +6,7 @@ alwaysApply: false
 
 # D1 とマイグレーション
 
-テーブル定義の詳細は当面 `docs/archive/initial/design.md` の6章を参照する（機能追加時に当該機能の design / platform へ切り出す）。横断方針は `docs/platform/design.md`。
+テーブル定義の列・制約は当面 `docs/archive/initial/design.md` の6章を**凍結参照**する（編集しない）。変えるときは当該機能の design か `docs/platform/design.md` へ移してから更新する。横断方針は `docs/platform/design.md`。
 
 ## クエリ本数を意識する
 

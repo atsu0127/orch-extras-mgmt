@@ -10,7 +10,7 @@
 - `docs/platform/design.md` — 横断仕様（技術基盤、認証、無料枠、CI、ADR 索引）。**基盤の実装判断はここが正**
 - 作業対象の `docs/<feature>/design.md` と `docs/<feature>/tasks.md` — 機能仕様・タスク・進捗。**機能の実装判断はここが正**
 - `docs/adr/` — 実装中に行った設計判断の記録
-- `docs/archive/initial/` — 初回リリース〜Phase 10 の総合設計・タスク（初期案。実装判断の正ではない）
+- `docs/archive/initial/` — 初回リリース〜Phase 10 の総合設計・タスク（**凍結参照**。実装判断の正ではない。編集せず、変えるときは platform / 機能 design へ移す）
 
 設計と違う実装が必要になったら、黙って逸脱せず先に相談する。合意して設計を変えたなら、対象の `docs/<feature>/design.md` または `docs/platform/design.md` を更新する。
 
