@@ -6,7 +6,7 @@ alwaysApply: false
 
 # 日付・時刻の扱い
 
-仕様は `docs/design.md` の5.4が正。
+仕様は `docs/platform/design.md` の時刻節が正。
 
 ## 練習の日付・時刻は日本時間の文字列として保持する
 
