@@ -24,7 +24,8 @@
 
 | 機能 | 設計 | タスク | 状態 |
 | --- | --- | --- | --- |
-| 練習の一括作成 | [design.md](./practice-bulk-create/design.md) | [tasks.md](./practice-bulk-create/tasks.md) | 完了 |
+| 練習の一括作成 | [design.md](./practice-bulk-create/design.md) | [tasks.md](./practice-bulk-create/tasks.md) | 初期完了・UI改修未着手 |
+| 曲の楽譜リンク（あり／なし） | [design.md](./piece-score-links/design.md) | [tasks.md](./piece-score-links/tasks.md) | 未着手 |
 
 お知らせ・会場 CRUD・ダッシュボード等の既存機能は、まだ個別ディレクトリ未作成。仕様は [archive/initial/design.md](./archive/initial/design.md) を凍結参照する。
 
