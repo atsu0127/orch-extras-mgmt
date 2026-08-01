@@ -1,6 +1,6 @@
 # 011 — 演奏会画面から資料（Resource）UI を切り出す
 
-- **Status**: TODO
+- **Status**: DONE
 - **Commit**: 90a50e7
 - **Severity**: LOW
 - **Category**: Maintainability & architecture

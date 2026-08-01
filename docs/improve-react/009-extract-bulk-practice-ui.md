@@ -1,6 +1,6 @@
 # 009 — 練習管理から一括追加 UI を切り出す
 
-- **Status**: TODO
+- **Status**: DONE
 - **Commit**: 90a50e7
 - **Severity**: MEDIUM
 - **Category**: Maintainability & architecture
