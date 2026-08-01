@@ -5,7 +5,6 @@ import {
   BULK_PRACTICE_LIMIT_MESSAGE,
   BULK_PRACTICE_UNKNOWN_CONCERT_MESSAGE,
   BULK_PRACTICE_UNKNOWN_VENUE_MESSAGE,
-  BULK_PRACTICE_VENUE_ADDRESS_CONFLICT_MESSAGE,
   MAX_BULK_PRACTICES,
 } from '../lib/limits'
 import { createTestDb } from '../test/db'
@@ -34,7 +33,7 @@ const baseRow = {
   startTime: '19:00' as string | null,
   endTime: '21:00' as string | null,
   detail: null as string | null,
-  venue: { kind: 'none' as const },
+  venueId: null as number | null,
 }
 
 describe('bulkPracticesInput', () => {
@@ -62,12 +61,12 @@ describe('createPracticesBulk', () => {
       {
         ...baseRow,
         date: '2026-08-08',
-        venue: { kind: 'existing', venueId: 1 },
+        venueId: 1,
         detail: '分奏',
       },
     ])
 
-    expect(result).toEqual({ practiceCount: 2, venueCreatedCount: 0 })
+    expect(result).toEqual({ practiceCount: 2 })
     expect(await listPracticesForAdmin(db, 1)).toMatchObject([
       { date: '2026-08-01', detail: '合奏', venueId: null },
       { date: '2026-08-08', detail: '分奏', venueId: 1 },
@@ -75,95 +74,18 @@ describe('createPracticesBulk', () => {
     expect(await listPracticesForAdmin(db, 2)).toEqual([])
   })
 
-  it('新規会場を追加し、同名は再利用する', async () => {
-    const result = await createPracticesBulk(db, 1, [
-      {
-        ...baseRow,
-        date: '2026-08-01',
-        venue: {
-          kind: 'new',
-          name: '市民会館',
-          address: '別の住所は無視される',
-          note: null,
-        },
-      },
-      {
-        ...baseRow,
-        date: '2026-08-08',
-        venue: {
-          kind: 'new',
-          name: '高輪アンナ会館',
-          address: '東京都港区',
-          note: 'ホール',
-        },
-      },
-      {
-        ...baseRow,
-        date: '2026-08-15',
-        venue: {
-          kind: 'new',
-          name: '高輪アンナ会館',
-          address: '東京都港区',
-          note: null,
-        },
-      },
+  it('一括では会場を新規作成しない', async () => {
+    await createPracticesBulk(db, 1, [
+      { ...baseRow, date: '2026-08-01', venueId: 1 },
+      { ...baseRow, date: '2026-08-08', venueId: null },
     ])
-
-    expect(result).toEqual({ practiceCount: 3, venueCreatedCount: 1 })
-    const venueList = await listVenues(db)
-    expect(venueList).toHaveLength(2)
-    const anna = venueList.find((venue) => venue.name === '高輪アンナ会館')
-    expect(anna).toMatchObject({
-      address: '東京都港区',
-      note: 'ホール',
-    })
-
-    const practices = await listPracticesForAdmin(db, 1)
-    expect(practices).toMatchObject([
-      { date: '2026-08-01', venueId: 1 },
-      { date: '2026-08-08', venueId: anna?.id },
-      { date: '2026-08-15', venueId: anna?.id },
-    ])
-  })
-
-  it('同名の新規会場で住所が食い違うとエラーにする', async () => {
-    await expect(
-      createPracticesBulk(db, 1, [
-        {
-          ...baseRow,
-          date: '2026-08-01',
-          venue: {
-            kind: 'new',
-            name: '新区民センター',
-            address: '住所A',
-            note: null,
-          },
-        },
-        {
-          ...baseRow,
-          date: '2026-08-08',
-          venue: {
-            kind: 'new',
-            name: '新区民センター',
-            address: '住所B',
-            note: null,
-          },
-        },
-      ]),
-    ).rejects.toThrow(BULK_PRACTICE_VENUE_ADDRESS_CONFLICT_MESSAGE)
 
     expect(await listVenues(db)).toHaveLength(1)
-    expect(await listPracticesForAdmin(db, 1)).toEqual([])
   })
 
   it('存在しない会場IDは拒否する', async () => {
     await expect(
-      createPracticesBulk(db, 1, [
-        {
-          ...baseRow,
-          venue: { kind: 'existing', venueId: 999 },
-        },
-      ]),
+      createPracticesBulk(db, 1, [{ ...baseRow, venueId: 999 }]),
     ).rejects.toThrow(BULK_PRACTICE_UNKNOWN_VENUE_MESSAGE)
   })
 
@@ -190,21 +112,13 @@ describe('createPracticesBulk', () => {
     const rows = Array.from({ length: 10 }, (_, index) => ({
       ...baseRow,
       date: `2026-09-${String(index + 1).padStart(2, '0')}`,
-      venue:
-        index % 2 === 0
-          ? ({ kind: 'existing', venueId: 1 } as const)
-          : ({
-              kind: 'new',
-              name: `新会場${Math.floor(index / 2)}`,
-              address: `住所${Math.floor(index / 2)}`,
-              note: null,
-            } as const),
+      venueId: index % 2 === 0 ? 1 : null,
     }))
 
     await createPracticesBulk(db, 1, rows)
 
-    // 演奏会確認・既存会場確認・新規 INSERT・新規 ID 取得・練習 INSERT
-    expect(queries).toBeLessThanOrEqual(8)
+    // 演奏会確認・会場確認・練習 INSERT
+    expect(queries).toBeLessThanOrEqual(5)
     expect(await listPracticesForAdmin(db, 1)).toHaveLength(10)
   })
 })

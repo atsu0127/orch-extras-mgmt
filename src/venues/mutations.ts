@@ -8,8 +8,15 @@ export type VenueInput = {
   note: string | null
 }
 
-export async function createVenue(db: Db, input: VenueInput): Promise<void> {
-  await db.insert(venues).values(input)
+export async function createVenue(db: Db, input: VenueInput): Promise<number> {
+  const [created] = await db
+    .insert(venues)
+    .values(input)
+    .returning({ id: venues.id })
+  if (!created) {
+    throw new Error('会場を登録できませんでした')
+  }
+  return created.id
 }
 
 export async function updateVenue(

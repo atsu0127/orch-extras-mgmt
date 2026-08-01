@@ -3,6 +3,7 @@ import {
   bulkPracticeCreateFormKey,
   collectBulkPracticesInput,
   createEmptyBulkPracticeRow,
+  duplicateBulkPracticeRow,
   firstBulkValidationMessage,
 } from './bulk-form-state'
 
@@ -22,32 +23,49 @@ describe('createEmptyBulkPracticeRow', () => {
       startTime: '',
       endTime: '',
       detail: '',
-      venueMode: 'none',
       venueId: '',
-      venueName: '',
-      venueAddress: '',
-      venueNote: '',
     })
     expect(row.key).toMatch(/^bulk-row-/)
     expect(createEmptyBulkPracticeRow().key).not.toBe(row.key)
   })
 })
 
+describe('duplicateBulkPracticeRow', () => {
+  it('内容をコピーし key だけ新しくする', () => {
+    const source = {
+      ...createEmptyBulkPracticeRow(),
+      date: '2026-08-01',
+      startTime: '19:00',
+      endTime: '21:00',
+      detail: '合奏',
+      venueId: '3',
+    }
+
+    const copied = duplicateBulkPracticeRow(source)
+
+    expect(copied).toMatchObject({
+      date: '2026-08-01',
+      startTime: '19:00',
+      endTime: '21:00',
+      detail: '合奏',
+      venueId: '3',
+    })
+    expect(copied.key).not.toBe(source.key)
+  })
+})
+
 describe('collectBulkPracticesInput', () => {
-  it('会場モードに応じて送信形へ変換する', () => {
+  it('venueId を送信形へ変換する', () => {
     const rows = [
       {
         ...createEmptyBulkPracticeRow(),
         date: '2026-08-01',
-        venueMode: 'existing' as const,
         venueId: '3',
       },
       {
         ...createEmptyBulkPracticeRow(),
         date: '2026-08-08',
-        venueMode: 'new' as const,
-        venueName: '新区民センター',
-        venueAddress: '東京都',
+        venueId: '',
       },
     ]
 
@@ -59,19 +77,14 @@ describe('collectBulkPracticesInput', () => {
           startTime: '',
           endTime: '',
           detail: '',
-          venue: { kind: 'existing', venueId: 3 },
+          venueId: 3,
         },
         {
           date: '2026-08-08',
           startTime: '',
           endTime: '',
           detail: '',
-          venue: {
-            kind: 'new',
-            name: '新区民センター',
-            address: '東京都',
-            note: '',
-          },
+          venueId: null,
         },
       ],
     })

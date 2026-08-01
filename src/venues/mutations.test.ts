@@ -13,15 +13,17 @@ beforeEach(() => {
 })
 
 describe('createVenue', () => {
-  it('登録した会場が一覧に出る', async () => {
-    await createVenue(db, {
+  it('登録した会場の id を返し、一覧に出る', async () => {
+    const id = await createVenue(db, {
       name: '市民会館 大練習室',
       address: '東京都1-1',
       note: null,
     })
 
+    expect(id).toBeTypeOf('number')
     const [venue] = await listVenues(db)
     expect(venue).toMatchObject({
+      id,
       name: '市民会館 大練習室',
       address: '東京都1-1',
       note: null,
