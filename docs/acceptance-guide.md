@@ -24,7 +24,7 @@
 
 ## チェック手順
 
-各項目を確認したら `docs/tasks.md` の受け入れチェックリストにチェックを入れてください。詰まったらこのリポジトリの Issue / PR コメントで状況を共有してください。
+各項目を確認したら当時の受け入れチェックリスト（[archive/initial/tasks-initial-release.md](./archive/initial/tasks-initial-release.md)）にチェックを入れてください。詰まったらこのリポジトリの Issue / PR コメントで状況を共有してください。
 
 ### 1. ロール分離
 
@@ -90,6 +90,6 @@
 
 ## 確認が終わったら
 
-1. `docs/tasks.md` の受け入れチェックリストをすべて `[x]` にする
+1. `docs/archive/initial/tasks-initial-release.md` の受け入れチェックリストをすべて `[x]` にする（本受け入れは完了済み）
 2. 進捗に Phase 8 完了を追記する
 3. A-7 のチェックを入れる（メールを設定済みなら）

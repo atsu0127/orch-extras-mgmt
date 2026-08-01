@@ -1,6 +1,8 @@
-# オーケストラ エキストラ管理ポータル 設計書
+# オーケストラ エキストラ管理ポータル 設計書（初期案アーカイブ）
 
-最終更新: 2026-07-31
+> **実装判断の正ではありません。** 横断仕様は [platform/design.md](../../platform/design.md)、機能仕様は各 `docs/<feature>/design.md`、文書構成は [docs/README.md](../../README.md) を参照。
+
+最終更新: 2026-07-31（アーカイブ化: 2026-08-01）
 
 ## 1. 目的と背景
 
@@ -99,7 +101,7 @@ export default defineConfig({
 
 全ページがログイン必須で SEO が不要、利用者も数名という条件下では、サーバサイドレンダリングの利点がほぼない。一方で無料プランの CPU 制限（後述）に対して SSR は最も重い処理になる。よってビルド時にアプリのシェル（`dist/client/index.html`）だけを事前生成し、Worker の仕事をサーバ関数の実行に絞る。
 
-シェルの配信は Cloudflare の assets binding が行い、Worker には `/_serverFn/*` だけを回す。この振り分けは `wrangler.jsonc` の `assets` で設定する（[ADR-0008](./adr/0008-serve-spa-shell-from-assets-binding.md)）。設定を外すと document ごとに Worker が描画してしまい、以下の前提が崩れる。
+シェルの配信は Cloudflare の assets binding が行い、Worker には `/_serverFn/*` だけを回す。この振り分けは `wrangler.jsonc` の `assets` で設定する（[ADR-0008](../../adr/0008-serve-spa-shell-from-assets-binding.md)）。設定を外すと document ごとに Worker が描画してしまい、以下の前提が崩れる。
 
 **重要な帰結**: SPAモードではルートの `beforeLoad` と `loader` がサーバで実行されない。つまり**ルート側の認証ガードは体験を整えるためのものにすぎず、権限の強制力を持たない**。認証と認可の実体は必ずサーバ関数側の middleware で行う（8章）。
 
@@ -318,22 +320,22 @@ venues ─┬─(本番会場)─ concerts ─┬─ practices ─ practice_medi
 2. `status = 'active'` のうち `performance_date` が最も近い将来のもの
 3. それも無ければ最新に作られた演奏会
 
-解決した結果は URL のクエリに書き戻す。以降の画面はクエリを見るだけでよい（[ADR-0009](./adr/0009-canonicalize-selected-concert-in-url.md)）。
+解決した結果は URL のクエリに書き戻す。以降の画面はクエリを見るだけでよい（[ADR-0009](../../adr/0009-canonicalize-selected-concert-in-url.md)）。
 
 セレクタは進行中とアーカイブ済みを区別して表示する。演奏会が1件も無い場合、閲覧側は「まだ公開された演奏会がありません」と表示し、管理者には演奏会作成への導線を出す。
 
 ### 7.2 デザイン方針
 
-ダッシュボード（ホーム）は演奏会プログラムに近い**パンフレット配置**とする。**次の練習**を中央寄せの大きな日付（明朝）で最上段に置き、その直後に最新のお知らせ、本番・出欠・備考・資料・問い合わせを hairline 区切りで続ける（基本の情報順は[ADR-0017](./adr/0017-departure-board-dashboard-layout.md)、お知らせの追加は[ADR-0022](./adr/0022-add-concert-announcements-without-notifications.md)）。練習日程・曲・管理などの一覧・操作画面は**実用コンパクト**（平坦パネルと行リスト）のままとする（[ADR-0018](./adr/0018-compact-utility-visual-language.md)）。
+ダッシュボード（ホーム）は演奏会プログラムに近い**パンフレット配置**とする。**次の練習**を中央寄せの大きな日付（明朝）で最上段に置き、その直後に最新のお知らせ、本番・出欠・備考・資料・問い合わせを hairline 区切りで続ける（基本の情報順は[ADR-0017](../../adr/0017-departure-board-dashboard-layout.md)、お知らせの追加は[ADR-0022](../../adr/0022-add-concert-announcements-without-notifications.md)）。練習日程・曲・管理などの一覧・操作画面は**実用コンパクト**（平坦パネルと行リスト）のままとする（[ADR-0018](../../adr/0018-compact-utility-visual-language.md)）。
 
-主要画面への移動は、スマホでは下部固定ナビ（アイコン＋短いラベル: ホーム / 練習 / 曲。管理者は管理を追加）、PC（概ね768px以上）ではヘッダの横タブとする。演奏会セレクタはヘッダに常時置く。PC は上部アプリバー型シェルとし、本文幅を読書・管理向けに広げる。ホームは次の練習＋お知らせ｜本番＋出欠の2カラム（プログラム表の見開き）にする。管理に入っているあいだ、PC のヘッダは閲覧タブの代わりに管理セクション（演奏会・練習の編集・曲の編集・お知らせ・会場・設定）を1段で出し、管理トップの一覧メニューは置かない。スマホの管理は下部ナビの「管理」＋区別しやすいラベルのサブナビとする（[ADR-0015](./adr/0015-adopt-mantine-with-purpose-built-theme.md)、[ADR-0019](./adr/0019-desktop-top-app-bar-shell.md)）。
+主要画面への移動は、スマホでは下部固定ナビ（アイコン＋短いラベル: ホーム / 練習 / 曲。管理者は管理を追加）、PC（概ね768px以上）ではヘッダの横タブとする。演奏会セレクタはヘッダに常時置く。PC は上部アプリバー型シェルとし、本文幅を読書・管理向けに広げる。ホームは次の練習＋お知らせ｜本番＋出欠の2カラム（プログラム表の見開き）にする。管理に入っているあいだ、PC のヘッダは閲覧タブの代わりに管理セクション（演奏会・練習の編集・曲の編集・お知らせ・会場・設定）を1段で出し、管理トップの一覧メニューは置かない。スマホの管理は下部ナビの「管理」＋区別しやすいラベルのサブナビとする（[ADR-0015](../../adr/0015-adopt-mantine-with-purpose-built-theme.md)、[ADR-0019](../../adr/0019-desktop-top-app-bar-shell.md)）。
 
 管理画面も同じ色・タイポ・部品を使い、装飾より入力と確認のしやすさを優先する。
 
 画一的な AI 生成 UI に見えやすいパターンを避けるため、次をデザイン上の制約とする。
 
 - 紫・青を中心としたグラデーション、ガラス表現、装飾だけの影を使わない
-- ホーム以外ではすべてを同じ角丸カードに入れず、日程や資料は平坦なパネルと行リストを基本にする。ホームのセクション区切りは hairline とタイポ階層を基本とし、PC幅ではプログラム表としての白い紙面（薄い枠）を1枚だけ許す（[ADR-0019](./adr/0019-desktop-top-app-bar-shell.md)）
+- ホーム以外ではすべてを同じ角丸カードに入れず、日程や資料は平坦なパネルと行リストを基本にする。ホームのセクション区切りは hairline とタイポ階層を基本とし、PC幅ではプログラム表としての白い紙面（薄い枠）を1枚だけ許す（[ADR-0019](../../adr/0019-desktop-top-app-bar-shell.md)）
 - 角丸は原則6〜8px。ピル型は状態や選択肢を表す場合だけに限る
 - アイコンは地図・外部リンク・下部ナビなど意味が明確な場合だけ使い、アイコンだけの操作を避ける（下部ナビはアイコン＋ラベル）
 - 本文は16px相当、行高1.5以上、操作領域は44px以上を基準にする
@@ -371,18 +373,18 @@ venues ─┬─(本番会場)─ concerts ─┬─ practices ─ practice_medi
 SPAモードのため画面側のガードは強制力を持たない。したがって次の二層で守る。
 
 1. **サーバ関数の middleware**（実体）: `requireAuth`（セッション必須）と `requireAdmin`（さらに `role = 'admin'` 必須）を用意し、**すべてのサーバ関数がどちらかを必ず通る**ようにする。読み取り系も例外にしない
-2. **ルートの `beforeLoad`**（体験）: 未ログインならログイン画面へ、`extra` が管理画面を開いたらダッシュボードへ、クライアント側で誘導する。判定に使うセッション照会はクライアントで1回だけ行い、以降は使い回す（[ADR-0005](./adr/0005-cache-session-lookup-on-client.md)）
+2. **ルートの `beforeLoad`**（体験）: 未ログインならログイン画面へ、`extra` が管理画面を開いたらダッシュボードへ、クライアント側で誘導する。判定に使うセッション照会はクライアントで1回だけ行い、以降は使い回す（[ADR-0005](../../adr/0005-cache-session-lookup-on-client.md)）
 
 ### 8.5 その他の防御
 
 - **ログインのレート制限**: 同一 IP（`CF-Connecting-IP`）で直近5分の失敗が10回に達したら、以後の試行を一定時間拒否する。`login_attempts` の古い行はログイン成功時に掃除する（9.5）
-- **CSRF**: Cookie が `SameSite=Lax` なので他サイトからの POST では送信されない。加えて `Sec-Fetch-Site`（無ければ `Origin`）が自サイトと一致しないサーバ関数呼び出しを 403 で落とす。更新系に限らず全サーバ関数に掛ける（[ADR-0006](./adr/0006-apply-csrf-middleware-to-all-server-functions.md)）
+- **CSRF**: Cookie が `SameSite=Lax` なので他サイトからの POST では送信されない。加えて `Sec-Fetch-Site`（無ければ `Origin`）が自サイトと一致しないサーバ関数呼び出しを 403 で落とす。更新系に限らず全サーバ関数に掛ける（[ADR-0006](../../adr/0006-apply-csrf-middleware-to-all-server-functions.md)）
 - **秘密情報の扱い**: 環境変数は `cloudflare:workers` の binding からリクエストごとに読む（モジュール読み込み時に読むとクライアントバンドルへ混入する恐れがあるため）
 - **レスポンスヘッダ**: `X-Content-Type-Options: nosniff`、`Referrer-Policy: strict-origin-when-cross-origin`、外部リンクは `rel="noopener noreferrer"`。ヘッダは Worker が返す分を `src/start.ts` で、assets binding が Worker を通さず返す静的ファイル分を `public/_headers` で付ける
 
 ### 8.6 パスワードの変更
 
-`/admin/settings` から両ロールのパスワードを変更する。どちらのロールを変える場合も、管理者の現在のパスワードを入力させて照合する（[ADR-0013](./adr/0013-require-admin-password-to-change-passwords.md)）。新しいパスワードは12文字以上で、確認用の再入力と一致することを求める。
+`/admin/settings` から両ロールのパスワードを変更する。どちらのロールを変える場合も、管理者の現在のパスワードを入力させて照合する（[ADR-0013](../../adr/0013-require-admin-password-to-change-passwords.md)）。新しいパスワードは12文字以上で、確認用の再入力と一致することを求める。
 
 変更したロールのセッションは 8.3 のとおり全件失効させる。管理者のパスワードを変えたときは操作中のセッションも落ちるため、画面にログインし直す導線を出す。
 
@@ -400,7 +402,7 @@ SPAモードのため画面側のガードは強制力を持たない。した�
 
 ### 9.3 Google カレンダー
 
-本番日または練習日があるとき、`https://calendar.google.com/calendar/render?action=TEMPLATE` を基準に Google カレンダーの予定作成 URL を組み立てて外部リンクとして開く。本番のタイトルは演奏会名、練習は `<演奏会名> 練習` とし、会場名と住所を場所に設定する（[ADR-0016](./adr/0016-build-calendar-links-with-local-date-strings.md)）。
+本番日または練習日があるとき、`https://calendar.google.com/calendar/render?action=TEMPLATE` を基準に Google カレンダーの予定作成 URL を組み立てて外部リンクとして開く。本番のタイトルは演奏会名、練習は `<演奏会名> 練習` とし、会場名と住所を場所に設定する（[ADR-0016](../../adr/0016-build-calendar-links-with-local-date-strings.md)）。
 
 本番は終日の予定とし、終了日には翌日を指定する。練習は開始・終了時刻が両方ある場合だけ時刻入りの予定とし、`ctz=Asia/Tokyo` を付ける。どちらかが欠ける場合は終日予定とする。日時は設計書5.4の日本時間文字列から直接組み立て、`Date` によるタイムゾーン変換や末尾の `Z` は使わない。
 
@@ -418,7 +420,7 @@ SPAモードのため画面側のガードは強制力を持たない。した�
 
 閲覧ホームでは、最大10件の先頭にある最新1件を次の練習の直後に日本時間の日付付きで強調し、残りも同じセクション内で確認できる。件数が少ない前提なので専用の閲覧ページとページングは設けない。選択中の演奏会にお知らせが無い場合は、セクション自体を表示しない。URLがある場合だけ既存の外部リンク表現で表示する。
 
-お知らせはポータルを開いた利用者へ変更点を伝える機能に限定する。個別の既読管理、端末内の既読状態、団体共通のお知らせ、固定表示、予約投稿、メールや外部サービスへの通知は持たない（[ADR-0022](./adr/0022-add-concert-announcements-without-notifications.md)）。
+お知らせはポータルを開いた利用者へ変更点を伝える機能に限定する。個別の既読管理、端末内の既読状態、団体共通のお知らせ、固定表示、予約投稿、メールや外部サービスへの通知は持たない（[ADR-0022](../../adr/0022-add-concert-announcements-without-notifications.md)）。
 
 ## 10. 環境変数・シークレット
 
@@ -480,12 +482,12 @@ E2E はローカルの D1（wrangler のローカルモード）に対して実�
 
 機能は満たしているが、見た目・操作感の改善候補。リリース後の短いフォローとして扱う。
 
-- **外部リンクの視認性**: 閲覧画面の Maps・カレンダー・出欠・資料・ボウイング・録音などが、リンクだと一目で分かりにくい。下線・色・アイコン・「開く」ラベルなど、タッチ対象であることが伝わる表現に揃える → T9-1 で `ExternalLink` に常時下線・ボルドー色・外部アイコンを付けた（[ADR-0021](./adr/0021-visible-external-links-and-compact-admin-row-actions.md)）
+- **外部リンクの視認性**: 閲覧画面の Maps・カレンダー・出欠・資料・ボウイング・録音などが、リンクだと一目で分かりにくい。下線・色・アイコン・「開く」ラベルなど、タッチ対象であることが伝わる表現に揃える → T9-1 で `ExternalLink` に常時下線・ボルドー色・外部アイコンを付けた（[ADR-0021](../../adr/0021-visible-external-links-and-compact-admin-row-actions.md)）
 - **管理画面の行アクションの密度**: 演奏会資料など、1行あたり「編集・上下・削除」が縦に並びボタンが密集する。メニュー集約やアイコンボタン化で、一覧のスキャンしやすさを優先する → T9-2 で ↑↓ をアイコン化し、リンクと操作を横並びの共通部品にした（同上）
 
 ## 14. 決定記録
 
-決定の一覧。実装中に行った判断は `docs/adr/` に ADR として1件1ファイルで記録し、ここには索引の1行だけを置く。書き方と運用は [ADR-0000](./adr/0000-use-markdown-architectural-decision-records.md) が正。
+決定の一覧。実装中に行った判断は `docs/adr/` に ADR として1件1ファイルで記録し、ここには索引の1行だけを置く。書き方と運用は [ADR-0000](../../adr/0000-use-markdown-architectural-decision-records.md) が正。
 
 | 決定 | 理由 | 詳細 |
 | --- | --- | --- |
@@ -497,26 +499,26 @@ E2E はローカルの D1（wrangler のローカルモード）に対して実�
 | ボウイングは1曲1リンク | 現状の共有方法に合わせ、パート別は将来の拡張とする | — |
 | 会場はマスタ化 | 同じ会場を繰り返し使うため、入力の手間と表記揺れを減らす | — |
 | 練習の個別ページを作らない | 件数が少なく、一覧内の展開で足りる | — |
-| 実装中の判断は ADR に記録する | 代替案と、その決定で犠牲にしたものが PR の説明に埋もれるのを防ぐ | [ADR-0000](./adr/0000-use-markdown-architectural-decision-records.md) |
-| CI は PR だけで動かし、main への push は Deploy が検査も兼ねる | 検査を通っていないコードが本番に出ないことを、ワークフローをまたがずに保証する | [ADR-0001](./adr/0001-split-ci-and-deploy-workflows.md) |
-| TypeScript 7（ネイティブ実装）を採用 | 型チェックが速い。新規プロジェクトなので 5.x への差し戻しが容易 | [ADR-0002](./adr/0002-adopt-typescript-7.md) |
-| Worker のエントリで Start の `fetch` をラップする | Workers の `env` が Start のオプション引数として渡るのを防ぐ | [ADR-0003](./adr/0003-wrap-start-fetch-in-worker-entry.md) |
-| 列挙値は CHECK 制約ではなくアプリ層で担保する | 13章の `target_type` 追加を、テーブル再作成なしで行えるようにする | [ADR-0004](./adr/0004-enforce-enums-in-app-layer.md) |
-| ルートガード用のセッション照会はクライアントで1回だけ行う | 画面遷移のたびに D1 クエリを足さない。認可の実体はサーバ関数側にある | [ADR-0005](./adr/0005-cache-session-lookup-on-client.md) |
-| CSRF 対策は更新系に限らず全サーバ関数に掛ける | 「更新系だけ」を人手で維持すると付け忘れに気づけない | [ADR-0006](./adr/0006-apply-csrf-middleware-to-all-server-functions.md) |
-| DB を伴うロジックの単体テストは `node:sqlite` で行う | 検証したいのは SQL の意味論。マイグレーションを流すのでスキーマとずれない | [ADR-0007](./adr/0007-test-db-logic-on-in-memory-sqlite.md) |
-| SPA シェルは assets binding から返し、Worker はサーバ関数だけを受ける | document ごとに Worker が描画していた。5.2・5.3の前提が実態と食い違っていた | [ADR-0008](./adr/0008-serve-spa-shell-from-assets-binding.md) |
-| 選択中の演奏会は URL のクエリを正とし、`beforeLoad` で書き戻す | `loaderDeps` が受け取れるのは search だけ。コンテキストに置くと切り替えが `loader` の再実行につながらない | [ADR-0009](./adr/0009-canonicalize-selected-concert-in-url.md) |
-| 削除の確認はネイティブの `<dialog>` で行う | 連鎖して消えるものを対象ごとの文言で出せる。`window.confirm` では書式が揃わない | [ADR-0010](./adr/0010-confirm-deletions-with-native-dialog.md) |
-| `sort_order` は 0 からの連番で保ち、並べ替えは2行だけ書き換える | 書き込み件数を一覧の長さに比例させない（5.3のサブリクエスト上限） | [ADR-0011](./adr/0011-keep-sort-order-dense.md) |
-| ボウイングURLを差し替えたら前のURLの検知結果を捨てる | 直したリンクが翌日のチェックまで要確認として出続けるのを防ぐ | [ADR-0012](./adr/0012-drop-link-check-on-url-change.md) |
-| パスワード変更には管理者の現在のパスワードを要求する | ログインしたままの端末を他人が触っても書き換えられないようにする | [ADR-0013](./adr/0013-require-admin-password-to-change-passwords.md) |
-| リンク切れ検知を見送り、利用者の利便性を優先する | 数件のリンク監視より、問い合わせ・資料・地図・カレンダー・複製の方が日常的な効果が高い | [ADR-0014](./adr/0014-prioritize-portal-usability-over-link-checking.md) |
-| Mantineを用途固有のテーマで使う | CRUD部品を再利用しつつ、画一的なSaaS風デザインを避ける | [ADR-0015](./adr/0015-adopt-mantine-with-purpose-built-theme.md) |
-| Googleカレンダーの予定を日本時間文字列から直接組み立てる | 実行環境による日時のずれを避け、タイトルと会場を予定だけで確認できるようにする | [ADR-0016](./adr/0016-build-calendar-links-with-local-date-strings.md) |
-| ダッシュボードは次の練習を最上位に置く | 開いてすぐ日時・会場・地図へ届く。本番と出欠も第一画面に残す | [ADR-0017](./adr/0017-departure-board-dashboard-layout.md) |
-| 閲覧 UI は実用コンパクト（ホームはパンフレット配置）、下部ナビはアイコン＋短いラベル | 一覧は密度優先、ホームはプログラム表の読みやすさ。タブ識別を速くする | [ADR-0018](./adr/0018-compact-utility-visual-language.md) |
-| PC幅は上部アプリバー型シェル、本文幅を広げ、ホームは2カラム | 主ナビが少ない情報ポータルでは横タブが一般的。スマホの優先順は維持する | [ADR-0019](./adr/0019-desktop-top-app-bar-shell.md) |
-| E2E はローカル D1 を `--reset` で固定フィクスチャへ戻す | 再実行で結果が変わらないようにする。テスト専用 API は増やさない | [ADR-0020](./adr/0020-reset-local-d1-for-e2e-fixtures.md) |
-| 外部リンクは共通部品で視認性を揃え、管理の行操作はアイコン化 | 受け入れで見つかったタップ対象の分かりにくさと操作密度を、共通部品で一括して直す | [ADR-0021](./adr/0021-visible-external-links-and-compact-admin-row-actions.md) |
-| 演奏会ごとのお知らせを最新順で表示し、通知と既読管理は持たない | 練習前や日常にホームを開く理由を作りつつ、個人データと別の通知基盤を増やさない | [ADR-0022](./adr/0022-add-concert-announcements-without-notifications.md) |
+| 実装中の判断は ADR に記録する | 代替案と、その決定で犠牲にしたものが PR の説明に埋もれるのを防ぐ | [ADR-0000](../../adr/0000-use-markdown-architectural-decision-records.md) |
+| CI は PR だけで動かし、main への push は Deploy が検査も兼ねる | 検査を通っていないコードが本番に出ないことを、ワークフローをまたがずに保証する | [ADR-0001](../../adr/0001-split-ci-and-deploy-workflows.md) |
+| TypeScript 7（ネイティブ実装）を採用 | 型チェックが速い。新規プロジェクトなので 5.x への差し戻しが容易 | [ADR-0002](../../adr/0002-adopt-typescript-7.md) |
+| Worker のエントリで Start の `fetch` をラップする | Workers の `env` が Start のオプション引数として渡るのを防ぐ | [ADR-0003](../../adr/0003-wrap-start-fetch-in-worker-entry.md) |
+| 列挙値は CHECK 制約ではなくアプリ層で担保する | 13章の `target_type` 追加を、テーブル再作成なしで行えるようにする | [ADR-0004](../../adr/0004-enforce-enums-in-app-layer.md) |
+| ルートガード用のセッション照会はクライアントで1回だけ行う | 画面遷移のたびに D1 クエリを足さない。認可の実体はサーバ関数側にある | [ADR-0005](../../adr/0005-cache-session-lookup-on-client.md) |
+| CSRF 対策は更新系に限らず全サーバ関数に掛ける | 「更新系だけ」を人手で維持すると付け忘れに気づけない | [ADR-0006](../../adr/0006-apply-csrf-middleware-to-all-server-functions.md) |
+| DB を伴うロジックの単体テストは `node:sqlite` で行う | 検証したいのは SQL の意味論。マイグレーションを流すのでスキーマとずれない | [ADR-0007](../../adr/0007-test-db-logic-on-in-memory-sqlite.md) |
+| SPA シェルは assets binding から返し、Worker はサーバ関数だけを受ける | document ごとに Worker が描画していた。5.2・5.3の前提が実態と食い違っていた | [ADR-0008](../../adr/0008-serve-spa-shell-from-assets-binding.md) |
+| 選択中の演奏会は URL のクエリを正とし、`beforeLoad` で書き戻す | `loaderDeps` が受け取れるのは search だけ。コンテキストに置くと切り替えが `loader` の再実行につながらない | [ADR-0009](../../adr/0009-canonicalize-selected-concert-in-url.md) |
+| 削除の確認はネイティブの `<dialog>` で行う | 連鎖して消えるものを対象ごとの文言で出せる。`window.confirm` では書式が揃わない | [ADR-0010](../../adr/0010-confirm-deletions-with-native-dialog.md) |
+| `sort_order` は 0 からの連番で保ち、並べ替えは2行だけ書き換える | 書き込み件数を一覧の長さに比例させない（5.3のサブリクエスト上限） | [ADR-0011](../../adr/0011-keep-sort-order-dense.md) |
+| ボウイングURLを差し替えたら前のURLの検知結果を捨てる | 直したリンクが翌日のチェックまで要確認として出続けるのを防ぐ | [ADR-0012](../../adr/0012-drop-link-check-on-url-change.md) |
+| パスワード変更には管理者の現在のパスワードを要求する | ログインしたままの端末を他人が触っても書き換えられないようにする | [ADR-0013](../../adr/0013-require-admin-password-to-change-passwords.md) |
+| リンク切れ検知を見送り、利用者の利便性を優先する | 数件のリンク監視より、問い合わせ・資料・地図・カレンダー・複製の方が日常的な効果が高い | [ADR-0014](../../adr/0014-prioritize-portal-usability-over-link-checking.md) |
+| Mantineを用途固有のテーマで使う | CRUD部品を再利用しつつ、画一的なSaaS風デザインを避ける | [ADR-0015](../../adr/0015-adopt-mantine-with-purpose-built-theme.md) |
+| Googleカレンダーの予定を日本時間文字列から直接組み立てる | 実行環境による日時のずれを避け、タイトルと会場を予定だけで確認できるようにする | [ADR-0016](../../adr/0016-build-calendar-links-with-local-date-strings.md) |
+| ダッシュボードは次の練習を最上位に置く | 開いてすぐ日時・会場・地図へ届く。本番と出欠も第一画面に残す | [ADR-0017](../../adr/0017-departure-board-dashboard-layout.md) |
+| 閲覧 UI は実用コンパクト（ホームはパンフレット配置）、下部ナビはアイコン＋短いラベル | 一覧は密度優先、ホームはプログラム表の読みやすさ。タブ識別を速くする | [ADR-0018](../../adr/0018-compact-utility-visual-language.md) |
+| PC幅は上部アプリバー型シェル、本文幅を広げ、ホームは2カラム | 主ナビが少ない情報ポータルでは横タブが一般的。スマホの優先順は維持する | [ADR-0019](../../adr/0019-desktop-top-app-bar-shell.md) |
+| E2E はローカル D1 を `--reset` で固定フィクスチャへ戻す | 再実行で結果が変わらないようにする。テスト専用 API は増やさない | [ADR-0020](../../adr/0020-reset-local-d1-for-e2e-fixtures.md) |
+| 外部リンクは共通部品で視認性を揃え、管理の行操作はアイコン化 | 受け入れで見つかったタップ対象の分かりにくさと操作密度を、共通部品で一括して直す | [ADR-0021](../../adr/0021-visible-external-links-and-compact-admin-row-actions.md) |
+| 演奏会ごとのお知らせを最新順で表示し、通知と既読管理は持たない | 練習前や日常にホームを開く理由を作りつつ、個人データと別の通知基盤を増やさない | [ADR-0022](../../adr/0022-add-concert-announcements-without-notifications.md) |

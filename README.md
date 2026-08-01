@@ -2,14 +2,16 @@
 
 オーケストラのエキストラ（客演奏者）向け情報ポータル。練習日程、出欠の回答先、演奏会資料、地図、カレンダー、ボウイング、練習の録音を1か所にまとめて公開し、管理者がブラウザから更新できるようにする。
 
-現在の状態: **Phase 10 実装済み**。演奏会ごとのお知らせを管理・閲覧できる。初回リリース（Phase 0〜9）は完了済み。
+現在の状態: **Phase 10 実装済み**。演奏会ごとのお知らせを管理・閲覧できる。初回リリース（Phase 0〜9）は完了済み。次期は[サークルスクエア同期](docs/circle-square-sync/)（取得手段の調査から）。
 
 本番: <https://orch-extras-mgmt.atsu-dq9.workers.dev>
 
 ## ドキュメント
 
-- [設計書](docs/design.md) — 機能仕様、データモデル、認証設計、外部サービス導線の仕様。決定の一覧は14章
-- [タスク一覧](docs/tasks.md) — 次期改善の作業、依存、受け入れ条件。初回リリース分は[アーカイブ](docs/archive/tasks-initial-release.md)
+- [ドキュメント案内](docs/README.md) — 正の設計・タスクの場所と機能一覧
+- [プラットフォーム設計](docs/platform/design.md) — 技術基盤、認証、無料枠、CI、ADR 索引
+- [サークルスクエア同期](docs/circle-square-sync/) — 次期機能の設計とタスク（調査待ち）
+- [初期案アーカイブ](docs/archive/initial/) — 初回リリース〜Phase 10 の総合 design/tasks（正ではない）
 - [ADR](docs/adr/) — 実装中に行った設計判断の記録（[MADR](https://adr.github.io/madr/) の minimal 版）
 - [セキュリティ点検（T8-1）](docs/security-review-t8.md) — サーバ関数の認可・入力検証・秘密情報の点検記録
 - [受け入れ確認ガイド（T8-4）](docs/acceptance-guide.md) — 本番でのチェック手順
@@ -34,7 +36,7 @@ TanStack Start (React + TypeScript) を SPA モードでビルドし、Cloudflar
 
 画面は事前生成した SPA シェル（`dist/client/index.html`）を Cloudflare の assets binding が返し、Worker が受けるのは `/_serverFn/*` だけ。この振り分けは `wrangler.jsonc` の `assets` にある。**外すと document ごとに Worker が描画してしまい、無料プランの CPU 制限に効いてくる**（[ADR-0008](docs/adr/0008-serve-spa-shell-from-assets-binding.md)）。
 
-詳細と選定理由は[設計書](docs/design.md)の5章および14章を参照。
+詳細と選定理由は[プラットフォーム設計](docs/platform/design.md)を参照。
 
 ## 開発の始め方
 
@@ -96,7 +98,7 @@ E2E_BASE_URL=https://orch-extras-mgmt.atsu-dq9.workers.dev pnpm test:e2e
 
 ## データベース
 
-Cloudflare D1 を binding 名 `DB` で使う。テーブル定義は[設計書](docs/design.md)の6章が正。
+Cloudflare D1 を binding 名 `DB` で使う。テーブル定義の詳細は当面[初期案アーカイブの設計書6章](docs/archive/initial/design.md)を参照（正の切り出しは機能追加時に行う）。横断方針は[プラットフォーム設計](docs/platform/design.md)。
 
 - スキーマは `src/db/schema.ts`（Drizzle ORM）
 - `pnpm db:generate` が `migrations/` に SQL を生成し、適用は `wrangler d1 migrations apply` が行う
@@ -151,7 +153,7 @@ pnpm exec wrangler d1 execute DB --local --command "SELECT 1"  # 中身を見る
 
 ## 画面
 
-スマートフォン優先のカードUI。テーマは OS 設定に追従する。画面とロールの対応は[設計書](docs/design.md)の7章が正。
+スマートフォン優先のカードUI。テーマは OS 設定に追従する。画面とロールの対応は当面[初期案アーカイブの設計書7章](docs/archive/initial/design.md)を参照。
 
 - `src/routes/_authed/` — ログイン必須の画面。`route.tsx` がヘッダ（演奏会セレクタとナビゲーション）と `main` を持つ
 - `src/routes/_authed/admin/` — 管理画面。`route.tsx` が管理内サブナビを持ち、`/` は演奏会へ誘導する。画面ごとにサーバ関数と入力欄を1ファイルにまとめている
@@ -173,7 +175,7 @@ pnpm exec wrangler d1 execute DB --local --command "SELECT 1"  # 中身を見る
 
 ## 認証
 
-ロールごとの共有パスワード2本で入る。仕様は[設計書](docs/design.md)の8章が正。
+ロールごとの共有パスワード2本で入る。仕様は[プラットフォーム設計](docs/platform/design.md)の認証節が正。
 
 - `src/auth/` — パスワードのハッシュ、セッション、Cookie、認可 middleware、レート制限、パスワードの変更（`credentials.ts`）
 - `src/routes/_authed/` — ログイン必須の画面。`_authed/admin/` はさらに管理者のみ
@@ -187,7 +189,7 @@ pnpm exec wrangler d1 execute DB --local --command "SELECT 1"  # 中身を見る
 
 ## 環境変数
 
-ローカルでは `.dev.vars`（git 管理外）、本番では `wrangler secret put` で設定する。必要な項目は `.dev.vars.example` と[設計書](docs/design.md)の10章を参照。`PASSWORD_PEPPER` を変えると既存のパスワードが検証できなくなるため、変更したら `pnpm db:seed` で入れ直す。
+ローカルでは `.dev.vars`（git 管理外）、本番では `wrangler secret put` で設定する。必要な項目は `.dev.vars.example` と[プラットフォーム設計](docs/platform/design.md)の環境変数節を参照。`PASSWORD_PEPPER` を変えると既存のパスワードが検証できなくなるため、変更したら `pnpm db:seed` で入れ直す。
 
 ## CI/CD
 
