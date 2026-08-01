@@ -26,6 +26,18 @@ body {
   background: var(--mantine-color-body);
 }
 
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 [data-mantine-color-scheme="light"] {
   --mantine-color-body: #f4f5f7;
   --mantine-color-text: var(--mantine-color-ink-8);

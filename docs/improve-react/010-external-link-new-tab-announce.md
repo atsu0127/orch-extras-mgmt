@@ -1,6 +1,6 @@
 # 010 — ExternalLink に新しいタブであることの告知を付ける
 
-- **Status**: TODO
+- **Status**: DONE
 - **Commit**: 90a50e7
 - **Severity**: LOW
 - **Category**: Accessibility

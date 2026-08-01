@@ -18,7 +18,7 @@
 | 7 | [006-pnpm-supply-chain-hardening.md](./006-pnpm-supply-chain-hardening.md) | DONE | MEDIUM | なし（アプリ UI と独立） |
 | 8 | [008-trim-google-font-weights.md](./008-trim-google-font-weights.md) | DONE | MEDIUM | なし（計測あり） |
 | 9 | [009-extract-bulk-practice-ui.md](./009-extract-bulk-practice-ui.md) | DONE | MEDIUM | 005 推奨先行 |
-| 10 | [010-external-link-new-tab-announce.md](./010-external-link-new-tab-announce.md) | TODO | LOW | なし |
+| 10 | [010-external-link-new-tab-announce.md](./010-external-link-new-tab-announce.md) | DONE | LOW | なし |
 | 11 | [011-extract-concert-resource-ui.md](./011-extract-concert-resource-ui.md) | DONE | LOW | 007 を Resource 呼び出しに入れた後ならその差分を維持 |
 
 ## 並列可能な束

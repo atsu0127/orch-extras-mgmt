@@ -19,6 +19,10 @@ export function ExternalLink({
   children,
   action = false,
 }: ExternalLinkProps) {
+  const newTabHint = (
+    <span className="visually-hidden">（新しいタブで開く）</span>
+  )
+
   if (action) {
     return (
       <Button
@@ -37,6 +41,7 @@ export function ExternalLink({
         }
       >
         {children}
+        {newTabHint}
       </Button>
     )
   }
@@ -51,6 +56,7 @@ export function ExternalLink({
       className="external-link"
     >
       <span className="external-link-label">{children}</span>
+      {newTabHint}
       <IconExternalLink
         className="external-link-icon"
         size={16}
