@@ -118,11 +118,15 @@ function VenueItem({ venue }: { venue: VenueListItem }) {
         </Text>
 
         <ControlRow failure={action.failure}>
-          <SecondaryButton onClick={() => setEditing(true)}>
+          <SecondaryButton
+            aria-label={`「${venue.name}」を編集`}
+            onClick={() => setEditing(true)}
+          >
             編集
           </SecondaryButton>
           <ConfirmButton
             label="削除"
+            labelAriaLabel={`「${venue.name}」を削除`}
             title={`「${venue.name}」を削除しますか？`}
             description={<p>{deleteWarning(venue)}</p>}
             disabled={action.running}

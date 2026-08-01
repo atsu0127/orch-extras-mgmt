@@ -13,13 +13,17 @@ describe('AdminRowActions', () => {
         onMoveUp={() => undefined}
         onMoveDown={() => undefined}
         onEdit={() => undefined}
+        editAriaLabel="「資料A」を編集"
         deleteTitle="「資料A」を削除しますか？"
+        deleteAriaLabel="「資料A」を削除"
         onDelete={() => Promise.resolve()}
       />,
     )
 
     expect(html).toContain('aria-label="「資料A」を上へ"')
     expect(html).toContain('aria-label="「資料A」を下へ"')
+    expect(html).toContain('aria-label="「資料A」を編集"')
+    expect(html).toContain('aria-label="「資料A」を削除"')
     expect(html).toContain('編集')
     expect(html).toContain('削除')
     expect(html).toContain('aria-labelledby=')

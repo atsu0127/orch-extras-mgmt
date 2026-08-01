@@ -172,9 +172,11 @@ function AnnouncementItem({ announcement }: AnnouncementItemProps) {
           failure={action.failure}
           disabled={action.running}
           onEdit={() => setEditing(true)}
+          editAriaLabel={`「${announcement.title}」を編集`}
           moveUpLabel=""
           moveDownLabel=""
           deleteTitle={`「${announcement.title}」を削除しますか？`}
+          deleteAriaLabel={`「${announcement.title}」を削除`}
           deleteDescription={<p>元に戻せません。</p>}
           onDelete={() =>
             action.run(() => remove({ data: { id: announcement.id } }))

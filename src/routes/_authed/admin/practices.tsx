@@ -308,11 +308,15 @@ function AdminPracticeItem({
 
         <ControlRow failure={action.failure}>
           <SecondaryButton onClick={onDuplicate}>複製して編集</SecondaryButton>
-          <SecondaryButton onClick={() => setEditing(true)}>
+          <SecondaryButton
+            aria-label={`${formatDate(practice.date)}の練習を編集`}
+            onClick={() => setEditing(true)}
+          >
             編集
           </SecondaryButton>
           <ConfirmButton
             label="削除"
+            labelAriaLabel={`${formatDate(practice.date)}の練習を削除`}
             title={`${formatDate(practice.date)}の練習を削除しますか？`}
             description={<p>{deleteWarning(practice)}</p>}
             disabled={action.running}
@@ -359,6 +363,7 @@ function MediaSection({ practice }: { practice: PracticeAdminItem }) {
                     moveUpLabel={`「${link.title}」を上へ`}
                     moveDownLabel={`「${link.title}」を下へ`}
                     deleteTitle={`「${link.title}」を削除しますか？`}
+                    deleteAriaLabel={`「${link.title}」を削除`}
                     deleteDescription={
                       <p>リンクだけを消します。録音そのものは残ります。</p>
                     }
@@ -751,6 +756,12 @@ function BulkVenueCreateDialog({
     dialog.current?.showModal()
   }, [])
 
+  function requestClose() {
+    if (!submitting) dialog.current?.close()
+  }
+
+  const titleId = `${id}-venue-dialog-title`
+
   const onSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     void (async () => {
@@ -785,15 +796,16 @@ function BulkVenueCreateDialog({
     <dialog
       ref={dialog}
       className="confirm-dialog"
+      aria-labelledby={titleId}
       onClose={onClose}
       onCancel={(event) => {
         event.preventDefault()
-        if (!submitting) onClose()
+        requestClose()
       }}
     >
       <form onSubmit={onSubmit}>
         <Stack gap="md">
-          <Title order={2} size="h3">
+          <Title id={titleId} order={2} size="h3">
             会場を新規追加
           </Title>
           <Field id={`${id}-name`} label="会場名">
@@ -819,7 +831,7 @@ function BulkVenueCreateDialog({
           </Field>
           {failure ? <FormError message={failure} /> : null}
           <Group grow>
-            <SecondaryButton disabled={submitting} onClick={onClose}>
+            <SecondaryButton disabled={submitting} onClick={requestClose}>
               キャンセル
             </SecondaryButton>
             <Button type="submit" disabled={submitting}>

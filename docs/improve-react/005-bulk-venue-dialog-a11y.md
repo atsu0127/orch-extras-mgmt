@@ -1,6 +1,6 @@
 # 005 — 一括会場ダイアログの名前付けとフォーカス復帰
 
-- **Status**: TODO
+- **Status**: DONE
 - **Commit**: 90a50e7
 - **Severity**: MEDIUM
 - **Category**: Accessibility

@@ -225,7 +225,10 @@ function ConcertItem({ concert, venues }: ConcertItemProps) {
         <ResourceSection concert={concert} />
 
         <ControlRow failure={action.failure}>
-          <SecondaryButton onClick={() => setEditing(true)}>
+          <SecondaryButton
+            aria-label={`「${concert.name}」を編集`}
+            onClick={() => setEditing(true)}
+          >
             編集
           </SecondaryButton>
           <SecondaryButton
@@ -245,6 +248,7 @@ function ConcertItem({ concert, venues }: ConcertItemProps) {
           </SecondaryButton>
           <ConfirmButton
             label="削除"
+            labelAriaLabel={`「${concert.name}」を削除`}
             title={`「${concert.name}」を削除しますか？`}
             description={<p>{deleteWarning(concert)}</p>}
             disabled={action.running}
@@ -330,6 +334,7 @@ function ResourceItem({ resource, first, last }: ResourceItemProps) {
             failure={action.failure}
             disabled={action.running}
             onEdit={() => setEditing(true)}
+            editAriaLabel={`「${resource.title}」を編集`}
             onMoveUp={() =>
               void action.run(() =>
                 move({ data: { id: resource.id, direction: 'up' } }),
@@ -345,6 +350,7 @@ function ResourceItem({ resource, first, last }: ResourceItemProps) {
             moveUpLabel={`「${resource.title}」を上へ`}
             moveDownLabel={`「${resource.title}」を下へ`}
             deleteTitle={`「${resource.title}」を削除しますか？`}
+            deleteAriaLabel={`「${resource.title}」を削除`}
             deleteDescription={
               <p>リンクだけを消します。リンク先の外部ファイルは残ります。</p>
             }

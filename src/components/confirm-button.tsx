@@ -3,6 +3,8 @@ import { type ReactNode, useId, useRef, useState } from 'react'
 
 type ConfirmButtonProps = {
   label: string
+  /** 省略時は label が accessible name */
+  labelAriaLabel?: string
   title: string
   /** 何が一緒に消えるかなど、押す前に知っておくべきこと */
   description?: ReactNode
@@ -18,6 +20,7 @@ type ConfirmButtonProps = {
  */
 export function ConfirmButton({
   label,
+  labelAriaLabel,
   title,
   description,
   confirmLabel = '削除する',
@@ -47,6 +50,9 @@ export function ConfirmButton({
         size="compact-md"
         disabled={disabled}
         onClick={() => dialog.current?.showModal()}
+        {...(labelAriaLabel !== undefined
+          ? { 'aria-label': labelAriaLabel }
+          : {})}
       >
         {label}
       </Button>

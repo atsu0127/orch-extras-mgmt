@@ -1,6 +1,6 @@
 # 007 — 編集・削除ボタンに対象を含む accessible name を付ける
 
-- **Status**: TODO
+- **Status**: DONE
 - **Commit**: 90a50e7
 - **Severity**: MEDIUM
 - **Category**: Accessibility

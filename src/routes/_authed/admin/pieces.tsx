@@ -192,6 +192,7 @@ function PieceItem({
           failure={action.failure}
           disabled={action.running}
           onEdit={() => setEditing(true)}
+          editAriaLabel={`「${piece.title}」を編集`}
           onMoveUp={() =>
             void action.run(() =>
               reorder({ data: { id: piece.id, direction: 'up' } }),
@@ -207,6 +208,7 @@ function PieceItem({
           moveUpLabel={`「${piece.title}」を前へ`}
           moveDownLabel={`「${piece.title}」を後へ`}
           deleteTitle={`「${piece.title}」を削除しますか？`}
+          deleteAriaLabel={`「${piece.title}」を削除`}
           deleteDescription={<p>{deleteWarning(piece)}</p>}
           onDelete={() => action.run(() => remove({ data: { id: piece.id } }))}
         />

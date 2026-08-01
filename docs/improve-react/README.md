@@ -12,9 +12,9 @@
 | 1 | [001-piece-create-form-concert-key.md](./001-piece-create-form-concert-key.md) | DONE | HIGH | なし |
 | 2 | [002-confirm-dialog-accessible-name.md](./002-confirm-dialog-accessible-name.md) | DONE | HIGH | なし（007 が ConfirmButton を触るので先に済ませると楽） |
 | 3 | [003-nav-aria-current.md](./003-nav-aria-current.md) | DONE | HIGH | なし |
-| 4 | [005-bulk-venue-dialog-a11y.md](./005-bulk-venue-dialog-a11y.md) | TODO | MEDIUM | 009 より先が望ましい |
-| 5 | [004-admin-form-refresh-failure.md](./004-admin-form-refresh-failure.md) | TODO | MEDIUM | なし |
-| 6 | [007-specific-edit-delete-aria-labels.md](./007-specific-edit-delete-aria-labels.md) | TODO | MEDIUM | 002 推奨先行 |
+| 4 | [005-bulk-venue-dialog-a11y.md](./005-bulk-venue-dialog-a11y.md) | DONE | MEDIUM | 009 より先が望ましい |
+| 5 | [004-admin-form-refresh-failure.md](./004-admin-form-refresh-failure.md) | DONE | MEDIUM | なし |
+| 6 | [007-specific-edit-delete-aria-labels.md](./007-specific-edit-delete-aria-labels.md) | DONE | MEDIUM | 002 推奨先行 |
 | 7 | [006-pnpm-supply-chain-hardening.md](./006-pnpm-supply-chain-hardening.md) | TODO | MEDIUM | なし（アプリ UI と独立） |
 | 8 | [008-trim-google-font-weights.md](./008-trim-google-font-weights.md) | TODO | MEDIUM | なし（計測あり） |
 | 9 | [009-extract-bulk-practice-ui.md](./009-extract-bulk-practice-ui.md) | TODO | MEDIUM | 005 推奨先行 |

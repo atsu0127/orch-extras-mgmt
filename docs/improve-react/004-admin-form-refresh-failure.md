@@ -1,6 +1,6 @@
 # 004 — 保存成功後の refresh 失敗を保存失敗と誤表示しない
 
-- **Status**: TODO
+- **Status**: DONE
 - **Commit**: 90a50e7
 - **Severity**: MEDIUM
 - **Category**: Bugs & correctness

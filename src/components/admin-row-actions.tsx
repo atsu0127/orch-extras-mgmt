@@ -10,6 +10,7 @@ type AdminRowActionsProps = {
   disabled?: boolean
   onEdit?: () => void
   editLabel?: string
+  editAriaLabel?: string
   onMoveUp?: () => void
   onMoveDown?: () => void
   canMoveUp?: boolean
@@ -18,6 +19,7 @@ type AdminRowActionsProps = {
   moveDownLabel: string
   onDelete: () => Promise<void>
   deleteLabel?: string
+  deleteAriaLabel?: string
   deleteTitle: string
   deleteDescription?: ReactNode
 }
@@ -31,6 +33,7 @@ export function AdminRowActions({
   disabled = false,
   onEdit,
   editLabel = '編集',
+  editAriaLabel,
   onMoveUp,
   onMoveDown,
   canMoveUp = false,
@@ -39,6 +42,7 @@ export function AdminRowActions({
   moveDownLabel,
   onDelete,
   deleteLabel = '削除',
+  deleteAriaLabel,
   deleteTitle,
   deleteDescription,
 }: AdminRowActionsProps) {
@@ -72,12 +76,21 @@ export function AdminRowActions({
           </Group>
         )}
         {onEdit && (
-          <SecondaryButton disabled={disabled} onClick={onEdit}>
+          <SecondaryButton
+            disabled={disabled}
+            onClick={onEdit}
+            {...(editAriaLabel !== undefined
+              ? { 'aria-label': editAriaLabel }
+              : {})}
+          >
             {editLabel}
           </SecondaryButton>
         )}
         <ConfirmButton
           label={deleteLabel}
+          {...(deleteAriaLabel !== undefined
+            ? { labelAriaLabel: deleteAriaLabel }
+            : {})}
           title={deleteTitle}
           {...(deleteDescription !== undefined
             ? { description: deleteDescription }
