@@ -73,12 +73,11 @@ test.describe('エキストラの閲覧導線', () => {
       page.getByRole('heading', { name: '曲・ボウイング' }),
     ).toBeVisible()
 
+    await expect(page.getByText(E2E_FIXTURE.pieceWithBowing)).toBeVisible()
     await expect(
-      page.getByRole('link', {
-        name: new RegExp(E2E_FIXTURE.pieceWithBowing),
-      }),
+      page.getByRole('link', { name: 'ボウイングあり' }),
     ).toHaveAttribute('href', E2E_FIXTURE.pieceWithBowingUrl)
     await expect(page.getByText(E2E_FIXTURE.pieceWithoutBowing)).toBeVisible()
-    await expect(page.getByText(/ボウイング未設定|未設定/)).toBeVisible()
+    await expect(page.getByText(/楽譜リンク未設定/)).toBeVisible()
   })
 })
