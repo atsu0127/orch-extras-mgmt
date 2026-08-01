@@ -112,8 +112,13 @@ type AdminFormOptions<Input, Output, Result> = {
   action: (value: Input) => Promise<Result>
   /** サーバが返した業務エラーを、フォームに表示する文言へ変換する */
   getResultFailure?: (result: Result) => string | null
+  /**
+   * 渡すと検証エラーをフィールド別ではなくフォーム全体の文言にする。
+   * 一括行のように「何行目か」を先に伝えたいときに使う。
+   */
+  formatValidationFailure?: (error: z.ZodError) => string
   /** 保存できたときだけ呼ぶ。編集フォームを閉じる、入力欄を空に戻すなど */
-  onSaved?: () => void
+  onSaved?: (result: Result) => void
 }
 
 export function actionResultFailure<Result>(
@@ -121,6 +126,16 @@ export function actionResultFailure<Result>(
   getResultFailure?: (result: Result) => string | null,
 ): string | null {
   return getResultFailure?.(result) ?? null
+}
+
+export function adminFormValidationState(
+  error: z.ZodError,
+  formatValidationFailure?: (error: z.ZodError) => string,
+): { errors: FieldErrors; failure: string | null } {
+  if (formatValidationFailure) {
+    return { errors: {}, failure: formatValidationFailure(error) }
+  }
+  return { errors: fieldErrors(error), failure: null }
 }
 
 /**
@@ -131,6 +146,7 @@ export function useAdminForm<Input, Output, Result>({
   schema,
   action,
   getResultFailure,
+  formatValidationFailure,
   onSaved,
 }: AdminFormOptions<Input, Output, Result>) {
   const refresh = useRefresh()
@@ -143,18 +159,23 @@ export function useAdminForm<Input, Output, Result>({
 
     const parsed = schema.safeParse(input)
     if (!parsed.success) {
-      setErrors(fieldErrors(parsed.error))
+      const next = adminFormValidationState(
+        parsed.error,
+        formatValidationFailure,
+      )
+      setErrors(next.errors)
+      setFailure(next.failure)
       return
     }
 
     setErrors({})
     setSubmitting(true)
-    let resultFailure: string | null = null
+    let saved: Result
     try {
       // 検証を通った値ではなく入力そのものを送る。空欄を null に寄せるといった
       // 正規化はサーバ側の検証で行い、そこを唯一の正とする
       const result = await action(input)
-      resultFailure = actionResultFailure(result, getResultFailure)
+      const resultFailure = actionResultFailure(result, getResultFailure)
       if (resultFailure) {
         setFailure(resultFailure)
         try {
@@ -164,6 +185,7 @@ export function useAdminForm<Input, Output, Result>({
         }
         return
       }
+      saved = result
     } catch {
       setFailure(FAILURE_MESSAGE)
       return
@@ -176,7 +198,7 @@ export function useAdminForm<Input, Output, Result>({
     } catch {
       // 保存は成功している。一覧再取得だけ失敗しても保存失敗扱いにしない
     }
-    onSaved?.()
+    onSaved?.(saved)
   }
 
   /** 送信時に入力欄の値を集める。React の state から組み立てる部分だけを画面側に残す */

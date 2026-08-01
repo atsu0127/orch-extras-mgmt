@@ -1,10 +1,8 @@
 import { Button, Group, Stack, Text, Title } from '@mantine/core'
-import { useRouter } from '@tanstack/react-router'
 import { createServerFn, useServerFn } from '@tanstack/react-start'
-import { type FormEvent, useEffect, useId, useRef, useState } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
 import { z } from 'zod'
 import { requireAdmin } from '../auth/middleware'
-import { forgetConcerts } from '../concerts/concert-cache'
 import { getDb } from '../db/client'
 import {
   BULK_PRACTICE_LIMIT_MESSAGE,
@@ -25,7 +23,7 @@ import {
 import { bulkPracticesInput } from '../practices/bulk-input'
 import { createVenue } from '../venues/mutations'
 import type { VenueOption } from '../venues/queries'
-import { AdminForm, Field, FormError } from './admin-form'
+import { AdminForm, Field, FormError, useAdminForm } from './admin-form'
 import { ControlRow, SecondaryButton } from './control-row'
 import { AppSelect, AppTextarea, AppTextInput } from './form-controls'
 
@@ -76,15 +74,22 @@ type BulkPracticeFormProps = {
 
 export function BulkPracticeForm({ concertId, venues }: BulkPracticeFormProps) {
   const id = useId()
-  const router = useRouter()
   const addBulk = useServerFn(addPracticesBulk)
   const [open, setOpen] = useState(false)
   const [rows, setRows] = useState<Array<BulkPracticeRowDraft>>([
     createEmptyBulkPracticeRow(),
   ])
-  const [failure, setFailure] = useState<string | null>(null)
-  const [submitting, setSubmitting] = useState(false)
   const [venueModalRowKey, setVenueModalRowKey] = useState<string | null>(null)
+
+  const form = useAdminForm({
+    schema: bulkPracticesInput,
+    action: (data) => addBulk({ data }),
+    getResultFailure: (result: BulkAddResult) =>
+      result.ok ? null : result.message,
+    formatValidationFailure: (error) =>
+      firstBulkValidationMessage(error.issues),
+    onSaved: () => setRows([createEmptyBulkPracticeRow()]),
+  })
 
   const updateRow = (
     index: number,
@@ -106,37 +111,6 @@ export function BulkPracticeForm({ concertId, venues }: BulkPracticeFormProps) {
     setVenueModalRowKey(null)
   }
 
-  const onSubmit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-    void (async () => {
-      setFailure(null)
-      const input = collectBulkPracticesInput(concertId, rows)
-      const parsed = bulkPracticesInput.safeParse(input)
-      if (!parsed.success) {
-        setFailure(firstBulkValidationMessage(parsed.error.issues))
-        return
-      }
-
-      setSubmitting(true)
-      try {
-        const result = await addBulk({ data: input })
-        if (!result.ok) {
-          setFailure(result.message)
-          return
-        }
-        forgetConcerts()
-        await router.invalidate()
-        setRows([createEmptyBulkPracticeRow()])
-      } catch {
-        setFailure(
-          '保存できませんでした。通信を確かめて、時間をおいてやり直してください。',
-        )
-      } finally {
-        setSubmitting(false)
-      }
-    })()
-  }
-
   return (
     <Stack gap="md">
       <ControlRow>
@@ -148,9 +122,11 @@ export function BulkPracticeForm({ concertId, venues }: BulkPracticeFormProps) {
       {open ? (
         <AdminForm
           title="練習を一括追加"
-          onSubmit={onSubmit}
-          failure={failure}
-          submitting={submitting}
+          onSubmit={form.onSubmit(() =>
+            collectBulkPracticesInput(concertId, rows),
+          )}
+          failure={form.failure}
+          submitting={form.submitting}
         >
           <Text size="sm" c="dimmed">
             最大{MAX_BULK_PRACTICES}
@@ -166,7 +142,9 @@ export function BulkPracticeForm({ concertId, venues }: BulkPracticeFormProps) {
                 row={row}
                 venues={venues}
                 canRemove={rows.length > 1}
-                canDuplicate={rows.length < MAX_BULK_PRACTICES && !submitting}
+                canDuplicate={
+                  rows.length < MAX_BULK_PRACTICES && !form.submitting
+                }
                 onChange={(patch) => updateRow(index, patch)}
                 onRemove={() =>
                   setRows((current) =>
@@ -186,7 +164,7 @@ export function BulkPracticeForm({ concertId, venues }: BulkPracticeFormProps) {
 
           <ControlRow>
             <SecondaryButton
-              disabled={rows.length >= MAX_BULK_PRACTICES || submitting}
+              disabled={rows.length >= MAX_BULK_PRACTICES || form.submitting}
               onClick={() =>
                 setRows((current) => [...current, createEmptyBulkPracticeRow()])
               }
@@ -218,53 +196,26 @@ function BulkVenueCreateDialog({
 }: BulkVenueCreateDialogProps) {
   const id = useId()
   const dialog = useRef<HTMLDialogElement>(null)
-  const router = useRouter()
   const addVenue = useServerFn(addVenueFromBulk)
   const [name, setName] = useState('')
   const [address, setAddress] = useState('')
   const [note, setNote] = useState('')
-  const [failure, setFailure] = useState<string | null>(null)
-  const [submitting, setSubmitting] = useState(false)
+
+  const form = useAdminForm({
+    schema: venueInput,
+    action: (data) => addVenue({ data }),
+    onSaved: (venueId) => onCreated(venueId),
+  })
 
   useEffect(() => {
     dialog.current?.showModal()
   }, [])
 
   function requestClose() {
-    if (!submitting) dialog.current?.close()
+    if (!form.submitting) dialog.current?.close()
   }
 
   const titleId = `${id}-venue-dialog-title`
-
-  const onSubmit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-    void (async () => {
-      setFailure(null)
-      const parsed = venueInput.safeParse({ name, address, note })
-      if (!parsed.success) {
-        setFailure(
-          parsed.error.issues[0]?.message ?? '入力内容を確認してください',
-        )
-        return
-      }
-
-      setSubmitting(true)
-      try {
-        const venueId = await addVenue({
-          data: { name, address, note },
-        })
-        forgetConcerts()
-        await router.invalidate()
-        onCreated(venueId)
-      } catch {
-        setFailure(
-          '保存できませんでした。通信を確かめて、時間をおいてやり直してください。',
-        )
-      } finally {
-        setSubmitting(false)
-      }
-    })()
-  }
 
   return (
     <dialog
@@ -277,39 +228,46 @@ function BulkVenueCreateDialog({
         requestClose()
       }}
     >
-      <form onSubmit={onSubmit}>
+      <form
+        noValidate
+        onSubmit={form.onSubmit(() => ({ name, address, note }))}
+      >
         <Stack gap="md">
           <Title id={titleId} order={2} size="h3">
             会場を新規追加
           </Title>
-          <Field id={`${id}-name`} label="会場名">
+          <Field id={`${id}-name`} label="会場名" error={form.errors.name}>
             <AppTextInput
               id={`${id}-name`}
               value={name}
               onChange={(event) => setName(event.target.value)}
             />
           </Field>
-          <Field id={`${id}-address`} label="住所">
+          <Field id={`${id}-address`} label="住所" error={form.errors.address}>
             <AppTextInput
               id={`${id}-address`}
               value={address}
               onChange={(event) => setAddress(event.target.value)}
             />
           </Field>
-          <Field id={`${id}-note`} label="会場メモ（任意）">
+          <Field
+            id={`${id}-note`}
+            label="会場メモ（任意）"
+            error={form.errors.note}
+          >
             <AppTextInput
               id={`${id}-note`}
               value={note}
               onChange={(event) => setNote(event.target.value)}
             />
           </Field>
-          {failure ? <FormError message={failure} /> : null}
+          <FormError message={form.failure} />
           <Group grow>
-            <SecondaryButton disabled={submitting} onClick={requestClose}>
+            <SecondaryButton disabled={form.submitting} onClick={requestClose}>
               キャンセル
             </SecondaryButton>
-            <Button type="submit" disabled={submitting}>
-              {submitting ? '保存中…' : '保存'}
+            <Button type="submit" disabled={form.submitting}>
+              {form.submitting ? '保存中…' : '保存'}
             </Button>
           </Group>
         </Stack>
