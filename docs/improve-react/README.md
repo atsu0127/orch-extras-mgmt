@@ -41,6 +41,6 @@
 
 スキャナ外の能力追加。必要なら別計画を起こす。
 
-1. 一括フォームの submit を `useAdminForm` に寄せる（004 と相性）
+1. ~~一括フォームの submit を `useAdminForm` に寄せる（004 と相性）~~ → 実施済み（`cursor/simplify-admin-forms-a8fe`）
 2. `getNextPractice` の practice→media 2段クエリを1クエリ化
 3. フォント self-host / preload（008 の follow-up）

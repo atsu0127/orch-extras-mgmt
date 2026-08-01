@@ -194,12 +194,8 @@ function ResourceForm({ resource, concertId, onDone }: ResourceFormProps) {
       resource
         ? edit({ data: { ...data, id: resource.id } })
         : add({ data: { ...data, concertId } }),
-    ...(resource
-      ? {}
-      : {
-          getResultFailure: (result: ResourceActionResult) =>
-            result.ok ? null : CONCERT_RESOURCE_LIMIT_MESSAGE,
-        }),
+    getResultFailure: (result: ResourceActionResult) =>
+      result.ok ? null : CONCERT_RESOURCE_LIMIT_MESSAGE,
     onSaved: onDone,
   })
 

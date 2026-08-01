@@ -18,12 +18,9 @@ import {
   ControlRow,
   SecondaryButton,
 } from '../../../components/control-row'
-import {
-  AppSelect,
-  AppTextarea,
-  AppTextInput,
-} from '../../../components/form-controls'
+import { AppTextarea, AppTextInput } from '../../../components/form-controls'
 import { EmptyState, PageSection } from '../../../components/states'
+import { VenueSelectField } from '../../../components/venue-select-field'
 import { concertInput } from '../../../concerts/input'
 import {
   createConcert,
@@ -268,25 +265,14 @@ function ConcertForm({ concert, venues, onDone }: ConcertFormProps) {
         />
       </Field>
 
-      <Field
+      <VenueSelectField
         id={`${id}-venue`}
         label="本番会場（任意）"
-        hint={venues.length === 0 ? '会場を登録すると選べます' : undefined}
+        value={venueId}
+        venues={venues}
+        onChange={setVenueId}
         error={form.errors.venueId}
-      >
-        <AppSelect
-          id={`${id}-venue`}
-          value={venueId}
-          onChange={(event) => setVenueId(event.target.value)}
-        >
-          <option value="">未設定</option>
-          {venues.map((venue) => (
-            <option key={venue.id} value={venue.id}>
-              {venue.name}
-            </option>
-          ))}
-        </AppSelect>
-      </Field>
+      />
 
       <Field
         id={`${id}-attendance-url`}
