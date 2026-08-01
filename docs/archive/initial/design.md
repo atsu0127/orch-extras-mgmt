@@ -1,6 +1,6 @@
 # オーケストラ エキストラ管理ポータル 設計書（初期案アーカイブ）
 
-> **実装判断の正ではありません。** 横断仕様は [platform/design.md](../../platform/design.md)、機能仕様は各 `docs/<feature>/design.md`、文書構成は [docs/README.md](../../README.md) を参照。
+> **実装判断の正ではありません（凍結参照・編集しない）。** 横断仕様は [platform/design.md](../../platform/design.md)、機能仕様は各 `docs/<feature>/design.md`、文書構成は [docs/README.md](../../README.md) を参照。
 
 最終更新: 2026-07-31（アーカイブ化: 2026-08-01）
 

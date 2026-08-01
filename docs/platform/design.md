@@ -89,7 +89,7 @@
 
 要約を本節に置き、**変更するときは本節を更新する**（archive の8章は凍結参照。食い違う場合は本節を正とする）。
 
-未切り出しの細部（例: Cookie 名・間引き間隔の数値）は [archive/initial/design.md の8章](../archive/initial/design.md) を読んでよいが、それを変える必要が出たら本節へ移してから直す。
+未切り出しの細部（例: `last_seen_at` の間引き間隔、Cookie の `Path=/`、`login_attempts` の保持日数）は [archive/initial/design.md の8章](../archive/initial/design.md) を読んでよいが、それを変える必要が出たら本節へ移してから直す。
 
 - ログインはパスワード1欄。admin / extra 両方のハッシュと照合し、一致したロールで入る
 - ハッシュは `HMAC-SHA256(password, PEPPER)` を `hmac-sha256$v1$<hex>` で保存。`PEPPER` は Workers secret。定数時間比較

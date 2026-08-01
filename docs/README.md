@@ -8,7 +8,7 @@
 | 機能の仕様 | `docs/<feature>/design.md` |
 | 機能のタスク・進捗 | `docs/<feature>/tasks.md` |
 | 設計判断の記録 | [adr/](./adr/) |
-| 初期案（参照用・正ではない） | [archive/initial/](./archive/initial/) |
+| 初期案（凍結参照・編集しない） | [archive/initial/](./archive/initial/) |
 
 新しい機能を始めるときは `docs/<feature>/` を作り、そこに `design.md` と `tasks.md` を置く。`docs/superpowers/` へ新規の仕様書・計画書は作らない（履歴として残っているものはそのままでよい）。
 
