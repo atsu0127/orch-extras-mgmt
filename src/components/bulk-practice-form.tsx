@@ -25,7 +25,8 @@ import { createVenue } from '../venues/mutations'
 import type { VenueOption } from '../venues/queries'
 import { AdminForm, Field, FormError, useAdminForm } from './admin-form'
 import { ControlRow, SecondaryButton } from './control-row'
-import { AppSelect, AppTextarea, AppTextInput } from './form-controls'
+import { AppTextarea, AppTextInput } from './form-controls'
+import { VenueSelectField } from './venue-select-field'
 
 const BULK_BUSINESS_MESSAGES = new Set([
   BULK_PRACTICE_LIMIT_MESSAGE,
@@ -352,24 +353,13 @@ function BulkPracticeRowFields({
         </Field>
       </Group>
 
-      <Field
+      <VenueSelectField
         id={`${idPrefix}-venue`}
         label="会場（任意）"
-        hint={venues.length === 0 ? '会場を登録すると選べます' : undefined}
-      >
-        <AppSelect
-          id={`${idPrefix}-venue`}
-          value={row.venueId}
-          onChange={(event) => onChange({ venueId: event.target.value })}
-        >
-          <option value="">未設定</option>
-          {venues.map((venue) => (
-            <option key={venue.id} value={venue.id}>
-              {venue.name}
-            </option>
-          ))}
-        </AppSelect>
-      </Field>
+        value={row.venueId}
+        venues={venues}
+        onChange={(venueId) => onChange({ venueId })}
+      />
 
       <ControlRow>
         <SecondaryButton onClick={onAddVenue}>会場を新規追加</SecondaryButton>

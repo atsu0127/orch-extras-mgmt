@@ -25,16 +25,13 @@ import {
   SecondaryButton,
 } from '../../../components/control-row'
 import { ExternalLink } from '../../../components/external-link'
-import {
-  AppSelect,
-  AppTextarea,
-  AppTextInput,
-} from '../../../components/form-controls'
+import { AppTextarea, AppTextInput } from '../../../components/form-controls'
 import {
   EmptyState,
   NoConcertState,
   PageSection,
 } from '../../../components/states'
+import { VenueSelectField } from '../../../components/venue-select-field'
 import { getDb } from '../../../db/client'
 import { formatDate, formatTimeRange } from '../../../lib/date'
 import { MAX_LENGTH } from '../../../lib/limits'
@@ -493,25 +490,14 @@ function PracticeForm({
         </Field>
       </Group>
 
-      <Field
+      <VenueSelectField
         id={`${id}-venue`}
         label="会場（任意）"
-        hint={venues.length === 0 ? '会場を登録すると選べます' : undefined}
+        value={venueId}
+        venues={venues}
+        onChange={setVenueId}
         error={form.errors.venueId}
-      >
-        <AppSelect
-          id={`${id}-venue`}
-          value={venueId}
-          onChange={(event) => setVenueId(event.target.value)}
-        >
-          <option value="">未設定</option>
-          {venues.map((venue) => (
-            <option key={venue.id} value={venue.id}>
-              {venue.name}
-            </option>
-          ))}
-        </AppSelect>
-      </Field>
+      />
 
       <Field
         id={`${id}-detail`}
