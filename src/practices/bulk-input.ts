@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import {
   BULK_PRACTICE_LIMIT_MESSAGE,
+  BULK_PRACTICE_VENUE_ADDRESS_CONFLICT_MESSAGE,
   MAX_BULK_PRACTICES,
   MAX_LENGTH,
 } from '../lib/limits'
@@ -56,13 +57,32 @@ export const bulkPracticeRowInput = z
     }
   })
 
-export const bulkPracticesInput = z.object({
-  concertId: idValue,
-  rows: z
-    .array(bulkPracticeRowInput)
-    .min(1, '1件以上入力してください')
-    .max(MAX_BULK_PRACTICES, BULK_PRACTICE_LIMIT_MESSAGE),
-})
+export const bulkPracticesInput = z
+  .object({
+    concertId: idValue,
+    rows: z
+      .array(bulkPracticeRowInput)
+      .min(1, '1件以上入力してください')
+      .max(MAX_BULK_PRACTICES, BULK_PRACTICE_LIMIT_MESSAGE),
+  })
+  .superRefine((value, ctx) => {
+    const addresses = new Map<string, string>()
+    for (const [index, row] of value.rows.entries()) {
+      if (row.venue.kind !== 'new') continue
+      const previous = addresses.get(row.venue.name)
+      if (previous === undefined) {
+        addresses.set(row.venue.name, row.venue.address)
+        continue
+      }
+      if (previous !== row.venue.address) {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['rows', index, 'venue', 'address'],
+          message: BULK_PRACTICE_VENUE_ADDRESS_CONFLICT_MESSAGE,
+        })
+      }
+    }
+  })
 
 export type BulkVenueInput = z.output<typeof bulkVenueInput>
 export type BulkPracticeRowInput = z.output<typeof bulkPracticeRowInput>
