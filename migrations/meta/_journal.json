@@ -22,6 +22,13 @@
       "when": 1785465746496,
       "tag": "0002_announcements",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1785558162536,
+      "tag": "0003_piece_score_without_bowing",
+      "breakpoints": true
     }
   ]
 }

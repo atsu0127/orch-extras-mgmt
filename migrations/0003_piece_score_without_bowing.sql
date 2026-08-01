@@ -1,0 +1,1 @@
+ALTER TABLE `pieces` ADD `score_without_bowing_url` text(2000);

@@ -141,6 +141,9 @@ export const pieces = sqliteTable(
     composer: text('composer', { length: MAX_LENGTH.pieceComposer }),
     sortOrder: integer('sort_order').notNull().default(0),
     bowingUrl: text('bowing_url', { length: MAX_LENGTH.url }),
+    scoreWithoutBowingUrl: text('score_without_bowing_url', {
+      length: MAX_LENGTH.url,
+    }),
     ...timestamps(),
   },
   (t) => [index('pieces_concert_sort_idx').on(t.concertId, t.sortOrder)],
