@@ -42,7 +42,9 @@ const getVenues = createServerFn({ method: 'GET' })
 const addVenue = createServerFn({ method: 'POST' })
   .middleware([requireAdmin])
   .validator(venueInput)
-  .handler(({ data }) => createVenue(getDb(), data))
+  .handler(async ({ data }) => {
+    await createVenue(getDb(), data)
+  })
 
 const editVenue = createServerFn({ method: 'POST' })
   .middleware([requireAdmin])

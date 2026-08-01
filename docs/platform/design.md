@@ -22,7 +22,7 @@
 | --- | --- |
 | 演奏会 (concert) | 1回の本番とその準備期間。管理の最上位の単位 |
 | 練習 (practice) | 演奏会に属する1回の練習日程 |
-| 曲 (piece) | 演奏会で演奏する曲。ボウイングリンクを1つ持つ |
+| 曲 (piece) | 演奏会で演奏する曲。ボウイングあり／なしの楽譜リンクを最大2つ持てる |
 | 会場 (venue) | 練習や本番の場所。名前と住所を持つマスタ |
 | 管理者 (admin) | すべてを更新できるロール |
 | エキストラ (extra) | 参照のみのロール |
@@ -138,7 +138,7 @@
 | 認証は共有パスワード2本 | 個人情報を持たない。個人識別が要件に無い | — |
 | ハッシュは HMAC-SHA256 + pepper | CPU 10ms 下で反復型 KDF が使えない | — |
 | 出欠リンクは演奏会に1つ | 外部サービスで全日程をまとめて回答する運用 | — |
-| ボウイングは1曲1リンク | 現状の共有方法に合わせる | — |
+| 曲の楽譜はあり／なし最大2リンク | ボウイング付きと無しを別 URL で渡す運用 | [ADR-0025](../adr/0025-dual-piece-score-links.md) |
 | 会場はマスタ化 | 入力の手間と表記揺れを減らす | — |
 | 練習の個別ページを作らない | 一覧内の展開で足りる | — |
 | 実装中の判断は ADR に記録する | PR 説明に埋もれないようにする | [ADR-0000](../adr/0000-use-markdown-architectural-decision-records.md) |
@@ -166,3 +166,5 @@
 | 演奏会お知らせは通知・既読なし | ホーム再訪の理由を最小構成で | [ADR-0022](../adr/0022-add-concert-announcements-without-notifications.md) |
 | 設計・タスクは機能ディレクトリ単位 | 初期案の単一 design/tasks をやめ、機能ごとに正を置く | [ADR-0023](../adr/0023-feature-directory-design-and-tasks.md) |
 | CS 自動同期を見送り練習一括作成にする | API/CSV 不可・iCal は会場不足。ポータル内で登録負荷を下げる | [ADR-0024](../adr/0024-prefer-bulk-practice-create-over-circle-square-sync.md) |
+| 曲の楽譜リンクをあり／なしの2本にする | 既存 `bowing_url` を残しつつ無し側を追加 | [ADR-0025](../adr/0025-dual-piece-score-links.md) |
+| 練習一括はトグル・行複製・会場 modal 即保存 | 普段は隠し、似た行をコピーし、会場はマスタとして即確定する | [ADR-0026](../adr/0026-bulk-practice-toggle-duplicate-and-venue-modal.md) |

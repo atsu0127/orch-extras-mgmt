@@ -19,6 +19,7 @@ const fields = {
   title: '交響曲第5番',
   composer: 'ベートーヴェン',
   bowingUrl: null,
+  scoreWithoutBowingUrl: null,
 }
 
 /** 演奏順に並んだ曲名 */
@@ -51,6 +52,38 @@ describe('updatePiece', () => {
 
     expect(await listPiecesForConcert(db, 1)).toMatchObject([
       { bowingUrl: 'https://example.com/bowing' },
+    ])
+  })
+
+  it('ボウイングなしの楽譜URLをあり側と独立に設定できる', async () => {
+    await createPiece(db, 1, fields)
+    const [piece] = await listPiecesForConcert(db, 1)
+    if (!piece) throw new Error('曲が登録できていない')
+
+    await updatePiece(db, piece.id, {
+      ...fields,
+      bowingUrl: 'https://example.com/with-bowing',
+      scoreWithoutBowingUrl: 'https://example.com/without-bowing',
+    })
+
+    expect(await listPiecesForConcert(db, 1)).toMatchObject([
+      {
+        bowingUrl: 'https://example.com/with-bowing',
+        scoreWithoutBowingUrl: 'https://example.com/without-bowing',
+      },
+    ])
+
+    await updatePiece(db, piece.id, {
+      ...fields,
+      bowingUrl: 'https://example.com/with-bowing',
+      scoreWithoutBowingUrl: null,
+    })
+
+    expect(await listPiecesForConcert(db, 1)).toMatchObject([
+      {
+        bowingUrl: 'https://example.com/with-bowing',
+        scoreWithoutBowingUrl: null,
+      },
     ])
   })
 

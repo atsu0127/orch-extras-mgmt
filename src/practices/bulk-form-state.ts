@@ -9,19 +9,13 @@ export function bulkPracticeCreateFormKey(concertId: number): string {
   return String(concertId)
 }
 
-export type BulkVenueMode = 'none' | 'existing' | 'new'
-
 export type BulkPracticeRowDraft = {
   key: string
   date: string
   startTime: string
   endTime: string
   detail: string
-  venueMode: BulkVenueMode
   venueId: string
-  venueName: string
-  venueAddress: string
-  venueNote: string
 }
 
 let bulkRowKeySeq = 0
@@ -34,11 +28,22 @@ export function createEmptyBulkPracticeRow(): BulkPracticeRowDraft {
     startTime: '',
     endTime: '',
     detail: '',
-    venueMode: 'none',
     venueId: '',
-    venueName: '',
-    venueAddress: '',
-    venueNote: '',
+  }
+}
+
+/** 既存行の内容をコピーした新しい行（key だけ新規） */
+export function duplicateBulkPracticeRow(
+  row: BulkPracticeRowDraft,
+): BulkPracticeRowDraft {
+  bulkRowKeySeq += 1
+  return {
+    key: `bulk-row-${bulkRowKeySeq}`,
+    date: row.date,
+    startTime: row.startTime,
+    endTime: row.endTime,
+    detail: row.detail,
+    venueId: row.venueId,
   }
 }
 
@@ -54,27 +59,9 @@ export function collectBulkPracticesInput(
       startTime: row.startTime,
       endTime: row.endTime,
       detail: row.detail,
-      venue: collectVenue(row),
+      venueId: toOptionalId(row.venueId),
     })),
   }
-}
-
-function collectVenue(row: BulkPracticeRowDraft) {
-  if (row.venueMode === 'existing') {
-    return {
-      kind: 'existing' as const,
-      venueId: toOptionalId(row.venueId) ?? 0,
-    }
-  }
-  if (row.venueMode === 'new') {
-    return {
-      kind: 'new' as const,
-      name: row.venueName,
-      address: row.venueAddress,
-      note: row.venueNote,
-    }
-  }
-  return { kind: 'none' as const }
 }
 
 export function firstBulkValidationMessage(

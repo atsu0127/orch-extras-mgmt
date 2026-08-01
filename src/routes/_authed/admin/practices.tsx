@@ -1,4 +1,4 @@
-import { Group, Stack, Text } from '@mantine/core'
+import { Button, Group, Stack, Text, Title } from '@mantine/core'
 import { createFileRoute, useRouter } from '@tanstack/react-router'
 import { createServerFn, useServerFn } from '@tanstack/react-start'
 import { type FormEvent, useEffect, useId, useRef, useState } from 'react'
@@ -41,13 +41,13 @@ import {
   BULK_PRACTICE_LIMIT_MESSAGE,
   BULK_PRACTICE_UNKNOWN_CONCERT_MESSAGE,
   BULK_PRACTICE_UNKNOWN_VENUE_MESSAGE,
-  BULK_PRACTICE_VENUE_ADDRESS_CONFLICT_MESSAGE,
   MAX_BULK_PRACTICES,
   MAX_LENGTH,
 } from '../../../lib/limits'
 import { DIRECTIONS } from '../../../lib/ordering'
 import {
   idValue,
+  optionalText,
   requiredText,
   requiredUrl,
   toOptionalId,
@@ -55,10 +55,10 @@ import {
 import { createPracticesBulk } from '../../../practices/bulk'
 import {
   type BulkPracticeRowDraft,
-  type BulkVenueMode,
   bulkPracticeCreateFormKey,
   collectBulkPracticesInput,
   createEmptyBulkPracticeRow,
+  duplicateBulkPracticeRow,
   firstBulkValidationMessage,
 } from '../../../practices/bulk-form-state'
 import { bulkPracticesInput } from '../../../practices/bulk-input'
@@ -81,18 +81,24 @@ import {
   listPracticesForAdmin,
   type PracticeAdminItem,
 } from '../../../practices/queries'
+import { createVenue } from '../../../venues/mutations'
 import { listVenueOptions, type VenueOption } from '../../../venues/queries'
 
 const BULK_BUSINESS_MESSAGES = new Set([
   BULK_PRACTICE_LIMIT_MESSAGE,
-  BULK_PRACTICE_VENUE_ADDRESS_CONFLICT_MESSAGE,
   BULK_PRACTICE_UNKNOWN_VENUE_MESSAGE,
   BULK_PRACTICE_UNKNOWN_CONCERT_MESSAGE,
 ])
 
 type BulkAddResult =
-  | { ok: true; practiceCount: number; venueCreatedCount: number }
+  | { ok: true; practiceCount: number }
   | { ok: false; message: string }
+
+const venueInput = z.object({
+  name: requiredText(MAX_LENGTH.venueName),
+  address: requiredText(MAX_LENGTH.venueAddress),
+  note: optionalText(MAX_LENGTH.venueNote),
+})
 
 const getPracticesPage = createServerFn({ method: 'GET' })
   .middleware([requireAdmin])
@@ -111,6 +117,11 @@ const addPractice = createServerFn({ method: 'POST' })
   .handler(({ data: { concertId, ...fields } }) =>
     createPractice(getDb(), concertId, fields),
   )
+
+const addVenueFromBulk = createServerFn({ method: 'POST' })
+  .middleware([requireAdmin])
+  .validator(venueInput)
+  .handler(({ data }) => createVenue(getDb(), data))
 
 const addPracticesBulk = createServerFn({ method: 'POST' })
   .middleware([requireAdmin])
@@ -588,11 +599,13 @@ function BulkPracticeForm({ concertId, venues }: BulkPracticeFormProps) {
   const id = useId()
   const router = useRouter()
   const addBulk = useServerFn(addPracticesBulk)
+  const [open, setOpen] = useState(false)
   const [rows, setRows] = useState<Array<BulkPracticeRowDraft>>([
     createEmptyBulkPracticeRow(),
   ])
   const [failure, setFailure] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
+  const [venueModalRowKey, setVenueModalRowKey] = useState<string | null>(null)
 
   const updateRow = (
     index: number,
@@ -603,6 +616,15 @@ function BulkPracticeForm({ concertId, venues }: BulkPracticeFormProps) {
         rowIndex === index ? { ...row, ...patch } : row,
       ),
     )
+  }
+
+  const onVenueCreated = (rowKey: string, venueId: number) => {
+    setRows((current) =>
+      current.map((row) =>
+        row.key === rowKey ? { ...row, venueId: String(venueId) } : row,
+      ),
+    )
+    setVenueModalRowKey(null)
   }
 
   const onSubmit = (event: FormEvent<HTMLFormElement>) => {
@@ -637,47 +659,176 @@ function BulkPracticeForm({ concertId, venues }: BulkPracticeFormProps) {
   }
 
   return (
-    <AdminForm
-      title="練習を一括追加"
-      onSubmit={onSubmit}
-      failure={failure}
-      submitting={submitting}
-    >
-      <Text size="sm" c="dimmed">
-        最大{MAX_BULK_PRACTICES}
-        件まで一度に登録できます。会場は未設定・既存から選択・新規登録を選べます。
-      </Text>
-
-      <Stack gap="lg">
-        {rows.map((row, index) => (
-          <BulkPracticeRowFields
-            key={row.key}
-            idPrefix={`${id}-${row.key}`}
-            index={index}
-            row={row}
-            venues={venues}
-            canRemove={rows.length > 1}
-            onChange={(patch) => updateRow(index, patch)}
-            onRemove={() =>
-              setRows((current) =>
-                current.filter((item) => item.key !== row.key),
-              )
-            }
-          />
-        ))}
-      </Stack>
-
+    <Stack gap="md">
       <ControlRow>
-        <SecondaryButton
-          disabled={rows.length >= MAX_BULK_PRACTICES || submitting}
-          onClick={() =>
-            setRows((current) => [...current, createEmptyBulkPracticeRow()])
-          }
-        >
-          行を追加
+        <SecondaryButton onClick={() => setOpen((current) => !current)}>
+          {open ? '一括追加を閉じる' : '一括追加'}
         </SecondaryButton>
       </ControlRow>
-    </AdminForm>
+
+      {open ? (
+        <AdminForm
+          title="練習を一括追加"
+          onSubmit={onSubmit}
+          failure={failure}
+          submitting={submitting}
+        >
+          <Text size="sm" c="dimmed">
+            最大{MAX_BULK_PRACTICES}
+            件まで一度に登録できます。会場の新規追加は各行のボタンからすぐに保存できます。
+          </Text>
+
+          <Stack gap="lg">
+            {rows.map((row, index) => (
+              <BulkPracticeRowFields
+                key={row.key}
+                idPrefix={`${id}-${row.key}`}
+                index={index}
+                row={row}
+                venues={venues}
+                canRemove={rows.length > 1}
+                canDuplicate={rows.length < MAX_BULK_PRACTICES && !submitting}
+                onChange={(patch) => updateRow(index, patch)}
+                onRemove={() =>
+                  setRows((current) =>
+                    current.filter((item) => item.key !== row.key),
+                  )
+                }
+                onDuplicate={() =>
+                  setRows((current) => [
+                    ...current,
+                    duplicateBulkPracticeRow(row),
+                  ])
+                }
+                onAddVenue={() => setVenueModalRowKey(row.key)}
+              />
+            ))}
+          </Stack>
+
+          <ControlRow>
+            <SecondaryButton
+              disabled={rows.length >= MAX_BULK_PRACTICES || submitting}
+              onClick={() =>
+                setRows((current) => [...current, createEmptyBulkPracticeRow()])
+              }
+            >
+              行を追加
+            </SecondaryButton>
+          </ControlRow>
+        </AdminForm>
+      ) : null}
+
+      {venueModalRowKey !== null ? (
+        <BulkVenueCreateDialog
+          onClose={() => setVenueModalRowKey(null)}
+          onCreated={(venueId) => onVenueCreated(venueModalRowKey, venueId)}
+        />
+      ) : null}
+    </Stack>
+  )
+}
+
+type BulkVenueCreateDialogProps = {
+  onClose: () => void
+  onCreated: (venueId: number) => void
+}
+
+function BulkVenueCreateDialog({
+  onClose,
+  onCreated,
+}: BulkVenueCreateDialogProps) {
+  const id = useId()
+  const dialog = useRef<HTMLDialogElement>(null)
+  const router = useRouter()
+  const addVenue = useServerFn(addVenueFromBulk)
+  const [name, setName] = useState('')
+  const [address, setAddress] = useState('')
+  const [note, setNote] = useState('')
+  const [failure, setFailure] = useState<string | null>(null)
+  const [submitting, setSubmitting] = useState(false)
+
+  useEffect(() => {
+    dialog.current?.showModal()
+  }, [])
+
+  const onSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    void (async () => {
+      setFailure(null)
+      const parsed = venueInput.safeParse({ name, address, note })
+      if (!parsed.success) {
+        setFailure(
+          parsed.error.issues[0]?.message ?? '入力内容を確認してください',
+        )
+        return
+      }
+
+      setSubmitting(true)
+      try {
+        const venueId = await addVenue({
+          data: { name, address, note },
+        })
+        forgetConcerts()
+        await router.invalidate()
+        onCreated(venueId)
+      } catch {
+        setFailure(
+          '保存できませんでした。通信を確かめて、時間をおいてやり直してください。',
+        )
+      } finally {
+        setSubmitting(false)
+      }
+    })()
+  }
+
+  return (
+    <dialog
+      ref={dialog}
+      className="confirm-dialog"
+      onClose={onClose}
+      onCancel={(event) => {
+        event.preventDefault()
+        if (!submitting) onClose()
+      }}
+    >
+      <form onSubmit={onSubmit}>
+        <Stack gap="md">
+          <Title order={2} size="h3">
+            会場を新規追加
+          </Title>
+          <Field id={`${id}-name`} label="会場名">
+            <AppTextInput
+              id={`${id}-name`}
+              value={name}
+              onChange={(event) => setName(event.target.value)}
+            />
+          </Field>
+          <Field id={`${id}-address`} label="住所">
+            <AppTextInput
+              id={`${id}-address`}
+              value={address}
+              onChange={(event) => setAddress(event.target.value)}
+            />
+          </Field>
+          <Field id={`${id}-note`} label="会場メモ（任意）">
+            <AppTextInput
+              id={`${id}-note`}
+              value={note}
+              onChange={(event) => setNote(event.target.value)}
+            />
+          </Field>
+          {failure ? <FormError message={failure} /> : null}
+          <Group grow>
+            <SecondaryButton disabled={submitting} onClick={onClose}>
+              キャンセル
+            </SecondaryButton>
+            <Button type="submit" disabled={submitting}>
+              {submitting ? '保存中…' : '保存'}
+            </Button>
+          </Group>
+        </Stack>
+      </form>
+    </dialog>
   )
 }
 
@@ -687,8 +838,11 @@ type BulkPracticeRowFieldsProps = {
   row: BulkPracticeRowDraft
   venues: ReadonlyArray<VenueOption>
   canRemove: boolean
+  canDuplicate: boolean
   onChange: (patch: Partial<BulkPracticeRowDraft>) => void
   onRemove: () => void
+  onDuplicate: () => void
+  onAddVenue: () => void
 }
 
 function BulkPracticeRowFields({
@@ -697,8 +851,11 @@ function BulkPracticeRowFields({
   row,
   venues,
   canRemove,
+  canDuplicate,
   onChange,
   onRemove,
+  onDuplicate,
+  onAddVenue,
 }: BulkPracticeRowFieldsProps) {
   return (
     <Stack
@@ -711,11 +868,16 @@ function BulkPracticeRowFields({
         padding: 'var(--mantine-spacing-md)',
       }}
     >
-      <Group justify="space-between" align="center">
+      <Group justify="space-between" align="center" wrap="wrap">
         <Text fw={600}>{index + 1}行目</Text>
-        {canRemove && (
-          <SecondaryButton onClick={onRemove}>この行を削除</SecondaryButton>
-        )}
+        <Group gap="xs">
+          <SecondaryButton disabled={!canDuplicate} onClick={onDuplicate}>
+            この行を複製
+          </SecondaryButton>
+          {canRemove ? (
+            <SecondaryButton onClick={onRemove}>この行を削除</SecondaryButton>
+          ) : null}
+        </Group>
       </Group>
 
       <Field id={`${idPrefix}-date`} label="日付">
@@ -746,68 +908,28 @@ function BulkPracticeRowFields({
         </Field>
       </Group>
 
-      <Field id={`${idPrefix}-venue-mode`} label="会場（任意）">
+      <Field
+        id={`${idPrefix}-venue`}
+        label="会場（任意）"
+        hint={venues.length === 0 ? '会場を登録すると選べます' : undefined}
+      >
         <AppSelect
-          id={`${idPrefix}-venue-mode`}
-          value={row.venueMode}
-          onChange={(event) =>
-            onChange({ venueMode: event.target.value as BulkVenueMode })
-          }
+          id={`${idPrefix}-venue`}
+          value={row.venueId}
+          onChange={(event) => onChange({ venueId: event.target.value })}
         >
-          <option value="none">未設定</option>
-          <option value="existing">既存から選ぶ</option>
-          <option value="new">新規登録</option>
+          <option value="">未設定</option>
+          {venues.map((venue) => (
+            <option key={venue.id} value={venue.id}>
+              {venue.name}
+            </option>
+          ))}
         </AppSelect>
       </Field>
 
-      {row.venueMode === 'existing' && (
-        <Field
-          id={`${idPrefix}-venue-id`}
-          label="既存の会場"
-          hint={venues.length === 0 ? '会場を登録すると選べます' : undefined}
-        >
-          <AppSelect
-            id={`${idPrefix}-venue-id`}
-            value={row.venueId}
-            onChange={(event) => onChange({ venueId: event.target.value })}
-          >
-            <option value="">選択してください</option>
-            {venues.map((venue) => (
-              <option key={venue.id} value={venue.id}>
-                {venue.name}
-              </option>
-            ))}
-          </AppSelect>
-        </Field>
-      )}
-
-      {row.venueMode === 'new' && (
-        <>
-          <Field id={`${idPrefix}-venue-name`} label="会場名">
-            <AppTextInput
-              id={`${idPrefix}-venue-name`}
-              value={row.venueName}
-              onChange={(event) => onChange({ venueName: event.target.value })}
-            />
-          </Field>
-          <Field id={`${idPrefix}-venue-address`} label="住所">
-            <AppTextInput
-              id={`${idPrefix}-venue-address`}
-              value={row.venueAddress}
-              onChange={(event) =>
-                onChange({ venueAddress: event.target.value })
-              }
-            />
-          </Field>
-          <Field id={`${idPrefix}-venue-note`} label="会場メモ（任意）">
-            <AppTextInput
-              id={`${idPrefix}-venue-note`}
-              value={row.venueNote}
-              onChange={(event) => onChange({ venueNote: event.target.value })}
-            />
-          </Field>
-        </>
-      )}
+      <ControlRow>
+        <SecondaryButton onClick={onAddVenue}>会場を新規追加</SecondaryButton>
+      </ControlRow>
 
       <Field id={`${idPrefix}-detail`} label="詳細（任意）">
         <AppTextarea

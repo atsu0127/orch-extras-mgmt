@@ -41,6 +41,7 @@ const pieceInput = z.object({
   title: requiredText(MAX_LENGTH.pieceTitle),
   composer: optionalText(MAX_LENGTH.pieceComposer),
   bowingUrl: optionalUrl,
+  scoreWithoutBowingUrl: optionalUrl,
 })
 
 const getPieces = createServerFn({ method: 'GET' })
@@ -147,6 +148,9 @@ function PieceItem({
     )
   }
 
+  const hasWith = Boolean(piece.bowingUrl)
+  const hasWithout = Boolean(piece.scoreWithoutBowingUrl)
+
   return (
     <AdminListItem>
       <Stack gap={4}>
@@ -159,16 +163,25 @@ function PieceItem({
             {piece.composer}
           </Text>
         )}
-        {piece.bowingUrl ? (
-          // 開けるかどうかは実際に踏まないと分からないので、URL の文字列ではなくリンクを出す
+        {hasWith && piece.bowingUrl ? (
           <Text size="sm">
-            <ExternalLink href={piece.bowingUrl}>ボウイングを開く</ExternalLink>
+            <ExternalLink href={piece.bowingUrl}>
+              ボウイングありの楽譜を開く
+            </ExternalLink>
           </Text>
-        ) : (
+        ) : null}
+        {hasWithout && piece.scoreWithoutBowingUrl ? (
+          <Text size="sm">
+            <ExternalLink href={piece.scoreWithoutBowingUrl}>
+              ボウイングなしの楽譜を開く
+            </ExternalLink>
+          </Text>
+        ) : null}
+        {!hasWith && !hasWithout ? (
           <Text size="sm" c="dimmed">
-            ボウイングは未登録
+            楽譜リンクは未登録
           </Text>
-        )}
+        ) : null}
 
         <AdminRowActions
           failure={action.failure}
@@ -210,6 +223,9 @@ function PieceForm({ piece, concertId, onDone }: PieceFormProps) {
   const [title, setTitle] = useState(piece?.title ?? '')
   const [composer, setComposer] = useState(piece?.composer ?? '')
   const [bowingUrl, setBowingUrl] = useState(piece?.bowingUrl ?? '')
+  const [scoreWithoutBowingUrl, setScoreWithoutBowingUrl] = useState(
+    piece?.scoreWithoutBowingUrl ?? '',
+  )
 
   const form = useAdminForm({
     schema: pieceInput,
@@ -225,13 +241,19 @@ function PieceForm({ piece, concertId, onDone }: PieceFormProps) {
       setTitle('')
       setComposer('')
       setBowingUrl('')
+      setScoreWithoutBowingUrl('')
     },
   })
 
   return (
     <AdminForm
       title={piece ? '曲を編集' : '曲を追加'}
-      onSubmit={form.onSubmit(() => ({ title, composer, bowingUrl }))}
+      onSubmit={form.onSubmit(() => ({
+        title,
+        composer,
+        bowingUrl,
+        scoreWithoutBowingUrl,
+      }))}
       failure={form.failure}
       submitting={form.submitting}
       onCancel={piece ? onDone : undefined}
@@ -258,8 +280,8 @@ function PieceForm({ piece, concertId, onDone }: PieceFormProps) {
 
       <Field
         id={`${id}-bowing`}
-        label="ボウイングURL（任意）"
-        hint="1曲に1つ。PDF や共有フォルダのURL"
+        label="ボウイングありの楽譜 URL（任意）"
+        hint="PDF や共有フォルダのURL"
         error={form.errors.bowingUrl}
       >
         <AppTextInput
@@ -270,11 +292,27 @@ function PieceForm({ piece, concertId, onDone }: PieceFormProps) {
           onChange={(event) => setBowingUrl(event.target.value)}
         />
       </Field>
+
+      <Field
+        id={`${id}-score-without`}
+        label="ボウイングなしの楽譜 URL（任意）"
+        hint="PDF や共有フォルダのURL"
+        error={form.errors.scoreWithoutBowingUrl}
+      >
+        <AppTextInput
+          id={`${id}-score-without`}
+          type="url"
+          inputMode="url"
+          value={scoreWithoutBowingUrl}
+          onChange={(event) => setScoreWithoutBowingUrl(event.target.value)}
+        />
+      </Field>
     </AdminForm>
   )
 }
 
 function deleteWarning(piece: PieceEntry): string {
   const base = '元に戻せません。以降の曲は1つ前に繰り上がります。'
-  return piece.bowingUrl ? `ボウイングのリンクも一緒に消えます。${base}` : base
+  const hasLink = Boolean(piece.bowingUrl || piece.scoreWithoutBowingUrl)
+  return hasLink ? `楽譜のリンクも一緒に消えます。${base}` : base
 }

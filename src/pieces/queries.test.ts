@@ -45,15 +45,24 @@ describe('listPiecesForConcert', () => {
         concertId: 1,
         title: '設定あり',
         bowingUrl: 'https://example.com/bowing',
+        scoreWithoutBowingUrl: 'https://example.com/plain',
       },
       { id: 2, concertId: 1, title: '設定なし' },
     ])
 
     const list = await listPiecesForConcert(db, 1)
 
-    expect(list.map(({ bowingUrl }) => bowingUrl)).toEqual([
-      'https://example.com/bowing',
-      null,
+    expect(
+      list.map(({ bowingUrl, scoreWithoutBowingUrl }) => ({
+        bowingUrl,
+        scoreWithoutBowingUrl,
+      })),
+    ).toEqual([
+      {
+        bowingUrl: 'https://example.com/bowing',
+        scoreWithoutBowingUrl: 'https://example.com/plain',
+      },
+      { bowingUrl: null, scoreWithoutBowingUrl: null },
     ])
   })
 
