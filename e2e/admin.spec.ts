@@ -21,6 +21,7 @@ const BULK_NEW_ADDRESS = '東京都港区E2E-9-9'
 const PIECE_TITLE = 'E2E序曲'
 const PIECE_COMPOSER = 'E2E作曲家'
 const PIECE_BOWING = 'https://example.com/e2e/bowing'
+const PIECE_SCORE_WITHOUT = 'https://example.com/e2e/score-plain'
 const ANNOUNCEMENT_TITLE = 'E2Eお知らせ'
 const ANNOUNCEMENT_BODY = 'E2E用の本文です'
 const ANNOUNCEMENT_URL = 'https://example.com/e2e/announcement'
@@ -118,25 +119,27 @@ test.describe('管理者の登録・編集導線', () => {
       duplicatedItem.getByRole('link', { name: 'E2E録音' }),
     ).toHaveCount(0)
 
+    const bulkToggle = page.getByRole('button', { name: '一括追加' })
+    await bulkToggle.click()
     const bulkForm = adminForm(page, '練習を一括追加')
     const bulkRow1 = bulkForm.getByRole('group', { name: '1行目' })
     await bulkRow1.getByLabel('日付').fill(BULK_DATE_EXISTING)
     await bulkRow1.getByLabel('開始（任意）').fill('18:00')
     await bulkRow1.getByLabel('終了（任意）').fill('20:00')
-    await bulkRow1
-      .getByLabel('会場（任意）')
-      .selectOption({ label: '既存から選ぶ' })
-    await bulkRow1.getByLabel('既存の会場').selectOption({ label: VENUE })
+    await bulkRow1.getByLabel('会場（任意）').selectOption({ label: VENUE })
     await bulkRow1.getByLabel('詳細（任意）').fill(BULK_DETAIL_EXISTING)
 
     await bulkForm.getByRole('button', { name: '行を追加' }).click()
     const bulkRow2 = bulkForm.getByRole('group', { name: '2行目' })
     await bulkRow2.getByLabel('日付').fill(BULK_DATE_NEW)
-    await bulkRow2
-      .getByLabel('会場（任意）')
-      .selectOption({ label: '新規登録' })
-    await bulkRow2.getByLabel('会場名').fill(BULK_NEW_VENUE)
-    await bulkRow2.getByLabel('住所').fill(BULK_NEW_ADDRESS)
+    await bulkRow2.getByRole('button', { name: '会場を新規追加' }).click()
+    const venueDialog = page.getByRole('dialog')
+    await venueDialog.getByLabel('会場名').fill(BULK_NEW_VENUE)
+    await venueDialog.getByLabel('住所').fill(BULK_NEW_ADDRESS)
+    await venueDialog.getByRole('button', { name: '保存' }).click()
+    await expect(
+      bulkRow2.getByLabel('会場（任意）').locator('option:checked'),
+    ).toHaveText(BULK_NEW_VENUE)
     await bulkRow2.getByLabel('詳細（任意）').fill(BULK_DETAIL_NEW)
     await bulkForm.getByRole('button', { name: '保存' }).click()
 
@@ -153,7 +156,12 @@ test.describe('管理者の登録・編集導線', () => {
     const pieceForm = adminForm(page, '曲を追加')
     await pieceForm.getByLabel('曲名').fill(PIECE_TITLE)
     await pieceForm.getByLabel('作曲者（任意）').fill(PIECE_COMPOSER)
-    await pieceForm.getByLabel('ボウイングURL（任意）').fill(PIECE_BOWING)
+    await pieceForm
+      .getByLabel('ボウイングありの楽譜 URL（任意）')
+      .fill(PIECE_BOWING)
+    await pieceForm
+      .getByLabel('ボウイングなしの楽譜 URL（任意）')
+      .fill(PIECE_SCORE_WITHOUT)
     await pieceForm.getByRole('button', { name: '保存' }).click()
     await expect(page.getByText(PIECE_TITLE, { exact: true })).toBeVisible()
 
@@ -193,8 +201,12 @@ test.describe('管理者の登録・編集導線', () => {
     await expect(page.getByText('18:00〜20:00')).toBeVisible()
 
     await page.getByRole('link', { name: '曲・ボウイング' }).click()
+    await expect(page.getByText(PIECE_TITLE)).toBeVisible()
     await expect(
-      page.getByRole('link', { name: new RegExp(PIECE_TITLE) }),
+      page.getByRole('link', { name: 'ボウイングあり' }),
     ).toHaveAttribute('href', PIECE_BOWING)
+    await expect(
+      page.getByRole('link', { name: 'ボウイングなし' }),
+    ).toHaveAttribute('href', PIECE_SCORE_WITHOUT)
   })
 })
