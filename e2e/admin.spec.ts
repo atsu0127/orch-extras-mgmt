@@ -12,6 +12,12 @@ const RESOURCE_URL = 'https://example.com/e2e/pamphlet'
 const PRACTICE_DETAIL = 'E2E通し稽古'
 const PRACTICE_DATE = '2099-03-15'
 const DUPLICATE_DATE = '2099-03-22'
+const BULK_DATE_EXISTING = '2099-04-05'
+const BULK_DATE_NEW = '2099-04-12'
+const BULK_DETAIL_EXISTING = 'E2E一括・既存会場'
+const BULK_DETAIL_NEW = 'E2E一括・新規会場'
+const BULK_NEW_VENUE = 'E2E一括ホール'
+const BULK_NEW_ADDRESS = '東京都港区E2E-9-9'
 const PIECE_TITLE = 'E2E序曲'
 const PIECE_COMPOSER = 'E2E作曲家'
 const PIECE_BOWING = 'https://example.com/e2e/bowing'
@@ -112,6 +118,37 @@ test.describe('管理者の登録・編集導線', () => {
       duplicatedItem.getByRole('link', { name: 'E2E録音' }),
     ).toHaveCount(0)
 
+    const bulkForm = adminForm(page, '練習を一括追加')
+    const bulkRow1 = bulkForm.getByRole('group', { name: '1行目' })
+    await bulkRow1.getByLabel('日付').fill(BULK_DATE_EXISTING)
+    await bulkRow1.getByLabel('開始（任意）').fill('18:00')
+    await bulkRow1.getByLabel('終了（任意）').fill('20:00')
+    await bulkRow1
+      .getByLabel('会場（任意）')
+      .selectOption({ label: '既存から選ぶ' })
+    await bulkRow1.getByLabel('既存の会場').selectOption({ label: VENUE })
+    await bulkRow1.getByLabel('詳細（任意）').fill(BULK_DETAIL_EXISTING)
+
+    await bulkForm.getByRole('button', { name: '行を追加' }).click()
+    const bulkRow2 = bulkForm.getByRole('group', { name: '2行目' })
+    await bulkRow2.getByLabel('日付').fill(BULK_DATE_NEW)
+    await bulkRow2
+      .getByLabel('会場（任意）')
+      .selectOption({ label: '新規登録' })
+    await bulkRow2.getByLabel('会場名').fill(BULK_NEW_VENUE)
+    await bulkRow2.getByLabel('住所').fill(BULK_NEW_ADDRESS)
+    await bulkRow2.getByLabel('詳細（任意）').fill(BULK_DETAIL_NEW)
+    await bulkForm.getByRole('button', { name: '保存' }).click()
+
+    await expect(page.getByText(BULK_DETAIL_EXISTING)).toBeVisible()
+    await expect(page.getByText(BULK_DETAIL_NEW)).toBeVisible()
+    await expect(
+      page
+        .locator('li')
+        .filter({ hasText: BULK_DETAIL_NEW })
+        .getByText(BULK_NEW_VENUE),
+    ).toBeVisible()
+
     await page.goto('/admin/pieces')
     const pieceForm = adminForm(page, '曲を追加')
     await pieceForm.getByLabel('曲名').fill(PIECE_TITLE)
@@ -150,9 +187,10 @@ test.describe('管理者の登録・編集導線', () => {
     await expect(
       page
         .getByRole('navigation', { name: '練習の表示切替' })
-        .getByText(/今後（2）/),
+        .getByText(/今後（4）/),
     ).toBeVisible()
     await expect(page.getByText('19:00〜21:00')).toHaveCount(2)
+    await expect(page.getByText('18:00〜20:00')).toBeVisible()
 
     await page.getByRole('link', { name: '曲・ボウイング' }).click()
     await expect(
