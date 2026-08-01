@@ -1,6 +1,6 @@
 # 006 — pnpm-workspace に供給連鎖 hardening を入れる
 
-- **Status**: TODO
+- **Status**: DONE
 - **Commit**: 90a50e7
 - **Severity**: MEDIUM
 - **Category**: Security

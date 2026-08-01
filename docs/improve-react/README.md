@@ -15,8 +15,8 @@
 | 4 | [005-bulk-venue-dialog-a11y.md](./005-bulk-venue-dialog-a11y.md) | DONE | MEDIUM | 009 より先が望ましい |
 | 5 | [004-admin-form-refresh-failure.md](./004-admin-form-refresh-failure.md) | DONE | MEDIUM | なし |
 | 6 | [007-specific-edit-delete-aria-labels.md](./007-specific-edit-delete-aria-labels.md) | DONE | MEDIUM | 002 推奨先行 |
-| 7 | [006-pnpm-supply-chain-hardening.md](./006-pnpm-supply-chain-hardening.md) | TODO | MEDIUM | なし（アプリ UI と独立） |
-| 8 | [008-trim-google-font-weights.md](./008-trim-google-font-weights.md) | TODO | MEDIUM | なし（計測あり） |
+| 7 | [006-pnpm-supply-chain-hardening.md](./006-pnpm-supply-chain-hardening.md) | DONE | MEDIUM | なし（アプリ UI と独立） |
+| 8 | [008-trim-google-font-weights.md](./008-trim-google-font-weights.md) | DONE | MEDIUM | なし（計測あり） |
 | 9 | [009-extract-bulk-practice-ui.md](./009-extract-bulk-practice-ui.md) | TODO | MEDIUM | 005 推奨先行 |
 | 10 | [010-external-link-new-tab-announce.md](./010-external-link-new-tab-announce.md) | TODO | LOW | なし |
 | 11 | [011-extract-concert-resource-ui.md](./011-extract-concert-resource-ui.md) | TODO | LOW | 007 を Resource 呼び出しに入れた後ならその差分を維持 |

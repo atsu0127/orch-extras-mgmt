@@ -1,6 +1,6 @@
 # 008 — Google Fonts の読み込みウェイトを実使用に絞る
 
-- **Status**: TODO
+- **Status**: DONE
 - **Commit**: 90a50e7
 - **Severity**: MEDIUM
 - **Category**: Performance

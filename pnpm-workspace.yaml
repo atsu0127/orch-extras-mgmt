@@ -1,5 +1,18 @@
 # workerd は Workers ランタイムの実行に、esbuild はバンドルにネイティブ
 # バイナリを必要とするため、インストール時のスクリプト実行を許可する
+minimumReleaseAge: 10080
+# 既に lock 済みで、hardening 導入時点では 7 日未満だったもの。
+# 新規採用・更新時に除外を残す必要がなければ外す
+minimumReleaseAgeExclude:
+  - '@mantine/core'
+  - '@mantine/hooks'
+  - '@tabler/icons-react'
+  - '@tabler/icons'
+  - postcss
+trustPolicy: no-downgrade
+# lock 済みの semver@6.3.1 が trust downgrade 判定になるため除外
+trustPolicyExclude:
+  - semver
 allowBuilds:
   esbuild: true
   workerd: true
