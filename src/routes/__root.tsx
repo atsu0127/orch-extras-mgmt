@@ -27,6 +27,7 @@ export const Route = createRootRoute({
       { title: 'エキストラ情報ポータル' },
     ],
     links: [
+      { rel: 'icon', href: '/favicon.svg', type: 'image/svg+xml' },
       { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
       {
         rel: 'preconnect',

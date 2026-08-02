@@ -76,7 +76,7 @@ describe('DashboardContent', () => {
     expect(html).toContain(
       'href="https://www.google.com/maps/search/?api=1&amp;query=%E6%9D%B1%E4%BA%AC%E9%83%BD1-1" target="_blank" rel="noopener noreferrer"',
     )
-    expect(html).toContain('Google Mapsで開く')
+    expect(html).toContain('地図を開く')
   })
 
   it('本番会場の住所がないときGoogle Mapsリンクを表示しない', () => {
@@ -90,7 +90,7 @@ describe('DashboardContent', () => {
       }),
     )
 
-    expect(html).not.toContain('Google Mapsで開く')
+    expect(html).not.toContain('地図を開く')
     expect(html).not.toContain('google.com/maps')
   })
 
@@ -105,7 +105,7 @@ describe('DashboardContent', () => {
       }),
     )
 
-    expect(html).toContain('カレンダーに追加')
+    expect(html).toContain('予定に追加')
     const href = html.match(
       /href="(https:\/\/calendar\.google\.com\/calendar\/render[^"]+)"/,
     )?.[1]
@@ -127,7 +127,7 @@ describe('DashboardContent', () => {
       }),
     )
 
-    expect(html).not.toContain('カレンダーに追加')
+    expect(html).not.toContain('予定に追加')
     expect(html).not.toContain('calendar.google.com')
   })
 
@@ -230,5 +230,23 @@ describe('DashboardContent', () => {
 
     expect(html).not.toContain('>お知らせ<')
     expect(html).not.toContain('新しいお知らせ')
+  })
+
+  it('問い合わせは出欠と同じ外部リンクボタンとして表示する', () => {
+    const html = renderMarkup(
+      createElement(DashboardContent, {
+        appSettings: { adminEmail: 'admin@example.com' },
+        concert,
+        nextPractice: null,
+        resources: [],
+        announcements: [],
+      }),
+    )
+
+    expect(html).toContain('出欠を回答する')
+    expect(html).toContain('管理者へ問い合わせる')
+    expect(html).toContain('mailto:admin@example.com')
+    expect(html).toContain('target="_blank" rel="noopener noreferrer"')
+    expect(html).toContain('external-link-icon')
   })
 })
