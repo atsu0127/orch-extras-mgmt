@@ -9,6 +9,7 @@
     "includes": [
       "**",
       "!!**/dist",
+      "!**/*.svg",
       "!src/routeTree.gen.ts",
       "!worker-configuration.d.ts"
     ]

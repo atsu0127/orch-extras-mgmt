@@ -588,8 +588,14 @@ body {
     border-right: 1px solid var(--app-border);
   }
 
+  /* 左カラムと対称に inset し、横線が中央縦線・外枠に食い付かないようにする */
+  .pamphlet-board > .pamphlet-aside {
+    padding: 0 0.75rem 0 1.75rem;
+  }
+
   .pamphlet-main .pamphlet-hero,
-  .pamphlet-main .pamphlet-section {
+  .pamphlet-main .pamphlet-section,
+  .pamphlet-aside .pamphlet-section {
     padding-inline: 0;
   }
 
@@ -600,10 +606,16 @@ body {
 
   .pamphlet-aside .pamphlet-section {
     flex: 1;
-    padding: 1.5rem 0.75rem 1.5rem 1.5rem;
+    padding-block: 1.5rem;
   }
 
   .pamphlet-aside .pamphlet-section:last-child {
+    border-bottom: none;
+  }
+
+  /* カード外枠と二重にならないよう、末尾の区切り線は外す */
+  .pamphlet > .pamphlet-board:last-child,
+  .pamphlet > .pamphlet-section:last-child {
     border-bottom: none;
   }
 

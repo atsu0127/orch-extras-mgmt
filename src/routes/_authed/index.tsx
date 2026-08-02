@@ -1,4 +1,4 @@
-import { Button, Stack, Text, Title } from '@mantine/core'
+import { Stack, Text, Title } from '@mantine/core'
 import { createFileRoute } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
 import { z } from 'zod'
@@ -208,12 +208,12 @@ export function DashboardContent({
             <div className="pamphlet-links">
               {concert.venueAddress && (
                 <ExternalLink href={buildGoogleMapsUrl(concert.venueAddress)}>
-                  Google Mapsで開く
+                  地図を開く
                 </ExternalLink>
               )}
               {performanceCalendarUrl && (
                 <ExternalLink href={performanceCalendarUrl}>
-                  カレンダーに追加
+                  予定に追加
                 </ExternalLink>
               )}
             </div>
@@ -276,16 +276,12 @@ export function DashboardContent({
           <p className="pamphlet-kicker" id="inquiry-title">
             問い合わせ
           </p>
-          <Button
-            component="a"
+          <ExternalLink
             href={buildInquiryMailtoUrl(appSettings.adminEmail, concert.name)}
-            fullWidth
-            maw="20rem"
-            mx="auto"
-            display="block"
+            action
           >
             管理者へ問い合わせる
-          </Button>
+          </ExternalLink>
         </section>
       )}
     </div>
@@ -354,9 +350,9 @@ function NextPracticeProgram({
         </p>
       )}
       <div className="pamphlet-links">
-        {mapsUrl && <ExternalLink href={mapsUrl}>Google Maps</ExternalLink>}
+        {mapsUrl && <ExternalLink href={mapsUrl}>地図を開く</ExternalLink>}
         {calendarUrl && (
-          <ExternalLink href={calendarUrl}>カレンダーに追加</ExternalLink>
+          <ExternalLink href={calendarUrl}>予定に追加</ExternalLink>
         )}
       </div>
       {practice.detail && (
