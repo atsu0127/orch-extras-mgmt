@@ -10,6 +10,7 @@
 
 - [ドキュメント案内](docs/README.md) — 正の設計・タスクの場所と機能一覧
 - [プラットフォーム設計](docs/platform/design.md) — 技術基盤、認証、無料枠、CI、ADR 索引
+- [AI案内](docs/ai-assistant/) — Claude tool useで登録情報を検索するチャット（設計レビュー待ち）
 - [練習の一括作成](docs/practice-bulk-create/) — 管理画面で練習をまとめて追加（完了）
 - [曲の楽譜リンク](docs/piece-score-links/) — ボウイングあり／なしの楽譜 URL（完了）
 - [初期案アーカイブ](docs/archive/initial/) — 初回リリース〜Phase 10 の総合 design/tasks（凍結参照・編集しない）
