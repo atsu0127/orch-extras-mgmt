@@ -4,7 +4,7 @@
 
 ## 進捗
 
-- **実装中** — T1〜T6 完了。次は T7（E2E・実API確認）
+- **実装完了** — T1〜T7 完了。次はリリース前の外部作業 E1（Anthropic課金）と E2（本番での少数確認）。本番 Workers secret `ANTHROPIC_API_KEY` は登録済み。この作業環境にキーが無いため実 Claude 確認は未実施で、`ASSISTANT_LIVE=1` の Vitest と E2 に残している。
 
 ## 実装順序
 
@@ -50,12 +50,12 @@
   - 会話の新規作成・切り替え・削除・全削除を実装する
   - クイック表示との往復、検索クエリ維持、レスポンシブ表示をテストする
 
-- [ ] **T7: 結合・E2E・実API確認**
+- [x] **T7: 結合・E2E・実API確認**
   - CI用の決定的なテストAIクライアントを用意する
   - 両ロール、未ログイン、端末別動線、別演奏会、根拠リンク、エラーをE2Eで確認する
   - 登録本文中の命令をデータとして扱う回帰ケースを追加する
   - `pnpm lint`、`pnpm typecheck`、`pnpm test`、Playwrightを通す
-  - ローカルで実Claude APIの代表質問を確認し、トークン数と概算費用を記録する
+  - ローカルで実Claude APIの代表質問を確認し、トークン数と概算費用を記録する（この環境にキーが無いため未実施。`src/assistant/live.test.ts` を `ASSISTANT_LIVE=1` で実行する。本番確認は E2）
   - 構成・コマンド・環境変数に変更があれば `README.md` を更新する
 
 ## リリース前の外部作業
@@ -66,12 +66,12 @@
   - auto-reloadを無効にする
 
 - [ ] **E2: 本番secretと少数確認**
-  - 実行前に確認を取り、Cloudflare Workers secret `ANTHROPIC_API_KEY` を登録する
+  - 実行前に確認を取り、Cloudflare Workers secret `ANTHROPIC_API_KEY` を登録する（登録済み）
   - 本番で代表質問を少数実行する
   - Anthropic Consoleで想定どおりの利用量か確認する
 
 ## フェーズ完了条件
 
-- [ ] [design.md](./design.md) の完了条件をすべて満たす
-- [ ] 各タスクの完了時に本ファイルの進捗を更新する
-- [ ] 実装全体の仕様レビューと品質レビューを各1回行う
+- [x] [design.md](./design.md) の完了条件のうち、自動テスト・lint・typecheck・Playwright・既存導線の継続を満たす。実 Claude API の代表質問と概算費用は E2 に残す
+- [x] 各タスクの完了時に本ファイルの進捗を更新する
+- [x] 実装全体の仕様レビューと品質レビューを各1回行う

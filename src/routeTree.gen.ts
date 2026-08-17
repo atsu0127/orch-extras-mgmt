@@ -13,9 +13,9 @@ import { Route as AuthedRouteRouteImport } from './routes/_authed/route'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AuthedIndexRouteImport } from './routes/_authed/index'
 import { Route as AuthedAdminRouteRouteImport } from './routes/_authed/admin/route'
+import { Route as AuthedAssistantRouteImport } from './routes/_authed/assistant'
 import { Route as AuthedPiecesRouteImport } from './routes/_authed/pieces'
 import { Route as AuthedPracticesRouteImport } from './routes/_authed/practices'
-import { Route as AuthedAssistantRouteImport } from './routes/_authed/assistant'
 import { Route as AuthedAdminIndexRouteImport } from './routes/_authed/admin/index'
 import { Route as AuthedAdminAnnouncementsRouteImport } from './routes/_authed/admin/announcements'
 import { Route as AuthedAdminConcertsRouteImport } from './routes/_authed/admin/concerts'
@@ -43,6 +43,11 @@ const AuthedAdminRouteRoute = AuthedAdminRouteRouteImport.update({
   path: '/admin',
   getParentRoute: () => AuthedRouteRoute,
 } as any)
+const AuthedAssistantRoute = AuthedAssistantRouteImport.update({
+  id: '/assistant',
+  path: '/assistant',
+  getParentRoute: () => AuthedRouteRoute,
+} as any)
 const AuthedPiecesRoute = AuthedPiecesRouteImport.update({
   id: '/pieces',
   path: '/pieces',
@@ -51,11 +56,6 @@ const AuthedPiecesRoute = AuthedPiecesRouteImport.update({
 const AuthedPracticesRoute = AuthedPracticesRouteImport.update({
   id: '/practices',
   path: '/practices',
-  getParentRoute: () => AuthedRouteRoute,
-} as any)
-const AuthedAssistantRoute = AuthedAssistantRouteImport.update({
-  id: '/assistant',
-  path: '/assistant',
   getParentRoute: () => AuthedRouteRoute,
 } as any)
 const AuthedAdminIndexRoute = AuthedAdminIndexRouteImport.update({
@@ -99,9 +99,9 @@ export interface FileRoutesByFullPath {
   '/': typeof AuthedIndexRoute
   '/login': typeof LoginRoute
   '/admin': typeof AuthedAdminRouteRouteWithChildren
+  '/assistant': typeof AuthedAssistantRoute
   '/pieces': typeof AuthedPiecesRoute
   '/practices': typeof AuthedPracticesRoute
-  '/assistant': typeof AuthedAssistantRoute
   '/admin/announcements': typeof AuthedAdminAnnouncementsRoute
   '/admin/concerts': typeof AuthedAdminConcertsRoute
   '/admin/pieces': typeof AuthedAdminPiecesRoute
@@ -112,9 +112,9 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
+  '/assistant': typeof AuthedAssistantRoute
   '/pieces': typeof AuthedPiecesRoute
   '/practices': typeof AuthedPracticesRoute
-  '/assistant': typeof AuthedAssistantRoute
   '/': typeof AuthedIndexRoute
   '/admin/announcements': typeof AuthedAdminAnnouncementsRoute
   '/admin/concerts': typeof AuthedAdminConcertsRoute
@@ -129,9 +129,9 @@ export interface FileRoutesById {
   '/_authed': typeof AuthedRouteRouteWithChildren
   '/login': typeof LoginRoute
   '/_authed/admin': typeof AuthedAdminRouteRouteWithChildren
+  '/_authed/assistant': typeof AuthedAssistantRoute
   '/_authed/pieces': typeof AuthedPiecesRoute
   '/_authed/practices': typeof AuthedPracticesRoute
-  '/_authed/assistant': typeof AuthedAssistantRoute
   '/_authed/': typeof AuthedIndexRoute
   '/_authed/admin/announcements': typeof AuthedAdminAnnouncementsRoute
   '/_authed/admin/concerts': typeof AuthedAdminConcertsRoute
@@ -147,9 +147,9 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/admin'
+    | '/assistant'
     | '/pieces'
     | '/practices'
-    | '/assistant'
     | '/admin/announcements'
     | '/admin/concerts'
     | '/admin/pieces'
@@ -160,9 +160,9 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/login'
+    | '/assistant'
     | '/pieces'
     | '/practices'
-    | '/assistant'
     | '/'
     | '/admin/announcements'
     | '/admin/concerts'
@@ -176,9 +176,9 @@ export interface FileRouteTypes {
     | '/_authed'
     | '/login'
     | '/_authed/admin'
+    | '/_authed/assistant'
     | '/_authed/pieces'
     | '/_authed/practices'
-    | '/_authed/assistant'
     | '/_authed/'
     | '/_authed/admin/announcements'
     | '/_authed/admin/concerts'
@@ -224,6 +224,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedAdminRouteRouteImport
       parentRoute: typeof AuthedRouteRoute
     }
+    '/_authed/assistant': {
+      id: '/_authed/assistant'
+      path: '/assistant'
+      fullPath: '/assistant'
+      preLoaderRoute: typeof AuthedAssistantRouteImport
+      parentRoute: typeof AuthedRouteRoute
+    }
     '/_authed/pieces': {
       id: '/_authed/pieces'
       path: '/pieces'
@@ -236,13 +243,6 @@ declare module '@tanstack/react-router' {
       path: '/practices'
       fullPath: '/practices'
       preLoaderRoute: typeof AuthedPracticesRouteImport
-      parentRoute: typeof AuthedRouteRoute
-    }
-    '/_authed/assistant': {
-      id: '/_authed/assistant'
-      path: '/assistant'
-      fullPath: '/assistant'
-      preLoaderRoute: typeof AuthedAssistantRouteImport
       parentRoute: typeof AuthedRouteRoute
     }
     '/_authed/admin/': {
@@ -322,17 +322,17 @@ const AuthedAdminRouteRouteWithChildren =
 
 interface AuthedRouteRouteChildren {
   AuthedAdminRouteRoute: typeof AuthedAdminRouteRouteWithChildren
+  AuthedAssistantRoute: typeof AuthedAssistantRoute
   AuthedPiecesRoute: typeof AuthedPiecesRoute
   AuthedPracticesRoute: typeof AuthedPracticesRoute
-  AuthedAssistantRoute: typeof AuthedAssistantRoute
   AuthedIndexRoute: typeof AuthedIndexRoute
 }
 
 const AuthedRouteRouteChildren: AuthedRouteRouteChildren = {
   AuthedAdminRouteRoute: AuthedAdminRouteRouteWithChildren,
+  AuthedAssistantRoute: AuthedAssistantRoute,
   AuthedPiecesRoute: AuthedPiecesRoute,
   AuthedPracticesRoute: AuthedPracticesRoute,
-  AuthedAssistantRoute: AuthedAssistantRoute,
   AuthedIndexRoute: AuthedIndexRoute,
 }
 

@@ -45,9 +45,14 @@ test.describe('エキストラのAI案内', () => {
 
     await sheet.getByRole('link', { name: '専用ページで開く' }).click()
     await expect(page).toHaveURL(/\/assistant(\?concert=\d+)?$/)
-    await expect(page.getByRole('heading', { name: 'AI案内' })).toBeVisible()
-    await expect(page.getByText('次の練習はいつですか？')).toBeVisible()
-    await expect(page.getByText(/登録情報です/)).toBeVisible()
+    await expect(assistantDialog(page)).toHaveCount(0)
+    await expect(
+      page.getByRole('heading', { name: 'AI案内', level: 1 }),
+    ).toBeVisible()
+    await expect(page.locator('.assistant-bubble--user')).toContainText(
+      '次の練習はいつですか？',
+    )
+    await expect(page.getByText(/登録情報です/).first()).toBeVisible()
     await expect(page.getByRole('button', { name: '履歴' })).toBeVisible()
     await expect(page.getByRole('button', { name: 'AIに聞く' })).toHaveCount(0)
   })
@@ -81,7 +86,9 @@ test.describe('エキストラのAI案内', () => {
     })
     await expect(sheet.getByText(/HACKED/)).toHaveCount(0)
     await expect(
-      sheet.getByText(E2E_FIXTURE.injectionAnnouncementTitle),
+      sheet.getByRole('link', {
+        name: E2E_FIXTURE.injectionAnnouncementTitle,
+      }),
     ).toBeVisible()
   })
 
@@ -93,7 +100,9 @@ test.describe('エキストラのAI案内', () => {
     await expect(sheet.getByRole('alert')).toContainText(
       '回答を作成できませんでした',
     )
-    await expect(sheet.getByText('これは失敗テストです')).toBeVisible()
+    await expect(sheet.locator('.assistant-bubble--user')).toContainText(
+      'これは失敗テストです',
+    )
     await expect(
       sheet.getByRole('button', { name: 'もう一度試す' }),
     ).toBeVisible()
@@ -127,7 +136,10 @@ test.describe('PC幅のAI案内', () => {
     ).toBeVisible()
     await panel.getByRole('link', { name: '専用ページで開く' }).click()
     await expect(page).toHaveURL(/\/assistant(\?concert=\d+)?$/)
-    await expect(page.getByRole('heading', { name: 'AI案内' })).toBeVisible()
+    await expect(assistantDialog(page)).toHaveCount(0)
+    await expect(
+      page.getByRole('heading', { name: 'AI案内', level: 1 }),
+    ).toBeVisible()
     await expect(page.getByLabel('会話履歴')).toBeVisible()
     await expect(page.getByRole('button', { name: '履歴' })).toHaveCount(0)
     await expect(page.getByRole('link', { name: 'AI案内' })).toHaveAttribute(

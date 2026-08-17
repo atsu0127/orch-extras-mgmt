@@ -24,7 +24,7 @@
 
 | 機能 | 設計 | タスク | 状態 |
 | --- | --- | --- | --- |
-| AI案内 | [design.md](./ai-assistant/design.md) | [tasks.md](./ai-assistant/tasks.md) | 実装中 |
+| AI案内 | [design.md](./ai-assistant/design.md) | [tasks.md](./ai-assistant/tasks.md) | 完了（本番確認は E2） |
 | 練習の一括作成 | [design.md](./practice-bulk-create/design.md) | [tasks.md](./practice-bulk-create/tasks.md) | 完了 |
 | 曲の楽譜リンク（あり／なし） | [design.md](./piece-score-links/design.md) | [tasks.md](./piece-score-links/tasks.md) | 完了 |
 
