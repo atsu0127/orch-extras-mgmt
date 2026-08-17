@@ -1,6 +1,7 @@
 import {
   index,
   integer,
+  primaryKey,
   sqliteTable,
   text,
   uniqueIndex,
@@ -221,5 +222,24 @@ export type Credential = typeof credentials.$inferSelect
 export type NewCredential = typeof credentials.$inferInsert
 export type Session = typeof sessions.$inferSelect
 export type NewSession = typeof sessions.$inferInsert
+export const aiUsageDaily = sqliteTable(
+  'ai_usage_daily',
+  {
+    usageDate: text('usage_date').notNull(),
+    model: text('model').notNull(),
+    apiRequestCount: integer('api_request_count').notNull().default(0),
+    successfulQuestionCount: integer('successful_question_count')
+      .notNull()
+      .default(0),
+    failedQuestionCount: integer('failed_question_count').notNull().default(0),
+    inputTokens: integer('input_tokens').notNull().default(0),
+    outputTokens: integer('output_tokens').notNull().default(0),
+    updatedAt: text('updated_at').notNull().$defaultFn(nowIso),
+  },
+  (t) => [primaryKey({ columns: [t.usageDate, t.model] })],
+)
+
 export type LoginAttempt = typeof loginAttempts.$inferSelect
 export type NewLoginAttempt = typeof loginAttempts.$inferInsert
+export type AiUsageDaily = typeof aiUsageDaily.$inferSelect
+export type NewAiUsageDaily = typeof aiUsageDaily.$inferInsert

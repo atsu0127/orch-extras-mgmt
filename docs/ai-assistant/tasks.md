@@ -2,11 +2,13 @@
 
 設計: [design.md](./design.md)
 
-状態: **設計レビュー待ち**
+## 進捗
+
+- **実装中** — T1 完了。次は T2（`search_portal`）
 
 ## 実装順序
 
-- [ ] **T1: AI連携の基盤と利用量テーブル**
+- [x] **T1: AI連携の基盤と利用量テーブル**
   - 最新の `@anthropic-ai/sdk` を追加する
   - `ANTHROPIC_API_KEY` のローカル例・Worker型・機能内の設定読み取りを追加する
   - `ai_usage_daily` のスキーマ、マイグレーション、日別upsertを実装する

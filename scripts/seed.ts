@@ -126,6 +126,7 @@ function clearData(): Array<string> {
     'DELETE FROM login_attempts;',
     'DELETE FROM app_settings;',
     'DELETE FROM credentials;',
+    'DELETE FROM ai_usage_daily;',
     `DELETE FROM sqlite_sequence WHERE name IN (
   'practice_media', 'pieces', 'concert_resources', 'announcements', 'practices',
   'link_checks', 'concerts', 'venues', 'login_attempts'

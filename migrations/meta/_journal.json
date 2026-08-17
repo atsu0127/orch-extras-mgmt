@@ -29,6 +29,13 @@
       "when": 1785558162536,
       "tag": "0003_piece_score_without_bowing",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1787005786661,
+      "tag": "0004_ai_usage_daily",
+      "breakpoints": true
     }
   ]
 }
