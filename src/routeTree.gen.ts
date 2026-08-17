@@ -15,6 +15,7 @@ import { Route as AuthedIndexRouteImport } from './routes/_authed/index'
 import { Route as AuthedAdminRouteRouteImport } from './routes/_authed/admin/route'
 import { Route as AuthedPiecesRouteImport } from './routes/_authed/pieces'
 import { Route as AuthedPracticesRouteImport } from './routes/_authed/practices'
+import { Route as AuthedAssistantRouteImport } from './routes/_authed/assistant'
 import { Route as AuthedAdminIndexRouteImport } from './routes/_authed/admin/index'
 import { Route as AuthedAdminAnnouncementsRouteImport } from './routes/_authed/admin/announcements'
 import { Route as AuthedAdminConcertsRouteImport } from './routes/_authed/admin/concerts'
@@ -50,6 +51,11 @@ const AuthedPiecesRoute = AuthedPiecesRouteImport.update({
 const AuthedPracticesRoute = AuthedPracticesRouteImport.update({
   id: '/practices',
   path: '/practices',
+  getParentRoute: () => AuthedRouteRoute,
+} as any)
+const AuthedAssistantRoute = AuthedAssistantRouteImport.update({
+  id: '/assistant',
+  path: '/assistant',
   getParentRoute: () => AuthedRouteRoute,
 } as any)
 const AuthedAdminIndexRoute = AuthedAdminIndexRouteImport.update({
@@ -95,6 +101,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AuthedAdminRouteRouteWithChildren
   '/pieces': typeof AuthedPiecesRoute
   '/practices': typeof AuthedPracticesRoute
+  '/assistant': typeof AuthedAssistantRoute
   '/admin/announcements': typeof AuthedAdminAnnouncementsRoute
   '/admin/concerts': typeof AuthedAdminConcertsRoute
   '/admin/pieces': typeof AuthedAdminPiecesRoute
@@ -107,6 +114,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/pieces': typeof AuthedPiecesRoute
   '/practices': typeof AuthedPracticesRoute
+  '/assistant': typeof AuthedAssistantRoute
   '/': typeof AuthedIndexRoute
   '/admin/announcements': typeof AuthedAdminAnnouncementsRoute
   '/admin/concerts': typeof AuthedAdminConcertsRoute
@@ -123,6 +131,7 @@ export interface FileRoutesById {
   '/_authed/admin': typeof AuthedAdminRouteRouteWithChildren
   '/_authed/pieces': typeof AuthedPiecesRoute
   '/_authed/practices': typeof AuthedPracticesRoute
+  '/_authed/assistant': typeof AuthedAssistantRoute
   '/_authed/': typeof AuthedIndexRoute
   '/_authed/admin/announcements': typeof AuthedAdminAnnouncementsRoute
   '/_authed/admin/concerts': typeof AuthedAdminConcertsRoute
@@ -140,6 +149,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/pieces'
     | '/practices'
+    | '/assistant'
     | '/admin/announcements'
     | '/admin/concerts'
     | '/admin/pieces'
@@ -152,6 +162,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/pieces'
     | '/practices'
+    | '/assistant'
     | '/'
     | '/admin/announcements'
     | '/admin/concerts'
@@ -167,6 +178,7 @@ export interface FileRouteTypes {
     | '/_authed/admin'
     | '/_authed/pieces'
     | '/_authed/practices'
+    | '/_authed/assistant'
     | '/_authed/'
     | '/_authed/admin/announcements'
     | '/_authed/admin/concerts'
@@ -224,6 +236,13 @@ declare module '@tanstack/react-router' {
       path: '/practices'
       fullPath: '/practices'
       preLoaderRoute: typeof AuthedPracticesRouteImport
+      parentRoute: typeof AuthedRouteRoute
+    }
+    '/_authed/assistant': {
+      id: '/_authed/assistant'
+      path: '/assistant'
+      fullPath: '/assistant'
+      preLoaderRoute: typeof AuthedAssistantRouteImport
       parentRoute: typeof AuthedRouteRoute
     }
     '/_authed/admin/': {
@@ -305,6 +324,7 @@ interface AuthedRouteRouteChildren {
   AuthedAdminRouteRoute: typeof AuthedAdminRouteRouteWithChildren
   AuthedPiecesRoute: typeof AuthedPiecesRoute
   AuthedPracticesRoute: typeof AuthedPracticesRoute
+  AuthedAssistantRoute: typeof AuthedAssistantRoute
   AuthedIndexRoute: typeof AuthedIndexRoute
 }
 
@@ -312,6 +332,7 @@ const AuthedRouteRouteChildren: AuthedRouteRouteChildren = {
   AuthedAdminRouteRoute: AuthedAdminRouteRouteWithChildren,
   AuthedPiecesRoute: AuthedPiecesRoute,
   AuthedPracticesRoute: AuthedPracticesRoute,
+  AuthedAssistantRoute: AuthedAssistantRoute,
   AuthedIndexRoute: AuthedIndexRoute,
 }
 
