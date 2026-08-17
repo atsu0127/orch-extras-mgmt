@@ -15,7 +15,7 @@ type BoundValue = string | number | bigint | null
 
 type TestDbOptions = {
   maxBindParameters?: number
-  onQuery?: () => void
+  onQuery?: (sql: string) => void
 }
 
 /**
@@ -40,7 +40,7 @@ export function createTestDb(options: TestDbOptions = {}): Db {
 
   const db = drizzle(
     async (sql, params, method) => {
-      options.onQuery?.()
+      options.onQuery?.(sql)
       if (
         options.maxBindParameters !== undefined &&
         params.length > options.maxBindParameters
