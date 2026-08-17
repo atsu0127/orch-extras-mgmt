@@ -141,7 +141,9 @@ function sampleData(now: string): string[] {
 VALUES (1, ${text(f.venueName)}, ${text(f.venueAddress)}, ${text(f.venueNote)}, ${text(now)}, ${text(now)});`,
 
     `INSERT INTO concerts (id, name, performance_date, venue_id, attendance_url, attendance_note, note, status, created_at, updated_at)
-VALUES (1, ${text(f.concertName)}, ${text(jstDate(60))}, 1, ${text(f.attendanceUrl)}, ${text(f.attendanceNote)}, ${text(f.concertNote)}, 'active', ${text(now)}, ${text(now)});`,
+VALUES
+  (1, ${text(f.concertName)}, ${text(jstDate(60))}, 1, ${text(f.attendanceUrl)}, ${text(f.attendanceNote)}, ${text(f.concertNote)}, 'active', ${text(now)}, ${text(now)}),
+  (2, ${text(f.otherConcertName)}, ${text(jstDate(90))}, 1, ${text(f.otherAttendanceUrl)}, NULL, ${text(f.otherConcertNote)}, 'active', ${text(now)}, ${text(now)});`,
 
     `INSERT INTO concert_resources (id, concert_id, title, url, sort_order, created_at, updated_at)
 VALUES (1, 1, ${text(f.resourceTitle)}, ${text(f.resourceUrl)}, 0, ${text(now)}, ${text(now)});`,
@@ -165,7 +167,8 @@ VALUES
     `INSERT INTO announcements (id, concert_id, title, body, url, created_at, updated_at)
 VALUES
   (1, 1, ${text(f.olderAnnouncementTitle)}, ${text(f.olderAnnouncementBody)}, NULL, ${text('2026-07-20T03:00:00.000Z')}, ${text('2026-07-20T03:00:00.000Z')}),
-  (2, 1, ${text(f.announcementTitle)}, ${text(f.announcementBody)}, ${text(f.announcementUrl)}, ${text('2026-07-30T03:00:00.000Z')}, ${text('2026-07-30T03:00:00.000Z')});`,
+  (2, 1, ${text(f.announcementTitle)}, ${text(f.announcementBody)}, ${text(f.announcementUrl)}, ${text('2026-07-30T03:00:00.000Z')}, ${text('2026-07-30T03:00:00.000Z')}),
+  (3, 1, ${text(f.injectionAnnouncementTitle)}, ${text(f.injectionAnnouncementBody)}, NULL, ${text('2026-07-15T03:00:00.000Z')}, ${text('2026-07-15T03:00:00.000Z')});`,
   ]
 }
 

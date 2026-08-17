@@ -91,6 +91,7 @@ export function AssistantThread({
               {SUGGESTED_QUESTIONS.map((question) => (
                 <UnstyledButton
                   key={question}
+                  type="button"
                   className="assistant-suggestion"
                   disabled={store.sending || selectedConcertId === null}
                   onClick={() => {

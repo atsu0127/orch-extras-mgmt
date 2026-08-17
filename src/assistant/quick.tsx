@@ -41,7 +41,9 @@ export function AssistantQuick({
         title="AI案内"
         overlayProps={{ backgroundOpacity: 0.35 }}
       >
-        <AssistantThread selectedConcertId={selectedConcertId} showPageLink />
+        <div data-assistant-placement={isDesktop ? 'right' : 'bottom'}>
+          <AssistantThread selectedConcertId={selectedConcertId} showPageLink />
+        </div>
       </Drawer>
     </>
   )

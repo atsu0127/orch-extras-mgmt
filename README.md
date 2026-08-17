@@ -2,7 +2,7 @@
 
 オーケストラのエキストラ（客演奏者）向け情報ポータル。練習日程、出欠の回答先、演奏会資料、地図、カレンダー、ボウイング、練習の録音を1か所にまとめて公開し、管理者がブラウザから更新できるようにする。
 
-現在の状態: **Phase 10 実装済み**。演奏会ごとのお知らせを管理・閲覧できる。練習の一括追加（[practice-bulk-create](docs/practice-bulk-create/)、[ADR-0024](docs/adr/0024-prefer-bulk-practice-create-over-circle-square-sync.md)）も利用できる。
+現在の状態: **Phase 10 実装済み**。演奏会ごとのお知らせを管理・閲覧できる。練習の一括追加（[practice-bulk-create](docs/practice-bulk-create/)、[ADR-0024](docs/adr/0024-prefer-bulk-practice-create-over-circle-square-sync.md)）と、登録情報を自然文で探す [AI案内](docs/ai-assistant/) も利用できる。
 
 本番: <https://orch-extras-mgmt.atsu-dq9.workers.dev>
 
@@ -10,7 +10,7 @@
 
 - [ドキュメント案内](docs/README.md) — 正の設計・タスクの場所と機能一覧
 - [プラットフォーム設計](docs/platform/design.md) — 技術基盤、認証、無料枠、CI、ADR 索引
-- [AI案内](docs/ai-assistant/) — Claude tool useで登録情報を検索するチャット（設計レビュー待ち）
+- [AI案内](docs/ai-assistant/) — Claude tool useで登録情報を検索するチャット
 - [練習の一括作成](docs/practice-bulk-create/) — 管理画面で練習をまとめて追加（完了）
 - [曲の楽譜リンク](docs/piece-score-links/) — ボウイングあり／なしの楽譜 URL（完了）
 - [初期案アーカイブ](docs/archive/initial/) — 初回リリース〜Phase 10 の総合 design/tasks（凍結参照・編集しない）
@@ -30,6 +30,7 @@
 - 本番・練習会場の Google Maps と Google カレンダー導線
 - 練習の複製入力
 - 練習の一括追加（トグル表示・行複製・会場は modal で即追加）
+- AI案内（登録情報の検索。候補質問と会話履歴）
 - 演奏会単位の管理と切り替え
 - 管理者は更新可、エキストラは参照のみ。個人情報は保持せず、ロールごとの共有パスワードで認証する
 
@@ -193,6 +194,12 @@ pnpm exec wrangler d1 execute DB --local --command "SELECT 1"  # 中身を見る
 ## 環境変数
 
 ローカルでは `.dev.vars`（git 管理外）、本番では `wrangler secret put` で設定する。必要な項目は `.dev.vars.example` と[プラットフォーム設計](docs/platform/design.md)の環境変数節を参照。`PASSWORD_PEPPER` を変えると既存のパスワードが検証できなくなるため、変更したら `pnpm db:seed` で入れ直す。
+
+AI案内は本番で `ANTHROPIC_API_KEY` を Workers secret として読む。ローカルと CI は `.dev.vars` の `ASSISTANT_STUB=1` で Claude API を呼ばず、決定的なスタブを使う。実 API の確認だけするときは `ASSISTANT_STUB` を外し、キーを入れたうえで次を実行する。
+
+```bash
+ASSISTANT_LIVE=1 ANTHROPIC_API_KEY=... pnpm test -- src/assistant/live.test.ts
+```
 
 ## CI/CD
 

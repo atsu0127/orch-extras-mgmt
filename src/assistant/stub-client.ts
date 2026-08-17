@@ -5,6 +5,7 @@ import type {
   AssistantTurnRequest,
   AssistantTurnResponse,
 } from './client'
+import { AssistantClientError } from './client'
 import type { SearchPortalModelResult } from './search'
 
 const SEARCH_HINTS: Array<{ pattern: RegExp; topic: SearchTopic }> = [
@@ -30,6 +31,9 @@ export function createStubClient(): AssistantClient {
 
 function stubToolUse(request: AssistantTurnRequest): AssistantTurnResponse {
   const question = lastUserText(request.messages)
+  if (question.includes('失敗テスト')) {
+    throw new AssistantClientError('failed', 'failed')
+  }
   return {
     content: [
       {
