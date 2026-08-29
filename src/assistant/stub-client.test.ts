@@ -57,6 +57,7 @@ describe('createStubClient', () => {
         selectedConcertId: 1,
         history: [],
       },
+      ip: '203.0.113.10',
     })
 
     expect(result.ok).toBe(true)
@@ -94,6 +95,7 @@ describe('createStubClient', () => {
         selectedConcertId: 1,
         history: [],
       },
+      ip: '203.0.113.10',
     })
 
     expect(result.ok).toBe(true)

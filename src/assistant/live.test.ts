@@ -42,6 +42,7 @@ describe.skipIf(!live)('実 Claude API', () => {
         selectedConcertId: 1,
         history: [],
       },
+      ip: '203.0.113.10',
     })
     expect(representative.ok).toBe(true)
     if (representative.ok) {
@@ -57,6 +58,7 @@ describe.skipIf(!live)('実 Claude API', () => {
         selectedConcertId: 1,
         history: [],
       },
+      ip: '203.0.113.10',
     })
     expect(other.ok).toBe(true)
     if (other.ok) {
@@ -71,6 +73,7 @@ describe.skipIf(!live)('実 Claude API', () => {
         selectedConcertId: 1,
         history: [],
       },
+      ip: '203.0.113.10',
     })
     expect(missing.ok).toBe(true)
     if (missing.ok) {

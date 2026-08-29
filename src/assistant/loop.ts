@@ -16,6 +16,7 @@ import {
   type AssistantToolUseBlock,
 } from './client'
 import { assistantSystemPrompt, SEARCH_PORTAL_TOOL_NAME } from './prompt'
+import { reserveAssistantQuota } from './quota'
 import { searchPortal } from './search'
 import { recordDailyUsage } from './usage'
 
@@ -29,9 +30,24 @@ export async function answerQuestion(options: {
   db: Db
   client: AssistantClient
   input: AskAssistantInput
+  ip: string
   now?: Date
 }): Promise<AskAssistantResult> {
   const now = options.now ?? new Date()
+
+  let reserved: Awaited<ReturnType<typeof reserveAssistantQuota>>
+  try {
+    reserved = await reserveAssistantQuota(options.db, {
+      ip: options.ip,
+      now,
+    })
+  } catch {
+    return { ok: false, reason: 'unavailable' }
+  }
+  if (reserved !== 'ok') {
+    return { ok: false, reason: reserved }
+  }
+
   const usage: LoopUsage = {
     apiRequestCount: 0,
     inputTokens: 0,

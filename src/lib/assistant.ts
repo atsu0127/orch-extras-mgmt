@@ -67,6 +67,8 @@ export type AskAssistantFailureReason =
   | 'timeout'
   | 'tool_limit'
   | 'failed'
+  | 'ip_limited'
+  | 'daily_limited'
 
 export type AskAssistantFailure = {
   ok: false
@@ -165,6 +167,13 @@ export const ASK_ASSISTANT_ERROR_MESSAGES: Record<
   tool_limit:
     '検索の上限を超えたため、回答を止めました。もう一度試してください。',
   failed: '回答を作成できませんでした。もう一度試してください。',
+  ip_limited: '質問が混み合っています。しばらくしてから試してください。',
+  daily_limited:
+    '本日の質問上限に達しました。日本時間の0時以降にまた利用できます。',
+}
+
+export function shouldOfferRetry(reason: AskAssistantFailureReason): boolean {
+  return reason !== 'ip_limited' && reason !== 'daily_limited'
 }
 
 export const ASSISTANT_PRIVACY_NOTICE =

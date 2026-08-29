@@ -1,6 +1,10 @@
 import { env } from 'cloudflare:workers'
 import { afterEach, describe, expect, it } from 'vitest'
-import { isAssistantStub, readAnthropicApiKey } from './config'
+import {
+  isAssistantStub,
+  readAnthropicApiKey,
+  shouldReserveAssistantQuota,
+} from './config'
 
 afterEach(() => {
   env.ASSISTANT_STUB = ''
@@ -14,6 +18,21 @@ describe('isAssistantStub', () => {
 
     env.ASSISTANT_STUB = '0'
     expect(isAssistantStub()).toBe(false)
+  })
+})
+
+describe('shouldReserveAssistantQuota', () => {
+  it('スタブかキーがあるときだけ確保する', () => {
+    env.ASSISTANT_STUB = ''
+    env.ANTHROPIC_API_KEY = ''
+    expect(shouldReserveAssistantQuota()).toBe(false)
+
+    env.ASSISTANT_STUB = '1'
+    expect(shouldReserveAssistantQuota()).toBe(true)
+
+    env.ASSISTANT_STUB = ''
+    env.ANTHROPIC_API_KEY = 'sk-test'
+    expect(shouldReserveAssistantQuota()).toBe(true)
   })
 })
 

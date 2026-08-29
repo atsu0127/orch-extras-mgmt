@@ -11,3 +11,8 @@ export function readAnthropicApiKey(): string | null {
   const trimmed = key.trim()
   return trimmed.length > 0 ? trimmed : null
 }
+
+/** スタブまたは API キーがあるときだけ枠を確保する（キー無しでは Claude を呼ばない） */
+export function shouldReserveAssistantQuota(): boolean {
+  return isAssistantStub() || readAnthropicApiKey() !== null
+}

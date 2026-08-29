@@ -17,6 +17,7 @@ import {
   ASSISTANT_LIMITS,
   ASSISTANT_PRIVACY_NOTICE,
   SUGGESTED_QUESTIONS,
+  shouldOfferRetry,
 } from '../lib/assistant'
 import { formatAssistantDateTime } from './format'
 import { askAssistant } from './functions'
@@ -152,16 +153,18 @@ export function AssistantThread({
             <Text size="sm">
               {ASK_ASSISTANT_ERROR_MESSAGES[store.errorReason]}
             </Text>
-            {lastUser && selectedConcertId !== null && (
-              <Button
-                size="compact-sm"
-                onClick={() => {
-                  void submit(lastUser.content, true)
-                }}
-              >
-                もう一度試す
-              </Button>
-            )}
+            {lastUser &&
+              selectedConcertId !== null &&
+              shouldOfferRetry(store.errorReason) && (
+                <Button
+                  size="compact-sm"
+                  onClick={() => {
+                    void submit(lastUser.content, true)
+                  }}
+                >
+                  もう一度試す
+                </Button>
+              )}
           </Stack>
         </Alert>
       )}

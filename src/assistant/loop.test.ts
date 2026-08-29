@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 import type { Db } from '../db/client'
-import { announcements, concerts, practices } from '../db/schema'
+import { aiUsageDaily, announcements, concerts, practices } from '../db/schema'
+import { ASSISTANT_LIMITS, ASSISTANT_MODEL } from '../lib/assistant'
 import { createTestDb } from '../test/db'
 import type {
   AssistantClient,
@@ -10,6 +11,7 @@ import type {
 import { AssistantClientError } from './client'
 import { answerQuestion, parseAssistantAnswer } from './loop'
 import { assistantSystemPrompt } from './prompt'
+import { reserveAssistantQuota } from './quota'
 import { listDailyUsage } from './usage'
 
 let db: Db
@@ -41,6 +43,8 @@ const question = {
   history: [],
 }
 
+const IP = '203.0.113.10'
+
 describe('answerQuestion', () => {
   it('tool_use のあと検索し、存在する参照キーのリンクだけ返す', async () => {
     const client = scriptedClient([
@@ -63,7 +67,7 @@ describe('answerQuestion', () => {
       },
     ])
 
-    const result = await answerQuestion({ db, client, input: question })
+    const result = await answerQuestion({ db, client, input: question, ip: IP })
 
     expect(result).toMatchObject({
       ok: true,
@@ -95,7 +99,7 @@ describe('answerQuestion', () => {
       },
     ])
 
-    const result = await answerQuestion({ db, client, input: question })
+    const result = await answerQuestion({ db, client, input: question, ip: IP })
     expect(result).toMatchObject({
       ok: true,
       answer: '登録情報にありません',
@@ -121,15 +125,15 @@ describe('answerQuestion', () => {
       },
     ])
 
-    const result = await answerQuestion({ db, client, input: question })
+    const result = await answerQuestion({ db, client, input: question, ip: IP })
     expect(result.ok).toBe(true)
   })
 
   it('不正なツール引数では D1 検索せず invalid_input にする', async () => {
-    let queries = 0
+    const sqls: Array<string> = []
     db = createTestDb({
-      onQuery: () => {
-        queries += 1
+      onQuery: (sql) => {
+        sqls.push(sql)
       },
     })
     const client = scriptedClient([
@@ -140,10 +144,11 @@ describe('answerQuestion', () => {
         }),
     ])
 
-    const result = await answerQuestion({ db, client, input: question })
+    const result = await answerQuestion({ db, client, input: question, ip: IP })
 
     expect(result).toEqual({ ok: false, reason: 'invalid_input' })
-    expect(queries).toBe(1)
+    expect(sqls.some((sql) => /from\s+"?practices"?/i.test(sql))).toBe(false)
+    expect(sqls.some((sql) => /from\s+"?concerts"?/i.test(sql))).toBe(false)
   })
 
   it('2回目のツール要求は実行せず止める', async () => {
@@ -152,7 +157,7 @@ describe('answerQuestion', () => {
       () => toolUseResponse({ concert: null, topics: ['concert'] }),
     ])
 
-    const result = await answerQuestion({ db, client, input: question })
+    const result = await answerQuestion({ db, client, input: question, ip: IP })
     expect(result).toEqual({ ok: false, reason: 'tool_limit' })
   })
 
@@ -165,6 +170,7 @@ describe('answerQuestion', () => {
         },
       },
       input: question,
+      ip: IP,
     })
     expect(failed).toEqual({ ok: false, reason: 'failed' })
 
@@ -176,6 +182,7 @@ describe('answerQuestion', () => {
         },
       },
       input: question,
+      ip: IP,
     })
     expect(timeout).toEqual({ ok: false, reason: 'timeout' })
   })
@@ -195,7 +202,7 @@ describe('answerQuestion', () => {
       },
     ])
 
-    const result = await answerQuestion({ db, client, input: question })
+    const result = await answerQuestion({ db, client, input: question, ip: IP })
     expect(result.ok).toBe(true)
     if (result.ok) expect(result.answer).not.toBe('HACKED')
   })
@@ -212,7 +219,7 @@ describe('answerQuestion', () => {
         }),
     ])
 
-    await answerQuestion({ db, client, input: question, now })
+    await answerQuestion({ db, client, input: question, ip: IP, now })
 
     expect(await listDailyUsage(db)).toMatchObject([
       {
@@ -227,7 +234,14 @@ describe('answerQuestion', () => {
   it('集計の失敗で回答を落とさない', async () => {
     db = createTestDb({
       onQuery: (sql) => {
-        if (sql.includes('ai_usage_daily')) throw new Error('usage down')
+        // 確保用 INSERT の列一覧にも同名がある。加算の SET だけ落とす
+        if (
+          sql.includes('ai_usage_daily') &&
+          (sql.includes('"api_request_count" =') ||
+            sql.includes('"successful_question_count" ='))
+        ) {
+          throw new Error('usage down')
+        }
       },
     })
     await db.insert(concerts).values({
@@ -250,8 +264,113 @@ describe('answerQuestion', () => {
         }),
     ])
 
-    const result = await answerQuestion({ db, client, input: question })
+    const result = await answerQuestion({ db, client, input: question, ip: IP })
     expect(result.ok).toBe(true)
+  })
+
+  it('ip_limited では Claude クライアントを呼ばない', async () => {
+    const now = new Date('2026-08-17T12:00:00.000Z')
+    for (let index = 0; index < ASSISTANT_LIMITS.ipQuestionsMax; index += 1) {
+      await reserveAssistantQuota(db, { ip: IP, now })
+    }
+
+    let calls = 0
+    const result = await answerQuestion({
+      db,
+      client: {
+        complete: async () => {
+          calls += 1
+          throw new Error('should not be called')
+        },
+      },
+      input: question,
+      ip: IP,
+      now,
+    })
+
+    expect(result).toEqual({ ok: false, reason: 'ip_limited' })
+    expect(calls).toBe(0)
+  })
+
+  it('daily_limited では Claude クライアントを呼ばない', async () => {
+    const now = new Date('2026-08-17T12:00:00.000Z')
+    await db.insert(aiUsageDaily).values({
+      usageDate: '2026-08-17',
+      model: ASSISTANT_MODEL,
+      acceptedQuestionCount: ASSISTANT_LIMITS.dailyQuestionsMax,
+      updatedAt: now.toISOString(),
+    })
+
+    let calls = 0
+    const result = await answerQuestion({
+      db,
+      client: {
+        complete: async () => {
+          calls += 1
+          throw new Error('should not be called')
+        },
+      },
+      input: question,
+      ip: IP,
+      now,
+    })
+
+    expect(result).toEqual({ ok: false, reason: 'daily_limited' })
+    expect(calls).toBe(0)
+  })
+
+  it('確保後の API 失敗でも accepted_question_count は 1 のまま残る', async () => {
+    const now = new Date('2026-08-17T12:00:00.000Z')
+    const result = await answerQuestion({
+      db,
+      client: {
+        complete: async () => {
+          throw new AssistantClientError('failed', 'failed')
+        },
+      },
+      input: question,
+      ip: IP,
+      now,
+    })
+
+    expect(result).toEqual({ ok: false, reason: 'failed' })
+    expect(await listDailyUsage(db)).toMatchObject([
+      {
+        usageDate: '2026-08-17',
+        acceptedQuestionCount: 1,
+        failedQuestionCount: 1,
+      },
+    ])
+  })
+
+  it('枠の確保に失敗したら unavailable でクライアント 0 回', async () => {
+    db = createTestDb({
+      onQuery: (sql) => {
+        if (sql.includes('accepted_question_count')) {
+          throw new Error('quota down')
+        }
+      },
+    })
+    await db.insert(concerts).values({
+      id: 1,
+      name: '第10回定期演奏会',
+    })
+
+    let calls = 0
+    const result = await answerQuestion({
+      db,
+      client: {
+        complete: async () => {
+          calls += 1
+          throw new Error('should not be called')
+        },
+      },
+      input: question,
+      ip: IP,
+    })
+
+    expect(result).toEqual({ ok: false, reason: 'unavailable' })
+    expect(calls).toBe(0)
   })
 })
 

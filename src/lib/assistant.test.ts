@@ -3,6 +3,7 @@ import {
   askAssistantInputSchema,
   assistantAnswerSchema,
   searchPortalInputSchema,
+  shouldOfferRetry,
 } from './assistant'
 
 describe('askAssistantInputSchema', () => {
@@ -53,6 +54,15 @@ describe('searchPortalInputSchema', () => {
         dateFrom: '2026/08/01',
       }).success,
     ).toBe(false)
+  })
+})
+
+describe('shouldOfferRetry', () => {
+  it('上限超過では再試行せず、タイムアウトと失敗では出す', () => {
+    expect(shouldOfferRetry('ip_limited')).toBe(false)
+    expect(shouldOfferRetry('daily_limited')).toBe(false)
+    expect(shouldOfferRetry('timeout')).toBe(true)
+    expect(shouldOfferRetry('failed')).toBe(true)
   })
 })
 
