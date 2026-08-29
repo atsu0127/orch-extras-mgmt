@@ -65,6 +65,8 @@
 
 ログ用 middleware は `requireAuth` の外側に置く。`role` は `requireAuth` が既に載せた context から取り、ログのためだけにセッションを D1 へ再照会しない。未認証時は `anonymous`。
 
+`createServerFn` 自体はヘルパで包まない。Start のコンパイラは呼び出し箇所をファイル内で見つける。包むとサーバ専用モジュールがクライアントへ載る（[ADR-0029](../adr/0029-keep-create-server-fn-in-source.md)）。各関数の middleware 先頭に `logServerFn('名前')` を置き、付け忘れはソース走査で止める。
+
 | フィールド | 内容 |
 | --- | --- |
 | `event` | `"server_fn"` |
