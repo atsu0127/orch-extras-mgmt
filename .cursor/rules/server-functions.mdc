@@ -12,13 +12,14 @@ alwaysApply: false
 
 SPA モードのためルートの `beforeLoad` は**強制力を持たない**（体験を整えるだけ）。
 **すべてのサーバ関数が `requireAuth` か `requireAdmin` のどちらかを必ず通る**こと。読み取り系も例外にしない。
+`getCurrentSession` 以外は `loggedServerFn('関数名', { method })` で作り、Workers Logs に `fn` を残す（`docs/observability/design.md`）。
 
 ```ts
 // ❌ BAD: middleware を通していない。誰でも呼べる
 export const listPractices = createServerFn().handler(async () => { /* ... */ })
 
 // ✅ GOOD
-export const listPractices = createServerFn()
+export const listPractices = loggedServerFn('listPractices', { method: 'GET' })
   .middleware([requireAuth])
   .handler(async () => { /* ... */ })
 ```

@@ -25,7 +25,7 @@
 | 機能 | 設計 | タスク | 状態 |
 | --- | --- | --- | --- |
 | AI案内 | [design.md](./ai-assistant/design.md) | [tasks.md](./ai-assistant/tasks.md) | T1〜T10 完了。候補質問「次の練習」が空になる件を修正。リリース前は E1（課金）と E2（本番の少数確認） |
-| 観測 | [design.md](./observability/design.md) | [tasks.md](./observability/tasks.md) | 設計まで。実装は T1〜T4、本番は E1・E2 |
+| 観測 | [design.md](./observability/design.md) | [tasks.md](./observability/tasks.md) | T1〜T4 完了。リリース前は E1（Gateway）と E2（本番の少数確認） |
 | 練習の一括作成 | [design.md](./practice-bulk-create/design.md) | [tasks.md](./practice-bulk-create/tasks.md) | 完了 |
 | 曲の楽譜リンク（あり／なし） | [design.md](./piece-score-links/design.md) | [tasks.md](./piece-score-links/tasks.md) | 完了 |
 
