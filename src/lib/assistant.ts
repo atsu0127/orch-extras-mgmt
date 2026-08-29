@@ -23,6 +23,9 @@ export const ASSISTANT_LIMITS = {
   conversationsMax: 10,
   messagesPerConversationMax: 20,
   conversationTitleMax: 40,
+  ipWindowMs: 10 * 60 * 1000,
+  ipQuestionsMax: 15,
+  dailyQuestionsMax: 80,
 } as const
 
 export const SEARCH_TOPICS = [

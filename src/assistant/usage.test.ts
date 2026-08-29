@@ -13,7 +13,7 @@ beforeEach(() => {
 })
 
 describe('recordDailyUsage', () => {
-  it('UTC の日付とモデルを主キーに加算する', async () => {
+  it('日本時間の暦日とモデルを主キーに加算する', async () => {
     const now = new Date('2026-08-17T15:30:00.000Z')
 
     await recordDailyUsage(
@@ -42,14 +42,66 @@ describe('recordDailyUsage', () => {
     const rows = await listDailyUsage(db)
     expect(rows).toHaveLength(1)
     expect(rows[0]).toMatchObject({
-      usageDate: '2026-08-17',
+      usageDate: '2026-08-18',
       model: ASSISTANT_MODEL,
       apiRequestCount: 3,
       successfulQuestionCount: 1,
       failedQuestionCount: 1,
       inputTokens: 150,
       outputTokens: 40,
+      acceptedQuestionCount: 0,
     })
+  })
+
+  it('JST の日付境界で usage_date を切る', async () => {
+    const cases: Array<[string, string]> = [
+      ['2026-08-16T14:59:59.999Z', '2026-08-16'],
+      ['2026-08-16T15:00:00.000Z', '2026-08-17'],
+      ['2026-08-17T12:00:00.000Z', '2026-08-17'],
+      ['2026-08-17T15:30:00.000Z', '2026-08-18'],
+    ]
+
+    for (const [iso, usageDate] of cases) {
+      const isolated = createTestDb()
+      await recordDailyUsage(
+        isolated,
+        {
+          apiRequestCount: 1,
+          successfulQuestionCount: 1,
+          failedQuestionCount: 0,
+          inputTokens: 1,
+          outputTokens: 1,
+        },
+        new Date(iso),
+      )
+      const [row] = await listDailyUsage(isolated)
+      expect(row?.usageDate).toBe(usageDate)
+    }
+  })
+
+  it('accepted_question_count は加算も上書きもしない', async () => {
+    const now = new Date('2026-08-17T12:00:00.000Z')
+    await db.insert(aiUsageDaily).values({
+      usageDate: '2026-08-17',
+      model: ASSISTANT_MODEL,
+      acceptedQuestionCount: 3,
+      updatedAt: now.toISOString(),
+    })
+
+    await recordDailyUsage(
+      db,
+      {
+        apiRequestCount: 2,
+        successfulQuestionCount: 1,
+        failedQuestionCount: 0,
+        inputTokens: 10,
+        outputTokens: 5,
+      },
+      now,
+    )
+
+    const [row] = await listDailyUsage(db)
+    expect(row?.acceptedQuestionCount).toBe(3)
   })
 
   it('質問本文や回答本文を保存しない', async () => {

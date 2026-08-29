@@ -2,6 +2,7 @@ import { sql } from 'drizzle-orm'
 import type { Db } from '../db/client'
 import { aiUsageDaily } from '../db/schema'
 import { ASSISTANT_MODEL } from '../lib/assistant'
+import { todayInJst } from '../lib/date'
 
 export type UsageDelta = {
   apiRequestCount: number
@@ -21,7 +22,7 @@ export async function recordDailyUsage(
   now: Date = new Date(),
   model: string = ASSISTANT_MODEL,
 ): Promise<void> {
-  const usageDate = now.toISOString().slice(0, 10)
+  const usageDate = todayInJst(now)
   const updatedAt = now.toISOString()
 
   await db
