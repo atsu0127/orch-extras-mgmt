@@ -4,7 +4,7 @@
 
 ## 進捗
 
-- **実装完了** — T1〜T7 完了。次はリリース前の外部作業 E1（Anthropic課金）と E2（本番での少数確認）。本番 Workers secret `ANTHROPIC_API_KEY` は登録済み。この作業環境にキーが無いため実 Claude 確認は未実施で、`ASSISTANT_LIVE=1` の Vitest と E2 に残している。
+- **T1〜T7 完了。利用上限 T8〜T10 が未着手** — 次は T8（スキーマと枠の確保）。リリース前の外部作業は E1（Anthropic課金）と E2（本番での少数確認）。本番 Workers secret `ANTHROPIC_API_KEY` は登録済み。この作業環境にキーが無いため実 Claude 確認は未実施で、`ASSISTANT_LIVE=1` の Vitest と E2 に残している。
 
 ## 実装順序
 
@@ -58,6 +58,32 @@
   - ローカルで実Claude APIの代表質問を確認し、トークン数と概算費用を記録する（この環境にキーが無いため未実施。`src/assistant/live.test.ts` を `ASSISTANT_LIVE=1` で実行する。本番確認は E2）
   - 構成・コマンド・環境変数に変更があれば `README.md` を更新する
 
+- [ ] **T8: 呼び出し上限のスキーマと枠の確保**
+  - `ASSISTANT_LIMITS` に `ipWindowMs`（10分）、`ipQuestionsMax`（15）、`dailyQuestionsMax`（80）を足す
+  - `ai_ask_attempts`（`id`, `ip`, `attempted_at`。`(ip, attempted_at)` インデックス）と `ai_usage_daily.accepted_question_count` を schema と **新規マイグレーション 0005**（SQL と `migrations/meta`）で追加する。0004 は書き換えない
+  - 確保ロジックは `src/assistant/quota.ts`（`src/auth/rate-limit.ts` に足さない）
+  - `reserveAssistantQuota(db, { ip, now })` の戻り値は `'ok' | 'ip_limited' | 'daily_limited'`
+  - 日次は `INSERT accepted_question_count=1 ON CONFLICT DO UPDATE SET accepted_question_count = accepted_question_count + 1 WHERE accepted_question_count < 80`。変更行数 0 なら拒否。空行 INSERT（0）と +1 を混ぜない
+  - `recordDailyUsage` の日付を `todayInJst(now)` にする。`accepted_question_count` は加算も上書きもしない
+  - `scripts/seed.ts` のリセットに `DELETE FROM ai_ask_attempts`（と sqlite_sequence）を足す
+  - 単体テスト（固定 `NOW` / `nowPlus`、別 IP。`rate-limit.test.ts` と同じ形）: 15問まで通り16問目は `ip_limited`、窓が滑るとまた通る、80問まで通り81問目は `daily_limited`、JST 0時で戻る、拒否時は IP 行も全体も増えない
+  - JST フィクスチャ: `2026-08-16T14:59:59.999Z` → 16日、`2026-08-16T15:00:00.000Z` → 17日、`2026-08-17T12:00:00.000Z` → 17日のまま、`2026-08-17T15:30:00.000Z` → 18日
+
+- [ ] **T9: 質問ループと画面へ上限を接続する**
+  - `askAssistant` で `getClientIp()` を取り、`answerQuestion` に `ip` と `now` を渡す
+  - スタブまたは API キーありのときだけ `answerQuestion`（確保あり）。キー無しの `unavailable` は確保しない
+  - `answerQuestion` は Claude 用 try の**外**で `reserveAssistantQuota` する。`ok` でなければクライアント 0 回。確保の例外は `unavailable`。掃除失敗は無視して Claude を呼ぶ
+  - `AskAssistantFailureReason` に `ip_limited` / `daily_limited` を足し、設計書の文言を `ASK_ASSISTANT_ERROR_MESSAGES` に置く
+  - `shouldOfferRetry`（名前は実装に合わせる）を単体テストする。`ip_limited` / `daily_limited` は false（ボタンなし）、`timeout` / `failed` は true。`thread.tsx` はこれを使う
+  - `loop.test.ts`: `ip_limited` と `daily_limited` の両方でクライアント 0 回。確保後の API 失敗でも `accepted_question_count` は 1。既存の「集計失敗でも回答する」は加算用 SQL（`successful_question_count` / `api_request_count` 等）だけ例外にし、確保用 SQL では投げない。確保失敗専用テストを別に書く
+  - 既存の日別集計テストを JST に合わせる。15:30Z だけ 18日。12:00Z は 17日のまま一括置換しない
+
+- [ ] **T10: E2E・進捗・検査**
+  - 既存 AI の E2E が IP `local` 共有でも 15問未満に収まることを確認する（1ランの実質問は5回。16問を足して発火させない）
+  - 上限超過の E2E は必須にしない（テスト専用 API を増やさない）
+  - `docs/README.md` の AI案内の状態を更新する
+  - `pnpm lint` / `pnpm typecheck` / `pnpm test` / ローカルなら Playwright
+
 ## リリース前の外部作業
 
 - [ ] **E1: Anthropic APIの課金設定**
@@ -72,6 +98,19 @@
 
 ## フェーズ完了条件
 
-- [x] [design.md](./design.md) の完了条件のうち、自動テスト・lint・typecheck・Playwright・既存導線の継続を満たす。実 Claude API の代表質問と概算費用は E2 に残す
+- [x] 初回導入（T1〜T7）の自動テスト・lint・typecheck・Playwright・既存導線の継続を満たす。実 Claude API の代表質問と概算費用は E2 に残す
+- [ ] T8〜T10 の呼び出し上限が設計 8.3 どおり単体テストで確認できる
 - [x] 各タスクの完了時に本ファイルの進捗を更新する
-- [x] 実装全体の仕様レビューと品質レビューを各1回行う
+- [x] 初回導入の仕様レビューと品質レビューを各1回行う
+- [ ] T8〜T10 の仕様レビュー（本追記＋指摘反映）と、実装後の品質レビュー
+
+## 実装時の注意
+
+- 画面から `src/db/schema.ts` を読まない。定数・失敗理由・文言は `src/lib/assistant.ts`
+- IP の取り方は `src/auth/client-ip.ts` を再利用する。ログイン制限のテーブルには足さない
+- 日次は `INSERT accepted=1 ON CONFLICT DO UPDATE ... WHERE accepted < 80`。drizzle で WHERE が書けないときは、**default 0 の空行**を `INSERT OR IGNORE` したあと `UPDATE ... + 1 WHERE < 80`。空行 INSERT を 1 で始めない（初問が 2 になる）
+- `recordDailyUsage` の失敗は今までどおり握りつぶす。枠の確保（COUNT・条件付き更新・IP INSERT）は握りつぶさない。掃除は best-effort
+- 追加 D1 はサブリクエストに数える。検索クエリは増やさない。日次更新と IP INSERT は `db.batch()` にまとめられるならまとめる
+- テスト専用の上限バイパス API は作らない
+- ログイン方式・Turnstile・パスワード規則は変えない
+- 会場の共有 Wi‑Fi では 10分15問が回線全体の上限になる（受け入れ済み）
