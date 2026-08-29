@@ -25,13 +25,14 @@ import {
   fieldErrors,
   optionalEmail,
 } from '../../../lib/validation'
+import { logServerFn } from '../../../observability/logged-server-fn'
 import { updateAdminEmail } from '../../../settings/mutations'
 import { getAppSettings } from '../../../settings/queries'
 
 const adminEmailInput = z.object({ adminEmail: optionalEmail })
 
 const getSettings = createServerFn({ method: 'GET' })
-  .middleware([requireAdmin])
+  .middleware([logServerFn('getSettings'), requireAdmin])
   .handler(async () => {
     const db = getDb()
     const [credentials, appSettings] = await Promise.all([
@@ -42,7 +43,7 @@ const getSettings = createServerFn({ method: 'GET' })
   })
 
 const submitAdminEmail = createServerFn({ method: 'POST' })
-  .middleware([requireAdmin])
+  .middleware([logServerFn('submitAdminEmail'), requireAdmin])
   .validator(adminEmailInput)
   .handler(({ data }) => updateAdminEmail(getDb(), data.adminEmail))
 
@@ -51,7 +52,7 @@ const submitAdminEmail = createServerFn({ method: 'POST' })
  * 端末を離席中に触られた場合に、そこで止めるための一手間である。
  */
 const submitPasswordChange = createServerFn({ method: 'POST' })
-  .middleware([requireAdmin])
+  .middleware([logServerFn('submitPasswordChange'), requireAdmin])
   .validator(passwordChangeInput.extend({ role: z.enum(ROLES) }))
   .handler(async ({ data }): Promise<{ ok: boolean }> => {
     const db = getDb()

@@ -12,6 +12,7 @@ import {
   MAX_LENGTH,
 } from '../lib/limits'
 import { optionalText, requiredText } from '../lib/validation'
+import { logServerFn } from '../observability/logged-server-fn'
 import { createPracticesBulk } from '../practices/bulk'
 import {
   type BulkPracticeRowDraft,
@@ -45,12 +46,12 @@ const venueInput = z.object({
 })
 
 const addVenueFromBulk = createServerFn({ method: 'POST' })
-  .middleware([requireAdmin])
+  .middleware([logServerFn('addVenueFromBulk'), requireAdmin])
   .validator(venueInput)
   .handler(({ data }) => createVenue(getDb(), data))
 
 const addPracticesBulk = createServerFn({ method: 'POST' })
-  .middleware([requireAdmin])
+  .middleware([logServerFn('addPracticesBulk'), requireAdmin])
   .validator(bulkPracticesInput)
   .handler(async ({ data }): Promise<BulkAddResult> => {
     try {

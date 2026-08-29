@@ -22,6 +22,7 @@ import { EmptyState, PageSection } from '../../../components/states'
 import { getDb } from '../../../db/client'
 import { MAX_LENGTH } from '../../../lib/limits'
 import { idValue, optionalText, requiredText } from '../../../lib/validation'
+import { logServerFn } from '../../../observability/logged-server-fn'
 import {
   createVenue,
   deleteVenue,
@@ -36,23 +37,23 @@ const venueInput = z.object({
 })
 
 const getVenues = createServerFn({ method: 'GET' })
-  .middleware([requireAdmin])
+  .middleware([logServerFn('getVenues'), requireAdmin])
   .handler(() => listVenues(getDb()))
 
 const addVenue = createServerFn({ method: 'POST' })
-  .middleware([requireAdmin])
+  .middleware([logServerFn('addVenue'), requireAdmin])
   .validator(venueInput)
   .handler(async ({ data }) => {
     await createVenue(getDb(), data)
   })
 
 const editVenue = createServerFn({ method: 'POST' })
-  .middleware([requireAdmin])
+  .middleware([logServerFn('editVenue'), requireAdmin])
   .validator(venueInput.extend({ id: idValue }))
   .handler(({ data: { id, ...input } }) => updateVenue(getDb(), id, input))
 
 const removeVenue = createServerFn({ method: 'POST' })
-  .middleware([requireAdmin])
+  .middleware([logServerFn('removeVenue'), requireAdmin])
   .validator(z.object({ id: idValue }))
   .handler(({ data }) => deleteVenue(getDb(), data.id))
 

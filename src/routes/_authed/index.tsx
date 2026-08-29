@@ -26,11 +26,12 @@ import {
   buildPerformanceCalendarUrl,
   buildPracticeCalendarUrl,
 } from '../../lib/external-urls'
+import { logServerFn } from '../../observability/logged-server-fn'
 import { getNextPractice, type PracticeEntry } from '../../practices/queries'
 import { type AppSettingsView, getAppSettings } from '../../settings/queries'
 
 const getDashboard = createServerFn({ method: 'GET' })
-  .middleware([requireAuth])
+  .middleware([logServerFn('getDashboard'), requireAuth])
   .validator(z.object({ concertId: z.number().int().positive() }))
   .handler(async ({ data }) => {
     const db = getDb()

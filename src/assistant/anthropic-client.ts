@@ -4,45 +4,82 @@ import Anthropic, {
   PermissionDeniedError,
 } from '@anthropic-ai/sdk'
 import { ASSISTANT_LIMITS, ASSISTANT_MODEL } from '../lib/assistant'
+import type { Role } from '../lib/roles'
 import {
   type AssistantClient,
   AssistantClientError,
   type AssistantInputBlock,
   type AssistantOutputBlock,
 } from './client'
+import {
+  type AiGatewayConfig,
+  aiGatewayAuthHeaders,
+  aiGatewayMetadataHeaders,
+  anthropicGatewayBaseUrl,
+} from './gateway'
 import { SEARCH_PORTAL_TOOL } from './prompt'
 
-export function createAnthropicClient(apiKey: string): AssistantClient {
+export type AnthropicGatewayBinding = {
+  config: AiGatewayConfig
+  questionId: string
+  role: Role
+}
+
+export function createAnthropicClient(
+  apiKey: string,
+  gateway?: AnthropicGatewayBinding,
+): AssistantClient {
   const anthropic = new Anthropic({
     apiKey,
     maxRetries: 0,
     timeout: ASSISTANT_LIMITS.apiTimeoutMs,
+    ...(gateway
+      ? {
+          baseURL: anthropicGatewayBaseUrl(gateway.config),
+          defaultHeaders: aiGatewayAuthHeaders(gateway.config.token),
+        }
+      : {}),
   })
+
+  let turn = 0
 
   return {
     async complete(request) {
       try {
-        const message = await anthropic.messages.create({
-          model: ASSISTANT_MODEL,
-          max_tokens: request.maxTokens,
-          system: request.system,
-          messages: request.messages.map((item) => ({
-            role: item.role,
-            content:
-              typeof item.content === 'string'
-                ? item.content
-                : item.content.map(toAnthropicInputBlock),
-          })),
-          tools: [SEARCH_PORTAL_TOOL],
-          tool_choice:
-            request.tools === 'search'
-              ? {
-                  type: 'tool',
-                  name: 'search_portal',
-                  disable_parallel_tool_use: true,
-                }
-              : { type: 'none' },
-        })
+        turn += 1
+        const currentTurn: 1 | 2 = turn === 1 ? 1 : 2
+        const message = await anthropic.messages.create(
+          {
+            model: ASSISTANT_MODEL,
+            max_tokens: request.maxTokens,
+            system: request.system,
+            messages: request.messages.map((item) => ({
+              role: item.role,
+              content:
+                typeof item.content === 'string'
+                  ? item.content
+                  : item.content.map(toAnthropicInputBlock),
+            })),
+            tools: [SEARCH_PORTAL_TOOL],
+            tool_choice:
+              request.tools === 'search'
+                ? {
+                    type: 'tool',
+                    name: 'search_portal',
+                    disable_parallel_tool_use: true,
+                  }
+                : { type: 'none' },
+          },
+          gateway
+            ? {
+                headers: aiGatewayMetadataHeaders({
+                  questionId: gateway.questionId,
+                  turn: currentTurn,
+                  role: gateway.role,
+                }),
+              }
+            : {},
+        )
 
         return {
           content: message.content.flatMap(fromAnthropicBlock),

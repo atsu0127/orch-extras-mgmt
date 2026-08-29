@@ -10,10 +10,11 @@ import {
   PageSection,
 } from '../../components/states'
 import { getDb } from '../../db/client'
+import { logServerFn } from '../../observability/logged-server-fn'
 import { listPiecesForConcert, type PieceEntry } from '../../pieces/queries'
 
 const listPieces = createServerFn({ method: 'GET' })
-  .middleware([requireAuth])
+  .middleware([logServerFn('listPieces'), requireAuth])
   .validator(z.object({ concertId: z.number().int().positive() }))
   .handler(({ data }) => listPiecesForConcert(getDb(), data.concertId))
 

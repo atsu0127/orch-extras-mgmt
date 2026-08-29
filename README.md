@@ -187,8 +187,10 @@ pnpm exec wrangler d1 execute DB --local --command "SELECT 1"  # 中身を見る
 - `src/start.ts` — 全サーバ関数への CSRF 対策と、Worker が返すレスポンスへのセキュリティヘッダ
 - `public/_headers` — 静的ファイルへのセキュリティヘッダ（assets binding は Worker を通らない）
 
-**新しくサーバ関数を書くときは必ず `requireAuth` か `requireAdmin` を通すこと**。SPA モードなので
-画面側のガードには強制力がない。CSRF 対策は `src/start.ts` で全体に掛かっているので個別の対応は要らない。
+**新しくサーバ関数を書くときは `createServerFn` をファイル内で呼び、`logServerFn('名前')` と `requireAuth` か `requireAdmin` を通すこと**。SPA モードなので
+画面側のガードには強制力がない。`getCurrentSession` だけはログ対象外。`createServerFn` をヘルパで包むとクライアントへサーバ専用モジュールが載る。CSRF 対策は `src/start.ts` で全体に掛かっているので個別の対応は要らない。
+
+観測（Workers Logs の `server_fn` / AI案内の `assistant_ask`、本番 Claude の AI Gateway）は [観測](docs/observability/) を参照。ローカル既定はスタブのまま Gateway 不要。
 
 パスワードは `/admin/settings` から変更する。どちらのロールを変えるときも管理者の現在のパスワードを要求し（[ADR-0013](docs/adr/0013-require-admin-password-to-change-passwords.md)）、変更したロールのセッションは全件失効させる。管理者を変えると操作中のセッションも落ちるので、ログインし直すことになる。
 
@@ -196,7 +198,7 @@ pnpm exec wrangler d1 execute DB --local --command "SELECT 1"  # 中身を見る
 
 ローカルでは `.dev.vars`（git 管理外）、本番では `wrangler secret put` で設定する。必要な項目は `.dev.vars.example` と[プラットフォーム設計](docs/platform/design.md)の環境変数節を参照。`PASSWORD_PEPPER` を変えると既存のパスワードが検証できなくなるため、変更したら `pnpm db:seed` で入れ直す。
 
-AI案内は本番で `ANTHROPIC_API_KEY` を Workers secret として読む。ローカルと CI は `.dev.vars` の `ASSISTANT_STUB=1` で Claude API を呼ばず、決定的なスタブを使う。実 API の確認だけするときは `ASSISTANT_STUB` を外し、キーを入れたうえで次を実行する。
+AI案内は本番で `ANTHROPIC_API_KEY` を Workers secret として読む。ローカルと CI は `.dev.vars` の `ASSISTANT_STUB=1` で Claude API を呼ばず、決定的なスタブを使う。実 API の確認だけするときは `ASSISTANT_STUB` を外し、キーを入れたうえで次を実行する。本番の実 Claude を AI Gateway 経由にするときは `AI_GATEWAY_ACCOUNT_ID` / `AI_GATEWAY_ID` / `AI_GATEWAY_TOKEN` を揃える（未設定なら直結）。
 
 ```bash
 ASSISTANT_LIVE=1 ANTHROPIC_API_KEY=... pnpm test -- src/assistant/live.test.ts

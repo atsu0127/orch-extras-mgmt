@@ -36,10 +36,11 @@ import { getDb } from '../../../db/client'
 import { CONCERT_STATUSES } from '../../../db/schema'
 import { formatFullDate } from '../../../lib/date'
 import { idValue, toOptionalId } from '../../../lib/validation'
+import { logServerFn } from '../../../observability/logged-server-fn'
 import { listVenueOptions, type VenueOption } from '../../../venues/queries'
 
 const getConcertsPage = createServerFn({ method: 'GET' })
-  .middleware([requireAdmin])
+  .middleware([logServerFn('getConcertsPage'), requireAdmin])
   .handler(async () => {
     const db = getDb()
     return {
@@ -49,22 +50,22 @@ const getConcertsPage = createServerFn({ method: 'GET' })
   })
 
 const addConcert = createServerFn({ method: 'POST' })
-  .middleware([requireAdmin])
+  .middleware([logServerFn('addConcert'), requireAdmin])
   .validator(concertInput)
   .handler(({ data }) => createConcert(getDb(), data))
 
 const editConcert = createServerFn({ method: 'POST' })
-  .middleware([requireAdmin])
+  .middleware([logServerFn('editConcert'), requireAdmin])
   .validator(concertInput.extend({ id: idValue }))
   .handler(({ data: { id, ...input } }) => updateConcert(getDb(), id, input))
 
 const changeConcertStatus = createServerFn({ method: 'POST' })
-  .middleware([requireAdmin])
+  .middleware([logServerFn('changeConcertStatus'), requireAdmin])
   .validator(z.object({ id: idValue, status: z.enum(CONCERT_STATUSES) }))
   .handler(({ data }) => setConcertStatus(getDb(), data.id, data.status))
 
 const removeConcert = createServerFn({ method: 'POST' })
-  .middleware([requireAdmin])
+  .middleware([logServerFn('removeConcert'), requireAdmin])
   .validator(z.object({ id: idValue }))
   .handler(({ data }) => deleteConcert(getDb(), data.id))
 

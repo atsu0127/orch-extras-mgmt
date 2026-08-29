@@ -18,6 +18,7 @@ import {
 } from '../lib/limits'
 import { DIRECTIONS } from '../lib/ordering'
 import { idValue, requiredText, requiredUrl } from '../lib/validation'
+import { logServerFn } from '../observability/logged-server-fn'
 import { AdminForm, Field, useAdminAction, useAdminForm } from './admin-form'
 import { AdminManagedLinkRow, AdminRowActions } from './admin-row-actions'
 import { ControlRow, MediaList, SecondaryButton } from './control-row'
@@ -32,7 +33,7 @@ const resourceInput = z.object({
 type ResourceActionResult = { ok: true } | { ok: false; reason: 'limit' }
 
 const addResource = createServerFn({ method: 'POST' })
-  .middleware([requireAdmin])
+  .middleware([logServerFn('addResource'), requireAdmin])
   .validator(resourceInput.extend({ concertId: idValue }))
   .handler(
     async ({
@@ -54,7 +55,7 @@ const addResource = createServerFn({ method: 'POST' })
   )
 
 const editResource = createServerFn({ method: 'POST' })
-  .middleware([requireAdmin])
+  .middleware([logServerFn('editResource'), requireAdmin])
   .validator(resourceInput.extend({ id: idValue }))
   .handler(
     async ({ data: { id, ...fields } }): Promise<ResourceActionResult> => {
@@ -64,12 +65,12 @@ const editResource = createServerFn({ method: 'POST' })
   )
 
 const moveResource = createServerFn({ method: 'POST' })
-  .middleware([requireAdmin])
+  .middleware([logServerFn('moveResource'), requireAdmin])
   .validator(z.object({ id: idValue, direction: z.enum(DIRECTIONS) }))
   .handler(({ data }) => moveConcertResource(getDb(), data.id, data.direction))
 
 const removeResource = createServerFn({ method: 'POST' })
-  .middleware([requireAdmin])
+  .middleware([logServerFn('removeResource'), requireAdmin])
   .validator(z.object({ id: idValue }))
   .handler(({ data }) => deleteConcertResource(getDb(), data.id))
 

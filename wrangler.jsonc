@@ -8,6 +8,11 @@
   "observability": {
     "enabled": true
   },
+  // 空なら Anthropic 直結。本番の id 投入は docs/observability/design.md 9章
+  "vars": {
+    "AI_GATEWAY_ACCOUNT_ID": "",
+    "AI_GATEWAY_ID": ""
+  },
   // directory はビルド時に Vite プラグインが入れるのでここには書かない。
   // 画面は SPA シェルを assets から返し、Worker はサーバ関数だけを受ける。
   // こうしないと document ごとに Worker が描画してしまう（設計書5章）

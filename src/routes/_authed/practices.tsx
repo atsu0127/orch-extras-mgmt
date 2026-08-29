@@ -11,11 +11,12 @@ import {
 } from '../../components/states'
 import { getDb } from '../../db/client'
 import { todayInJst } from '../../lib/date'
+import { logServerFn } from '../../observability/logged-server-fn'
 import { listPracticesWithMedia } from '../../practices/queries'
 import { PRACTICE_VIEWS, splitPractices } from '../../practices/schedule'
 
 const listPractices = createServerFn({ method: 'GET' })
-  .middleware([requireAuth])
+  .middleware([logServerFn('listPractices'), requireAuth])
   .validator(z.object({ concertId: z.number().int().positive() }))
   .handler(async ({ data }) => ({
     practices: await listPracticesWithMedia(getDb(), data.concertId),

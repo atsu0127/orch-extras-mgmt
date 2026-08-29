@@ -29,6 +29,7 @@ import {
   optionalUrl,
   requiredText,
 } from '../../../lib/validation'
+import { logServerFn } from '../../../observability/logged-server-fn'
 import {
   createPiece,
   deletePiece,
@@ -45,29 +46,29 @@ const pieceInput = z.object({
 })
 
 const getPieces = createServerFn({ method: 'GET' })
-  .middleware([requireAdmin])
+  .middleware([logServerFn('getPieces'), requireAdmin])
   .validator(z.object({ concertId: idValue }))
   .handler(({ data }) => listPiecesForConcert(getDb(), data.concertId))
 
 const addPiece = createServerFn({ method: 'POST' })
-  .middleware([requireAdmin])
+  .middleware([logServerFn('addPiece'), requireAdmin])
   .validator(pieceInput.extend({ concertId: idValue }))
   .handler(({ data: { concertId, ...fields } }) =>
     createPiece(getDb(), concertId, fields),
   )
 
 const editPiece = createServerFn({ method: 'POST' })
-  .middleware([requireAdmin])
+  .middleware([logServerFn('editPiece'), requireAdmin])
   .validator(pieceInput.extend({ id: idValue }))
   .handler(({ data: { id, ...fields } }) => updatePiece(getDb(), id, fields))
 
 const reorderPiece = createServerFn({ method: 'POST' })
-  .middleware([requireAdmin])
+  .middleware([logServerFn('reorderPiece'), requireAdmin])
   .validator(z.object({ id: idValue, direction: z.enum(DIRECTIONS) }))
   .handler(({ data }) => movePiece(getDb(), data.id, data.direction))
 
 const removePiece = createServerFn({ method: 'POST' })
-  .middleware([requireAdmin])
+  .middleware([logServerFn('removePiece'), requireAdmin])
   .validator(z.object({ id: idValue }))
   .handler(({ data }) => deletePiece(getDb(), data.id))
 

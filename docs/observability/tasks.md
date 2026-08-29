@@ -1,11 +1,11 @@
-# 観測 — タスク
+# 観測 — タスク（完了: T1〜T4）
 
 設計は [design.md](./design.md)。横断制約は [platform/design.md](../platform/design.md)。サイズは相対見積り（S: 小さな差分 / M: 中程度 / L: 広い変更）。
 
 ## 進捗
 
-- **設計まで完了**（2026-08-29）。実装は未着手
-- 次に着手できるもの: T1
+- **T1〜T4 完了**（2026-08-29）。実装はマージできる。本番 Gateway は E1・E2（実行前確認が必要）
+- 次に着手できるもの: E1（認証付き Gateway の作成と secret。実行前に確認を取る）
 
 ## 進め方
 
@@ -29,13 +29,13 @@ T1〜T3 はコード、T4 は検査と README / 設定例。E1・E2 は本番影
 
 ## 受け入れ条件
 
-- [ ] サーバ関数の失敗が Workers Logs で辿れる
-- [ ] AI案内の、handler に入った失敗が `reason` と `questionId` で辿れる
-- [ ] 本番 Gateway で成功質問の turn 1/2 本文が `questionId` で結べる
-- [ ] アプリの構造化 JSON に質問・回答・IP が出ない
-- [ ] スタブ / Gateway 未設定で AI案内が止まらない
-- [ ] Langfuse と Workers Traces を入れてない
-- [ ] lint / typecheck / test が通る
+- [x] サーバ関数の失敗が Workers Logs で辿れる（単体: `fn` / `ok` / `error`。本番画面は E2）
+- [x] AI案内の、handler に入った失敗が `reason` と `questionId` で辿れる
+- [ ] 本番 Gateway で成功質問の turn 1/2 本文が `questionId` で結べる（E2）
+- [x] アプリの構造化 JSON に質問・回答・IP が出ない
+- [x] スタブ / Gateway 未設定で AI案内が止まらない
+- [x] Langfuse と Workers Traces を入れてない
+- [x] lint / typecheck / test が通る
 
 ## 実装時の注意
 

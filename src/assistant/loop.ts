@@ -27,14 +27,23 @@ type LoopUsage = {
   outputTokens: number
 }
 
+export type AssistantLoopLog = {
+  apiRequestCount: number
+  droppedSourceKeys?: number
+}
+
 export async function answerQuestion(options: {
   db: Db
   client: AssistantClient
   input: AskAssistantInput
   ip: string
   now?: Date
+  onLog?: (log: AssistantLoopLog) => void
 }): Promise<AskAssistantResult> {
   const now = options.now ?? new Date()
+  const report = (log: AssistantLoopLog) => {
+    options.onLog?.(log)
+  }
 
   let reserved: Awaited<ReturnType<typeof reserveAssistantQuota>>
   try {
@@ -43,9 +52,11 @@ export async function answerQuestion(options: {
       now,
     })
   } catch {
+    report({ apiRequestCount: 0 })
     return { ok: false, reason: 'unavailable' }
   }
   if (reserved !== 'ok') {
+    report({ apiRequestCount: 0 })
     return { ok: false, reason: reserved }
   }
 
@@ -75,12 +86,14 @@ export async function answerQuestion(options: {
     const toolUse = findSearchToolUse(first.content)
     if (!toolUse) {
       await recordOutcome(options.db, usage, 'failed', now)
+      report({ apiRequestCount: usage.apiRequestCount })
       return { ok: false, reason: 'failed' }
     }
 
     const parsedArgs = searchPortalInputSchema.safeParse(toolUse.input)
     if (!parsedArgs.success) {
       await recordOutcome(options.db, usage, 'failed', now)
+      report({ apiRequestCount: usage.apiRequestCount })
       return { ok: false, reason: 'invalid_input' }
     }
 
@@ -117,26 +130,34 @@ export async function answerQuestion(options: {
 
     if (second.content.some((block) => block.type === 'tool_use')) {
       await recordOutcome(options.db, usage, 'failed', now)
+      report({ apiRequestCount: usage.apiRequestCount })
       return { ok: false, reason: 'tool_limit' }
     }
 
     const parsed = parseAssistantAnswer(textOf(second.content))
     if (!parsed) {
       await recordOutcome(options.db, usage, 'failed', now)
+      report({ apiRequestCount: usage.apiRequestCount })
       return { ok: false, reason: 'failed' }
     }
 
+    const verified = verifiedLinks(parsed, searched.sources)
     const result: AskAssistantResult = {
       ok: true,
       answer: parsed.answer,
       concertName: parsed.concertName,
-      links: verifiedLinks(parsed, searched.sources),
+      links: verified.links,
       answeredAt: now.toISOString(),
     }
     await recordOutcome(options.db, usage, 'success', now)
+    report({
+      apiRequestCount: usage.apiRequestCount,
+      droppedSourceKeys: verified.droppedSourceKeys,
+    })
     return result
   } catch (error) {
     await recordOutcome(options.db, usage, 'failed', now)
+    report({ apiRequestCount: usage.apiRequestCount })
     if (error instanceof AssistantClientError) {
       return { ok: false, reason: error.kind }
     }
@@ -164,18 +185,22 @@ export function parseAssistantAnswer(text: string): AssistantAnswer | null {
 function verifiedLinks(
   answer: AssistantAnswer,
   sources: ReadonlyArray<SourceLink>,
-): Array<SourceLink> {
+): { links: Array<SourceLink>; droppedSourceKeys: number } {
   const allowed = new Map(sources.map((source) => [source.key, source]))
   const links: Array<SourceLink> = []
   const seen = new Set<string>()
+  let droppedSourceKeys = 0
   for (const key of answer.sourceKeys) {
     if (seen.has(key)) continue
     const source = allowed.get(key)
-    if (!source) continue
+    if (!source) {
+      droppedSourceKeys += 1
+      continue
+    }
     seen.add(key)
     links.push(source)
   }
-  return links
+  return { links, droppedSourceKeys }
 }
 
 function findSearchToolUse(

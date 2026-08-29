@@ -34,16 +34,17 @@ import {
   MAX_ANNOUNCEMENTS,
 } from '../../../lib/limits'
 import { idValue } from '../../../lib/validation'
+import { logServerFn } from '../../../observability/logged-server-fn'
 
 type AnnouncementActionResult = { ok: true } | { ok: false; reason: 'limit' }
 
 const getAnnouncements = createServerFn({ method: 'GET' })
-  .middleware([requireAdmin])
+  .middleware([logServerFn('getAnnouncements'), requireAdmin])
   .validator(z.object({ concertId: idValue }))
   .handler(({ data }) => listAnnouncementsForConcert(getDb(), data.concertId))
 
 const addAnnouncement = createServerFn({ method: 'POST' })
-  .middleware([requireAdmin])
+  .middleware([logServerFn('addAnnouncement'), requireAdmin])
   .validator(announcementInput.extend({ concertId: idValue }))
   .handler(
     async ({
@@ -65,7 +66,7 @@ const addAnnouncement = createServerFn({ method: 'POST' })
   )
 
 const editAnnouncement = createServerFn({ method: 'POST' })
-  .middleware([requireAdmin])
+  .middleware([logServerFn('editAnnouncement'), requireAdmin])
   .validator(announcementInput.extend({ id: idValue }))
   .handler(
     async ({ data: { id, ...fields } }): Promise<AnnouncementActionResult> => {
@@ -75,7 +76,7 @@ const editAnnouncement = createServerFn({ method: 'POST' })
   )
 
 const removeAnnouncement = createServerFn({ method: 'POST' })
-  .middleware([requireAdmin])
+  .middleware([logServerFn('removeAnnouncement'), requireAdmin])
   .validator(z.object({ id: idValue }))
   .handler(({ data }) => deleteAnnouncement(getDb(), data.id))
 

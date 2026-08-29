@@ -176,3 +176,4 @@
 | 練習一括はトグル・行複製・会場 modal 即保存 | 普段は隠し、似た行をコピーし、会場はマスタとして即確定する | [ADR-0026](../adr/0026-bulk-practice-toggle-duplicate-and-venue-modal.md) |
 | 次の練習検索は質問語句を無視し今日を明示する | 1回の tool use で候補質問が空にならないようにする | [ADR-0027](../adr/0027-assistant-next-practice-search.md) |
 | アプリログは Workers Logs、LLM 本文は AI Gateway | 無料枠内で失敗と品質を分けて追う。Langfuse と Traces は見送り | [ADR-0028](../adr/0028-workers-logs-and-ai-gateway-observability.md) |
+| サーバ関数はヘルパで包まずログは middleware | Start のコンパイラが `createServerFn` をファイル内で見つけるため | [ADR-0029](../adr/0029-keep-create-server-fn-in-source.md) |
