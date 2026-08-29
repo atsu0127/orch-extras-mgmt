@@ -12,11 +12,14 @@ import {
   type SearchTopic,
   type SourceLink,
 } from '../lib/assistant'
+import { todayInJst } from '../lib/date'
 import { listPiecesForConcert } from '../pieces/queries'
 import {
+  getNextPractice,
   listPracticesWithMedia,
   type PracticeEntry,
 } from '../practices/queries'
+import { splitPractices } from '../practices/schedule'
 
 export type SearchItem = {
   key: string
@@ -46,6 +49,7 @@ export async function searchPortal(
   db: Db,
   input: SearchPortalInput,
   selectedConcertId: number,
+  today: string = todayInJst(),
 ): Promise<SearchPortalExecution> {
   const resolved = await resolveConcert(db, input.concert, selectedConcertId)
   if (resolved.status === 'not_found') {
@@ -64,7 +68,7 @@ export async function searchPortal(
     }
   }
 
-  const collected = await collectItems(db, resolved.concert, input)
+  const collected = await collectItems(db, resolved.concert, input, today)
   return limitResult(resolved.concert.name, collected)
 }
 
@@ -90,7 +94,10 @@ async function resolveConcert(
   | { status: 'ambiguous'; candidates: Array<{ name: string }> }
   | { status: 'not_found' }
 > {
-  const query = concertQuery === null ? '' : normalizeConcertName(concertQuery)
+  const query =
+    concertQuery === null || isQuestionLikeQuery(concertQuery)
+      ? ''
+      : normalizeConcertName(concertQuery)
   if (query === '') {
     const concert = await getConcertOverview(db, selectedConcertId)
     return concert ? { status: 'ok', concert } : { status: 'not_found' }
@@ -141,6 +148,7 @@ async function collectItems(
   db: Db,
   concert: ConcertOverview,
   input: SearchPortalInput,
+  today: string,
 ): Promise<Collected> {
   const collected: Collected = { items: [], sources: [] }
   const topics = new Set(input.topics)
@@ -148,12 +156,17 @@ async function collectItems(
   const practices = needsPractices
     ? await listPracticesWithMedia(db, concert.id)
     : []
+  const nextPractice = needsPractices
+    ? (splitPractices(practices, today).upcoming[0] ?? null)
+    : topics.has('concert')
+      ? await getNextPractice(db, concert.id, today)
+      : null
 
   if (topics.has('concert')) {
-    pushConcert(collected, concert)
+    pushConcert(collected, concert, nextPractice)
   }
   if (topics.has('practices')) {
-    pushPractices(collected, concert.id, practices, input)
+    pushPractices(collected, concert.id, practices, input, today)
   }
   if (topics.has('recordings')) {
     pushRecordings(collected, practices, input)
@@ -258,7 +271,11 @@ async function collectItems(
   return filterCollected(collected, input.keywords)
 }
 
-function pushConcert(collected: Collected, concert: ConcertOverview) {
+function pushConcert(
+  collected: Collected,
+  concert: ConcertOverview,
+  nextPractice: PracticeEntry | null,
+) {
   const key = `concert:${concert.id}`
   const parts = [
     concert.performanceDate
@@ -272,6 +289,7 @@ function pushConcert(collected: Collected, concert: ConcertOverview) {
       : '出欠の回答先は未登録',
     concert.attendanceNote ? `出欠メモ: ${concert.attendanceNote}` : null,
     concert.note ? `備考: ${concert.note}` : null,
+    nextPracticeSummary(nextPractice),
   ].filter((part): part is string => part !== null)
 
   collected.items.push({
@@ -304,14 +322,19 @@ function pushPractices(
   concertId: number,
   practices: ReadonlyArray<PracticeEntry>,
   input: SearchPortalInput,
+  today: string,
 ) {
-  for (const practice of practices) {
-    if (!inDateRange(practice.date, input.dateFrom, input.dateTo)) continue
+  const inRange = practices.filter((practice) =>
+    inDateRange(practice.date, input.dateFrom, input.dateTo),
+  )
+  const { upcoming, past } = splitPractices(inRange, today)
+  const nextId = upcoming[0]?.id
+  for (const practice of [...upcoming, ...past]) {
     const key = `practice:${practice.id}`
-    const time = [practice.startTime, practice.endTime]
-      .filter((value): value is string => value !== null)
-      .join('〜')
+    const time = practiceTimeRange(practice)
+    const isNext = practice.id === nextId
     const parts = [
+      isNext ? '次の練習' : null,
       practice.date,
       time || null,
       practice.venue ? `会場 ${practice.venue.name}` : '会場未設定',
@@ -321,7 +344,7 @@ function pushPractices(
     collected.items.push({
       key,
       topic: 'practices',
-      title: `${practice.date}の練習`,
+      title: isNext ? `次の練習（${practice.date}）` : `${practice.date}の練習`,
       summary: parts.join('。'),
     })
     collected.sources.push(
@@ -360,12 +383,14 @@ function filterCollected(
   collected: Collected,
   keywords: string | undefined,
 ): Collected {
-  const needle = keywords === undefined ? '' : normalizeConcertName(keywords)
-  if (needle === '') return collected
+  if (keywords === undefined) return collected
+  const needles = substantialKeywords(keywords)
+  if (needles.length === 0) return collected
 
-  const items = collected.items.filter((item) =>
-    normalizeConcertName(`${item.title} ${item.summary}`).includes(needle),
-  )
+  const items = collected.items.filter((item) => {
+    const haystack = normalizeConcertName(`${item.title} ${item.summary}`)
+    return needles.every((needle) => haystack.includes(needle))
+  })
   const keys = new Set(items.map((item) => item.key))
   return {
     items,
@@ -410,6 +435,86 @@ function sourcesFor(
 ): Array<SourceLink> {
   const keys = new Set(items.map((item) => item.key))
   return sources.filter((source) => keys.has(source.key))
+}
+
+function nextPracticeSummary(practice: PracticeEntry | null): string {
+  if (!practice) return '次の練習は未登録'
+  const time = practiceTimeRange(practice)
+  const venue = practice.venue ? ` 会場 ${practice.venue.name}` : ''
+  return `次の練習 ${practice.date}${time ? ` ${time}` : ''}${venue}`
+}
+
+function practiceTimeRange(practice: PracticeEntry): string {
+  return [practice.startTime, practice.endTime]
+    .filter((value): value is string => value !== null)
+    .join('〜')
+}
+
+const QUESTION_PHRASES = [
+  '次の練習はいつですか',
+  '次の練習はいつ',
+  '次の練習',
+  'いつですか',
+  'どこですか',
+  'ありますか',
+  'ますか',
+  'ですか',
+  'ください',
+  '教えて',
+  'について',
+  '次の',
+  '次回の',
+  '次回',
+  '今日の',
+  '今日',
+  '今週の',
+  '今週',
+  'いつ',
+  'どこ',
+  'だれ',
+  '誰',
+  'なに',
+  'なん',
+  'どの',
+] as const
+
+const GENERIC_KEYWORD_TOKENS = new Set([
+  '練習',
+  '日程',
+  '出欠',
+  '本番',
+  '楽譜',
+  'お知らせ',
+  '資料',
+  '録音',
+  '録画',
+  '演奏会',
+  '案内',
+  '予定',
+  '日時',
+  '情報',
+  '時間',
+  '会場',
+])
+
+/** 質問の言い回しを除いた、登録テキストと照合する語句。空なら絞り込まない */
+export function substantialKeywords(text: string): Array<string> {
+  let remaining = normalizeConcertName(text)
+  const phrases = [...QUESTION_PHRASES].sort((a, b) => b.length - a.length)
+  for (const phrase of phrases) {
+    remaining = remaining.replaceAll(phrase, ' ')
+  }
+  remaining = remaining.replace(
+    /[のはがをにともでへやかよねな？?！。、・]/g,
+    ' ',
+  )
+  return remaining
+    .split(/\s+/)
+    .filter((token) => token.length > 0 && !GENERIC_KEYWORD_TOKENS.has(token))
+}
+
+function isQuestionLikeQuery(text: string): boolean {
+  return substantialKeywords(text).length === 0
 }
 
 function inDateRange(

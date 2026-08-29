@@ -11,7 +11,7 @@ import {
 } from '../db/schema'
 import { ASSISTANT_LIMITS } from '../lib/assistant'
 import { createTestDb } from '../test/db'
-import { searchPortal } from './search'
+import { searchPortal, substantialKeywords } from './search'
 
 let db: Db
 
@@ -171,6 +171,101 @@ describe('searchPortal', () => {
     ])
   })
 
+  it('keywords にトピック名が混ざっても実質的な語句で絞り込む', async () => {
+    const result = await searchPortal(
+      db,
+      { concert: null, topics: ['practices'], keywords: '弦分奏の練習' },
+      1,
+    )
+
+    expect(result.forModel.items.map((item) => item.key)).toEqual([
+      'practice:1',
+    ])
+  })
+
+  it('候補質問の言い回しを keywords にされても練習を返す', async () => {
+    const result = await searchPortal(
+      db,
+      { concert: null, topics: ['practices'], keywords: '次の練習' },
+      1,
+      '2026-08-29',
+    )
+
+    expect(result.forModel.items.map((item) => item.key)).toContain(
+      'practice:2',
+    )
+    expect(
+      result.forModel.items.find((item) => item.key === 'practice:2')?.title,
+    ).toContain('次の練習')
+  })
+
+  it('質問文そのものを keywords にされても練習を返す', async () => {
+    const result = await searchPortal(
+      db,
+      {
+        concert: null,
+        topics: ['practices'],
+        keywords: '次の練習はいつですか？',
+        dateFrom: '2026-08-29',
+      },
+      1,
+      '2026-08-29',
+    )
+
+    expect(result.forModel.items.map((item) => item.key)).toEqual([
+      'practice:2',
+    ])
+  })
+
+  it('concert に質問語句が来ても選択中の演奏会を使う', async () => {
+    const result = await searchPortal(
+      db,
+      { concert: '次の練習', topics: ['practices'] },
+      1,
+      '2026-08-29',
+    )
+
+    expect(result.forModel.status).toBe('ok')
+    expect(result.forModel.concertName).toBe('第10回定期演奏会')
+    expect(
+      result.forModel.items.some((item) => item.key === 'practice:2'),
+    ).toBe(true)
+  })
+
+  it('concert トピックの概要に次の練習を含める', async () => {
+    const result = await searchPortal(
+      db,
+      { concert: null, topics: ['concert'] },
+      1,
+      '2026-08-29',
+    )
+
+    expect(result.forModel.items[0]?.summary).toMatch(/次の練習.*2026-09-10/)
+  })
+
+  it('今後の練習を過去より先に並べ、30件制限でも次の練習を残す', async () => {
+    await db.insert(practices).values(
+      Array.from({ length: 40 }, (_, index) => ({
+        id: index + 10,
+        concertId: 1,
+        date: '2026-07-01',
+      })),
+    )
+
+    const result = await searchPortal(
+      db,
+      { concert: null, topics: ['practices'] },
+      1,
+      '2026-08-29',
+    )
+
+    expect(result.forModel.items).toHaveLength(ASSISTANT_LIMITS.searchItemsMax)
+    expect(result.forModel.items[0]?.key).toBe('practice:2')
+    expect(
+      result.forModel.items.some((item) => item.key === 'practice:2'),
+    ).toBe(true)
+  })
+
   it('お知らせ本文をデータとして返し、URLは参照キー側に置く', async () => {
     const result = await searchPortal(
       db,
@@ -266,5 +361,14 @@ describe('searchPortal', () => {
     expect(result.sources.map((link) => link.href)).toEqual([
       'https://example.com/pamphlet',
     ])
+  })
+})
+
+describe('substantialKeywords', () => {
+  it('候補質問の言い回しは空になり、固有語句は残る', () => {
+    expect(substantialKeywords('次の練習はいつですか？')).toEqual([])
+    expect(substantialKeywords('次の練習')).toEqual([])
+    expect(substantialKeywords('弦分奏の練習')).toEqual(['弦分奏'])
+    expect(substantialKeywords('市民会館')).toEqual(['市民会館'])
   })
 })

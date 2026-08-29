@@ -5,6 +5,7 @@
 ## 進捗
 
 - **T1〜T10 完了。** リリース前の外部作業は E1（Anthropic課金）と E2（本番での少数確認）。本番 Workers secret `ANTHROPIC_API_KEY` は登録済み。この作業環境にキーが無いため実 Claude 確認は未実施で、`ASSISTANT_LIVE=1` の Vitest と E2 に残している。
+- **バグ修正:** 候補質問「次の練習はいつですか？」が登録済み練習を空と答える件。質問らしい `keywords` / `concert` を無視し、次の練習をダッシュボードと同じ今日で明示する（[ADR-0027](../adr/0027-assistant-next-practice-search.md)）。
 
 ## 実装順序
 

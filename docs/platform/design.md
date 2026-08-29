@@ -170,3 +170,4 @@
 | CS 自動同期を見送り練習一括作成にする | API/CSV 不可・iCal は会場不足。ポータル内で登録負荷を下げる | [ADR-0024](../adr/0024-prefer-bulk-practice-create-over-circle-square-sync.md) |
 | 曲の楽譜リンクをあり／なしの2本にする | 既存 `bowing_url` を残しつつ無し側を追加 | [ADR-0025](../adr/0025-dual-piece-score-links.md) |
 | 練習一括はトグル・行複製・会場 modal 即保存 | 普段は隠し、似た行をコピーし、会場はマスタとして即確定する | [ADR-0026](../adr/0026-bulk-practice-toggle-duplicate-and-venue-modal.md) |
+| 次の練習検索は質問語句を無視し今日を明示する | 1回の tool use で候補質問が空にならないようにする | [ADR-0027](../adr/0027-assistant-next-practice-search.md) |
