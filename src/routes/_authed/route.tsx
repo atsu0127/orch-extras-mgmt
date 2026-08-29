@@ -11,8 +11,10 @@ import {
 } from '@tanstack/react-router'
 import { useServerFn } from '@tanstack/react-start'
 import type { ReactNode } from 'react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { z } from 'zod'
+import { AssistantQuick } from '../../assistant/quick'
+import { hydrateAssistantStore } from '../../assistant/store'
 import { logout } from '../../auth/functions'
 import {
   forgetCurrentSession,
@@ -73,6 +75,7 @@ type AppPath =
   | '/'
   | '/practices'
   | '/pieces'
+  | '/assistant'
   | '/admin/concerts'
   | '/admin/practices'
   | '/admin/pieces'
@@ -86,6 +89,10 @@ function AuthedLayout() {
   const isAdminPath = useRouterState({
     select: (state) => state.location.pathname.startsWith('/admin'),
   })
+
+  useEffect(() => {
+    hydrateAssistantStore(session.role)
+  }, [session.role])
 
   return (
     <div className={`app-frame${isAdminPath ? ' app-frame--admin' : ''}`}>
@@ -124,6 +131,7 @@ function AuthedLayout() {
                 </DesktopLink>
                 <DesktopLink to="/practices">練習</DesktopLink>
                 <DesktopLink to="/pieces">曲</DesktopLink>
+                <DesktopLink to="/assistant">AI案内</DesktopLink>
                 {showAdmin && (
                   <AdminEntryLink variant="desktop">管理</AdminEntryLink>
                 )}
@@ -150,6 +158,8 @@ function AuthedLayout() {
         <Outlet />
       </Box>
 
+      <AssistantQuick selectedConcertId={concert?.id ?? null} />
+
       <nav className="app-bottom-nav" aria-label="メイン">
         <BottomLink to="/" exact label="ホーム" ariaLabel="ホーム">
           <HomeIcon />
@@ -159,6 +169,9 @@ function AuthedLayout() {
         </BottomLink>
         <BottomLink to="/pieces" label="曲" ariaLabel="曲・ボウイング">
           <MusicIcon />
+        </BottomLink>
+        <BottomLink to="/assistant" label="AI案内" ariaLabel="AI案内">
+          <AssistantIcon />
         </BottomLink>
         {showAdmin && (
           <AdminEntryLink variant="bottom">
@@ -376,6 +389,20 @@ function MusicIcon() {
       <path d="M9 18V6l10-2v12" />
       <circle cx="7" cy="18" r="2.5" />
       <circle cx="17" cy="16" r="2.5" />
+    </svg>
+  )
+}
+
+function AssistantIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <path d="M12 3.5 13.6 8H18l-3.5 2.8L15.8 16 12 13.4 8.2 16l1.3-5.2L6 8h4.4L12 3.5z" />
     </svg>
   )
 }

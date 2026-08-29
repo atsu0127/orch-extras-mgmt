@@ -107,6 +107,8 @@
 | `ADMIN_INITIAL_PASSWORD` | secret | 初期投入用。投入後は削除可 |
 | `EXTRA_INITIAL_PASSWORD` | secret | 同上 |
 | `DB` | D1 binding | データベース |
+| `ANTHROPIC_API_KEY` | secret | AI案内の Claude API。機能仕様は [ai-assistant/design.md](../ai-assistant/design.md) |
+| `ASSISTANT_STUB` | 任意（ローカル/CI） | `1` のとき Claude API を呼ばず決定的スタブを使う。本番では設定しない |
 
 ローカルは `.dev.vars`、本番は `wrangler secret put`。機能固有の secret は当該機能の `design.md` に追記する。
 

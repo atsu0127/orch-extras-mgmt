@@ -26,6 +26,7 @@
     "test:e2e": "playwright test"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.116.0",
     "@mantine/core": "^9.5.0",
     "@mantine/hooks": "^9.5.0",
     "@tabler/icons-react": "^3.46.0",

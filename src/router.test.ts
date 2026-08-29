@@ -6,7 +6,12 @@ describe('getRouter', () => {
     const router = getRouter()
 
     expect(Object.keys(router.routesById)).toEqual(
-      expect.arrayContaining(['/login', '/_authed/', '/_authed/admin/']),
+      expect.arrayContaining([
+        '/login',
+        '/_authed/',
+        '/_authed/admin/',
+        '/_authed/assistant',
+      ]),
     )
   })
 })

@@ -7,3 +7,8 @@ PASSWORD_PEPPER=local-development-pepper
 # pnpm db:seed が投入する初期パスワード
 ADMIN_INITIAL_PASSWORD=local-admin-password
 EXTRA_INITIAL_PASSWORD=local-extra-password
+
+# AI案内。ローカルと CI は決定的スタブを使う（1）。実 Claude API の確認時は
+# ASSISTANT_STUB を外し、ANTHROPIC_API_KEY にキーを入れる。
+ASSISTANT_STUB=1
+ANTHROPIC_API_KEY=
