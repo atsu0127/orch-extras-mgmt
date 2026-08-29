@@ -46,11 +46,12 @@
 
 | 知りたいこと | 見る場所 |
 | --- | --- |
-| サーバ関数の例外、ログイン失敗、Claude 前の失敗 | Cloudflare Observability（Workers Logs） |
-| その質問で Claude が見たもの・返したもの | AI Gateway ログを `questionId` で絞る（turn 1 と 2） |
+| サーバ関数の例外、ログイン失敗、Claude 前の失敗 | Cloudflare Observability（Workers Logs）の構造化 `console.log` |
+| CSRF 403 などサーバ関数に届かない拒否 | 同上の invocation log（`server_fn` 行は出ない） |
+| その質問で Claude が見たもの・返したもの | AI Gateway ログを `questionId` で絞る。成功時は turn 1 と 2。失敗時は turn 1 のみ、または 0 本 |
 | 月次トークン・費用 | D1 `ai_usage_daily` と Anthropic Console |
 
-`wrangler.jsonc` の `observability.enabled` は既に true。Traces は有効にしない。
+`wrangler.jsonc` の `observability.enabled` は既に true。Traces は有効にしない。invocation log（起動ログ）は Cloudflare がリクエストごとに出す別物で、アプリの JSON とは独立する。詳細は 4.3。
 
 ## 4. アプリケーションログ
 
@@ -60,22 +61,35 @@
 
 ### 4.1 `server_fn`
 
-`getCurrentSession` 以外のすべてのサーバ関数が、呼び出しあたり1行出す。画面遷移のたびに走るセッション照会は情報量が少なく、ノイズになるため除外する。
+`getCurrentSession` 以外のすべてのサーバ関数が、呼び出しあたり1行出す。`getCurrentSession` はログイン前の入口で情報量が少なく、除外する（セッション照会を画面遷移ごとに増やさない判断は [ADR-0005](../adr/0005-cache-session-lookup-on-client.md)）。
+
+ログ用 middleware は `requireAuth` の外側に置く。`role` は `requireAuth` が既に載せた context から取り、ログのためだけにセッションを D1 へ再照会しない。未認証時は `anonymous`。
 
 | フィールド | 内容 |
 | --- | --- |
 | `event` | `"server_fn"` |
 | `fn` | アプリが付ける名前（`login`, `addPractice`, `askAssistant` など） |
-| `ok` | ハンドラが正常終了したか |
+| `ok` | 呼び出し側が成功として使える結果を返したか。例外・`redirect`・戻り値 `{ ok: false }` は false |
 | `durationMs` | サーバ関数の壁時計時間。LLM 内訳は出さない |
-| `role` | `admin` / `extra`。未ログインは `anonymous` |
-| `error` | 例外時のみ。クラス名か短いコード。メッセージ本文は入れない |
+| `role` | `admin` / `extra`。未ログイン・未認証は `anonymous`。`login` 成功時は確定したロール |
+| `error` | `ok: false` のとき。短いコードのみ。メッセージ本文は入れない |
 
-`login` の失敗もこの行だけにする。`error` は `invalid_credentials` / `rate_limited` など短いコードまで。試行 IP は D1 `login_attempts` が正で、Worker ログには出さない。
+`error` の決め方:
+
+- `requireAuth` の `redirect` → `unauthenticated`（記録してから同じ redirect を投げ直す）
+- 戻り値が `{ ok: false, reason }` → `reason` をそのまま使う。`login` は `invalid` / `rate_limited`（`src/auth/functions.ts` の `LoginResult` に合わせる）
+- それ以外の例外 → クラス名か短いコード
+- `.validator()` 拒否 → ハンドラに入らない。`ok: false`。`error` は `validation`。`questionId` は切らない
+
+CSRF 検証は `src/start.ts` の request middleware で 403 になり、サーバ関数 middleware に到達しない。`server_fn` 行は出ない。痕跡は invocation log だけである。
+
+試行 IP は D1 `login_attempts` が正で、アプリの JSON には出さない。
 
 ### 4.2 `assistant_ask`
 
-AI案内の質問ごとに1行出す。Claude に届く前の失敗でも出す。受付直後に UUID を切り、それを `questionId` とする。
+`askAssistant` の **handler 開始以降**に1行出す。handler 先頭で UUID を切り、それを `questionId` とする。Claude に届く前の失敗（枠超過、キー無しの `unavailable` など）でも出す。
+
+`.validator()`（`askAssistantInputSchema`）の拒否では handler に入らないため `assistant_ask` は出さない。その場合の記録は `server_fn`（`fn: "askAssistant"`）だけである。`reason: invalid_input` は Claude 1回目のあとのツール引数検証失敗を指し、このとき `apiRequestCount` は 1 である。
 
 | フィールド | 内容 |
 | --- | --- |
@@ -84,13 +98,13 @@ AI案内の質問ごとに1行出す。Claude に届く前の失敗でも出す�
 | `ok` | 画面に回答を返せたか |
 | `reason` | 失敗時のみ。既存の `invalid_input` / `unavailable` / `timeout` / `tool_limit` / `failed` / `ip_limited` / `daily_limited` |
 | `role` | `admin` / `extra` |
-| `stub` | スタブ経路なら `true` |
-| `gateway` | この質問で AI Gateway を通したか |
+| `stub` | スタブ経路なら `true`。常に出す |
+| `gateway` | この質問で AI Gateway を通したか。常に出す |
 | `apiRequestCount` | 実際に Claude を呼んだ回数（0〜2） |
 | `droppedSourceKeys` | 成功時のみ。検証で捨てた参照キー件数（キー文字列は出さない） |
 | `selectedConcertId` | 選択中演奏会の ID（名前は出さない） |
 
-同じリクエストで `server_fn`（`fn: "askAssistant"`）と `assistant_ask` の両方を出してよい。
+同じリクエストで `server_fn`（`fn: "askAssistant"`）と `assistant_ask` の両方を出してよい。`apiRequestCount` と `droppedSourceKeys` はログ専用の経路で渡し、`AskAssistantResult`（画面へ返す型）には足さない。
 
 ### 4.3 出さないもの
 
@@ -103,6 +117,8 @@ Worker ログ（`server_fn` / `assistant_ask` / 例外の付随出力）に次�
 
 未捕捉例外のスタックはランタイムが出しうる。アプリが足す `error` はコードだけにする。
 
+invocation log はアプリ JSON とは別に Cloudflare が出す。Cookie など機密らしい名前のヘッダは伏字になるが、`CF-Connecting-IP` 相当が残るかはアプリでは制御しない。アプリは IP を JSON に出さない。invocation log に IP が含まれていた場合はスタックと同様のランタイム出力として扱い、受け入れの「アプリ JSON に IP が無い」とは別件とする。E2 で中身を確認する。含まれることが運用上困るなら `observability.logs.invocation_logs: false` を検討する（CSRF 403 の痕跡も消える）。この設計の既定では invocation log を消さない。
+
 ## 5. AI Gateway
 
 ### 5.1 通し方
@@ -113,7 +129,7 @@ Worker ログ（`server_fn` / `assistant_ask` / 例外の付随出力）に次�
 https://gateway.ai.cloudflare.com/v1/{account_id}/{gateway_id}/anthropic
 ```
 
-サブリクエストは「Anthropic 直」が「Gateway 経由」に変わるだけで増えない。`maxRetries: 0` と 20 秒タイムアウトは維持する。`ANTHROPIC_API_KEY` は今どおり Worker が持ち、Gateway の BYOK にはしない。
+サブリクエストは「Anthropic 直」が「Gateway 経由」に変わるだけで増えない。`maxRetries: 0` と 20 秒タイムアウトは維持する。`ANTHROPIC_API_KEY` は今どおり Worker が持ち、Gateway の BYOK にはしない。認証トークンは `cf-aig-authorization: Bearer {AI_GATEWAY_TOKEN}` で付ける。
 
 通さない経路:
 
@@ -131,7 +147,7 @@ https://gateway.ai.cloudflare.com/v1/{account_id}/{gateway_id}/anthropic
 | `turn` | `1`（ツール要求）または `2`（最終回答） |
 | `role` | `admin` / `extra` |
 
-品質調査は、Workers Logs の `questionId` で Gateway を絞り、turn 1（検索条件）と turn 2（`tool_result` と最終回答）を読む。1質問を1本の木としては見せない（Langfuse は見送り）。
+品質調査は、Workers Logs の `questionId` で Gateway を絞る。成功した質問は turn 1（検索条件）と turn 2（`tool_result` と最終回答）が揃う。turn 1 のあとで失敗した場合（`timeout` / `tool_limit` / `failed` など、`apiRequestCount: 1`）は turn 1 だけが残る。Claude 前の失敗は 0 本である。turn が欠けていること自体が調査対象であり、欠落を異常とはしない。1質問を1本の木としては見せない（Langfuse は見送り）。
 
 ### 5.3 ダッシュボード設定
 
@@ -168,10 +184,13 @@ Gateway はこのアプリ専用に1つ作る。
 CI では Gateway も実 Claude も呼ばない（`ASSISTANT_STUB=1` のまま）。
 
 - `console.log` に渡った JSON に、質問・回答・ツール結果・IP・Cookie が含まれない
-- `login` 失敗が `fn: "login"` と短い `error` だけになる
+- `login` 失敗が `fn: "login"`、`ok: false`、`error: "invalid"` または `"rate_limited"` になる
 - `getCurrentSession` が `server_fn` を出さない
-- Claude 前の失敗でも `questionId` 付きの `assistant_ask` が出る（`apiRequestCount: 0`, `gateway: false`）
-- Gateway 設定ありのとき、SDK の `baseURL` と `questionId` / `turn` / `role` が付く（fetch はモック）
+- `getCurrentSession` 以外の `createServerFn` がログ middleware を通る（付け忘れを走査する）
+- handler に入った Claude 前の失敗でも `questionId` 付きの `assistant_ask` が出る（`apiRequestCount: 0`, `gateway: false`, `stub` も明示）
+- `.validator()` 拒否では `assistant_ask` が出ず、`server_fn` の `error` は `validation` になる
+- Gateway 設定ありのとき、SDK の `baseURL` とメタデータ3キー（`questionId` / `turn` / `role`）だけが付く。4つ目は付けない（fetch はモック）
+- 認証ヘッダが `cf-aig-authorization` である
 - Gateway 設定なし・スタブでは直結または Claude を呼ばない
 
 E2E は既存の AI案内が壊れていないことだけ見る。Cloudflare の Observability / Gateway 画面は自動テストしない。
@@ -179,9 +198,9 @@ E2E は既存の AI案内が壊れていないことだけ見る。Cloudflare �
 ## 8. 受け入れの目安
 
 - サーバ関数の失敗が Workers Logs で `fn` と `ok` / `error` から辿れる
-- AI案内の失敗が `reason` と `questionId` で辿れる
-- 本番で Gateway を通した質問は、同じ `questionId` の turn 1/2 に本文がある
-- Worker ログに質問・回答・IP が出ない
+- AI案内の、handler に入った失敗が `reason` と `questionId` で辿れる
+- 本番で Gateway を通した**成功**質問は、同じ `questionId` の turn 1/2 に本文がある
+- アプリの構造化 JSON に質問・回答・IP が出ない
 - スタブ経路と Gateway 未設定では AI案内が止まらない
 - lint / typecheck / test が通る
 
@@ -192,4 +211,5 @@ E2E は既存の AI案内が壊れていないことだけ見る。Cloudflare �
 1. Cloudflare で認証付き Gateway を1つ作り、5.3 どおりに設定する
 2. `AI_GATEWAY_ACCOUNT_ID` / `AI_GATEWAY_ID` を Worker の設定に入れる
 3. `AI_GATEWAY_TOKEN` を secret にする（`ANTHROPIC_API_KEY` はそのまま）
-4. 本番で少数の質問を打ち、同じ `questionId` で Workers Logs と Gateway の turn 1/2 が揃うことを見る
+4. 本番で少数の質問を打ち、成功質問は同じ `questionId` で Workers Logs と Gateway の turn 1/2 が揃うことを見る。失敗質問は turn が欠けてよい
+5. 同じ確認で invocation log を1件開き、IP や本文がどう出るかを見る。アプリ JSON に本文・IP が無いことは別途確認する
