@@ -51,6 +51,8 @@ describe('reserveAssistantQuota', () => {
       'ip_limited',
     )
     expect(await attemptCount()).toBe(ASSISTANT_LIMITS.ipQuestionsMax)
+    const [usage] = await listDailyUsage(db)
+    expect(usage?.acceptedQuestionCount).toBe(ASSISTANT_LIMITS.ipQuestionsMax)
   })
 
   it('窓から外れた試行は数えない', async () => {
