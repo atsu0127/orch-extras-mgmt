@@ -12,3 +12,9 @@ EXTRA_INITIAL_PASSWORD=local-extra-password
 # ASSISTANT_STUB を外し、ANTHROPIC_API_KEY にキーを入れる。
 ASSISTANT_STUB=1
 ANTHROPIC_API_KEY=
+
+# 本番の実 Claude だけ AI Gateway 経由にする（docs/observability/design.md）。
+# ローカル既定のスタブでは不要。実 API を Gateway 経由で試すときだけ入れる。
+# AI_GATEWAY_ACCOUNT_ID=
+# AI_GATEWAY_ID=
+# AI_GATEWAY_TOKEN=
