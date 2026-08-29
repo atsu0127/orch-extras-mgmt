@@ -2,6 +2,7 @@ import { env } from 'cloudflare:workers'
 import { afterEach, describe, expect, it } from 'vitest'
 import {
   isAssistantStub,
+  readAiGatewayConfig,
   readAnthropicApiKey,
   shouldReserveAssistantQuota,
 } from './config'
@@ -9,6 +10,9 @@ import {
 afterEach(() => {
   env.ASSISTANT_STUB = ''
   env.ANTHROPIC_API_KEY = ''
+  env.AI_GATEWAY_ACCOUNT_ID = ''
+  env.AI_GATEWAY_ID = ''
+  env.AI_GATEWAY_TOKEN = ''
 })
 
 describe('isAssistantStub', () => {
@@ -48,5 +52,28 @@ describe('readAnthropicApiKey', () => {
   it('前後の空白を除いて返す', () => {
     env.ANTHROPIC_API_KEY = ' sk-test '
     expect(readAnthropicApiKey()).toBe('sk-test')
+  })
+})
+
+describe('readAiGatewayConfig', () => {
+  it('3つ揃ったときだけ返す', () => {
+    env.AI_GATEWAY_ACCOUNT_ID = 'acct'
+    env.AI_GATEWAY_ID = 'gw'
+    env.AI_GATEWAY_TOKEN = 'tok'
+    expect(readAiGatewayConfig()).toEqual({
+      accountId: 'acct',
+      gatewayId: 'gw',
+      token: 'tok',
+    })
+  })
+
+  it('欠けや空白だけなら未設定として扱う', () => {
+    env.AI_GATEWAY_ACCOUNT_ID = 'acct'
+    env.AI_GATEWAY_ID = 'gw'
+    env.AI_GATEWAY_TOKEN = ''
+    expect(readAiGatewayConfig()).toBeNull()
+
+    env.AI_GATEWAY_TOKEN = '   '
+    expect(readAiGatewayConfig()).toBeNull()
   })
 })

@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 const mocks = vi.hoisted(() => ({
   answerQuestion: vi.fn(),
+  createAnthropicClient: vi.fn(),
   getClientIp: vi.fn(),
   getDb: vi.fn(),
 }))
@@ -10,6 +11,9 @@ const mocks = vi.hoisted(() => ({
 vi.mock('../db/client', () => ({ getDb: mocks.getDb }))
 vi.mock('../auth/client-ip', () => ({ getClientIp: mocks.getClientIp }))
 vi.mock('./loop', () => ({ answerQuestion: mocks.answerQuestion }))
+vi.mock('./anthropic-client', () => ({
+  createAnthropicClient: mocks.createAnthropicClient,
+}))
 
 import { runAskAssistant } from './ask'
 
@@ -25,6 +29,9 @@ afterEach(() => {
   mocks.answerQuestion.mockReset()
   env.ASSISTANT_STUB = ''
   env.ANTHROPIC_API_KEY = ''
+  env.AI_GATEWAY_ACCOUNT_ID = ''
+  env.AI_GATEWAY_ID = ''
+  env.AI_GATEWAY_TOKEN = ''
 })
 
 beforeEach(() => {
@@ -129,5 +136,74 @@ describe('runAskAssistant', () => {
     })
     expect(JSON.stringify(entry)).not.toContain('弦分奏')
     expect(JSON.stringify(entry)).not.toContain('practice:')
+  })
+
+  it('Gateway 設定ありの実 API 経路は gateway: true にする', async () => {
+    env.ASSISTANT_STUB = ''
+    env.ANTHROPIC_API_KEY = 'sk-test'
+    env.AI_GATEWAY_ACCOUNT_ID = 'acct'
+    env.AI_GATEWAY_ID = 'gw'
+    env.AI_GATEWAY_TOKEN = 'tok'
+    const fakeClient = { complete: vi.fn() }
+    mocks.createAnthropicClient.mockReturnValue(fakeClient)
+    mocks.answerQuestion.mockImplementation(
+      async ({ onLog }: { onLog?: (log: object) => void }) => {
+        onLog?.({ apiRequestCount: 2, droppedSourceKeys: 0 })
+        return {
+          ok: true,
+          answer: 'ok',
+          concertName: null,
+          links: [],
+          answeredAt: '2026-08-29T00:00:00.000Z',
+        }
+      },
+    )
+    const spy = vi.spyOn(console, 'log').mockImplementation(() => undefined)
+
+    await runAskAssistant(input, 'extra')
+
+    expect(mocks.createAnthropicClient).toHaveBeenCalledWith('sk-test', {
+      config: { accountId: 'acct', gatewayId: 'gw', token: 'tok' },
+      questionId: QUESTION_ID,
+      role: 'extra',
+    })
+    expect(lastLog(spy)).toMatchObject({
+      gateway: true,
+      stub: false,
+      apiRequestCount: 2,
+    })
+  })
+
+  it('Gateway 未設定の実 API は直結し、スタブでは Claude を呼ばない', async () => {
+    env.ASSISTANT_STUB = ''
+    env.ANTHROPIC_API_KEY = 'sk-test'
+    mocks.createAnthropicClient.mockReturnValue({ complete: vi.fn() })
+    mocks.answerQuestion.mockImplementation(
+      async ({ onLog }: { onLog?: (log: object) => void }) => {
+        onLog?.({ apiRequestCount: 2 })
+        return {
+          ok: true,
+          answer: 'ok',
+          concertName: null,
+          links: [],
+          answeredAt: '2026-08-29T00:00:00.000Z',
+        }
+      },
+    )
+    const spy = vi.spyOn(console, 'log').mockImplementation(() => undefined)
+
+    await runAskAssistant(input, 'admin')
+
+    expect(mocks.createAnthropicClient).toHaveBeenCalledWith('sk-test')
+    expect(lastLog(spy)).toMatchObject({ gateway: false, stub: false })
+
+    mocks.createAnthropicClient.mockClear()
+    env.ASSISTANT_STUB = '1'
+    env.AI_GATEWAY_ACCOUNT_ID = 'acct'
+    env.AI_GATEWAY_ID = 'gw'
+    env.AI_GATEWAY_TOKEN = 'tok'
+    await runAskAssistant(input, 'admin')
+    expect(mocks.createAnthropicClient).not.toHaveBeenCalled()
+    expect(lastLog(spy)).toMatchObject({ gateway: false, stub: true })
   })
 })

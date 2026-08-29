@@ -6,6 +6,7 @@ import { buildAssistantAskLog } from '../lib/assistant-ask-log'
 import type { Role } from '../lib/roles'
 import {
   isAssistantStub,
+  readAiGatewayConfig,
   readAnthropicApiKey,
   shouldReserveAssistantQuota,
 } from './config'
@@ -18,7 +19,7 @@ export async function runAskAssistant(
 ): Promise<AskAssistantResult> {
   const questionId = crypto.randomUUID()
   const stub = isAssistantStub()
-  const gateway = false
+  let usedGateway = false
   let loopLog: AssistantLoopLog = { apiRequestCount: 0 }
 
   const finish = (result: AskAssistantResult): AskAssistantResult => {
@@ -28,7 +29,7 @@ export async function runAskAssistant(
         ok: result.ok,
         role,
         stub,
-        gateway,
+        gateway: usedGateway && loopLog.apiRequestCount > 0,
         apiRequestCount: loopLog.apiRequestCount,
         selectedConcertId: input.selectedConcertId,
         ...(result.ok
@@ -62,11 +63,21 @@ export async function runAskAssistant(
   const apiKey = readAnthropicApiKey()
   if (!apiKey) return finish({ ok: false, reason: 'unavailable' })
 
+  const gatewayConfig = readAiGatewayConfig()
   const { createAnthropicClient } = await import('./anthropic-client')
+  const client =
+    gatewayConfig === null
+      ? createAnthropicClient(apiKey)
+      : createAnthropicClient(apiKey, {
+          config: gatewayConfig,
+          questionId,
+          role,
+        })
+  usedGateway = gatewayConfig !== null
   return finish(
     await answerQuestion({
       db: getDb(),
-      client: createAnthropicClient(apiKey),
+      client,
       input,
       ip: getClientIp(),
       onLog,
