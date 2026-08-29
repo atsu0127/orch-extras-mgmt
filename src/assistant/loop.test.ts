@@ -100,7 +100,15 @@ describe('answerQuestion', () => {
       },
     ])
 
-    const result = await answerQuestion({ db, client, input: question, ip: IP })
+    const logs: Array<{ apiRequestCount: number; droppedSourceKeys?: number }> =
+      []
+    const result = await answerQuestion({
+      db,
+      client,
+      input: question,
+      ip: IP,
+      onLog: (log) => logs.push(log),
+    })
 
     expect(result).toMatchObject({
       ok: true,
@@ -116,6 +124,7 @@ describe('answerQuestion', () => {
         external: false,
       },
     ])
+    expect(logs).toEqual([{ apiRequestCount: 2, droppedSourceKeys: 2 }])
   })
 
   it('登録が無ければ検索結果を渡して最終回答させる', async () => {
@@ -308,6 +317,7 @@ describe('answerQuestion', () => {
     }
 
     let calls = 0
+    const logs: Array<{ apiRequestCount: number }> = []
     const result = await answerQuestion({
       db,
       client: {
@@ -319,10 +329,12 @@ describe('answerQuestion', () => {
       input: question,
       ip: IP,
       now,
+      onLog: (log) => logs.push(log),
     })
 
     expect(result).toEqual({ ok: false, reason: 'ip_limited' })
     expect(calls).toBe(0)
+    expect(logs).toEqual([{ apiRequestCount: 0 }])
   })
 
   it('daily_limited では Claude クライアントを呼ばない', async () => {
