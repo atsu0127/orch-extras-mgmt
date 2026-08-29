@@ -1,6 +1,6 @@
 import { Stack, Text } from '@mantine/core'
 import { createFileRoute } from '@tanstack/react-router'
-import { createServerFn, useServerFn } from '@tanstack/react-start'
+import { useServerFn } from '@tanstack/react-start'
 import { useId, useState } from 'react'
 import { z } from 'zod'
 import { announcementInput } from '../../../announcements/input'
@@ -34,15 +34,16 @@ import {
   MAX_ANNOUNCEMENTS,
 } from '../../../lib/limits'
 import { idValue } from '../../../lib/validation'
+import { loggedServerFn } from '../../../observability/logged-server-fn'
 
 type AnnouncementActionResult = { ok: true } | { ok: false; reason: 'limit' }
 
-const getAnnouncements = createServerFn({ method: 'GET' })
+const getAnnouncements = loggedServerFn('getAnnouncements', { method: 'GET' })
   .middleware([requireAdmin])
   .validator(z.object({ concertId: idValue }))
   .handler(({ data }) => listAnnouncementsForConcert(getDb(), data.concertId))
 
-const addAnnouncement = createServerFn({ method: 'POST' })
+const addAnnouncement = loggedServerFn('addAnnouncement', { method: 'POST' })
   .middleware([requireAdmin])
   .validator(announcementInput.extend({ concertId: idValue }))
   .handler(
@@ -64,7 +65,7 @@ const addAnnouncement = createServerFn({ method: 'POST' })
     },
   )
 
-const editAnnouncement = createServerFn({ method: 'POST' })
+const editAnnouncement = loggedServerFn('editAnnouncement', { method: 'POST' })
   .middleware([requireAdmin])
   .validator(announcementInput.extend({ id: idValue }))
   .handler(
@@ -74,7 +75,9 @@ const editAnnouncement = createServerFn({ method: 'POST' })
     },
   )
 
-const removeAnnouncement = createServerFn({ method: 'POST' })
+const removeAnnouncement = loggedServerFn('removeAnnouncement', {
+  method: 'POST',
+})
   .middleware([requireAdmin])
   .validator(z.object({ id: idValue }))
   .handler(({ data }) => deleteAnnouncement(getDb(), data.id))

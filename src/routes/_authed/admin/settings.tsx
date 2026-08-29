@@ -1,6 +1,6 @@
 import { Anchor, Paper, PasswordInput, Stack, Text, Title } from '@mantine/core'
 import { createFileRoute, Link, useRouter } from '@tanstack/react-router'
-import { createServerFn, useServerFn } from '@tanstack/react-start'
+import { useServerFn } from '@tanstack/react-start'
 import { type FormEvent, useId, useState } from 'react'
 import { z } from 'zod'
 import {
@@ -25,12 +25,13 @@ import {
   fieldErrors,
   optionalEmail,
 } from '../../../lib/validation'
+import { loggedServerFn } from '../../../observability/logged-server-fn'
 import { updateAdminEmail } from '../../../settings/mutations'
 import { getAppSettings } from '../../../settings/queries'
 
 const adminEmailInput = z.object({ adminEmail: optionalEmail })
 
-const getSettings = createServerFn({ method: 'GET' })
+const getSettings = loggedServerFn('getSettings', { method: 'GET' })
   .middleware([requireAdmin])
   .handler(async () => {
     const db = getDb()
@@ -41,7 +42,7 @@ const getSettings = createServerFn({ method: 'GET' })
     return { credentials, appSettings }
   })
 
-const submitAdminEmail = createServerFn({ method: 'POST' })
+const submitAdminEmail = loggedServerFn('submitAdminEmail', { method: 'POST' })
   .middleware([requireAdmin])
   .validator(adminEmailInput)
   .handler(({ data }) => updateAdminEmail(getDb(), data.adminEmail))
@@ -50,7 +51,9 @@ const submitAdminEmail = createServerFn({ method: 'POST' })
  * 変更できるのは管理者だけなので、確かめるのも常に管理者のパスワード。
  * 端末を離席中に触られた場合に、そこで止めるための一手間である。
  */
-const submitPasswordChange = createServerFn({ method: 'POST' })
+const submitPasswordChange = loggedServerFn('submitPasswordChange', {
+  method: 'POST',
+})
   .middleware([requireAdmin])
   .validator(passwordChangeInput.extend({ role: z.enum(ROLES) }))
   .handler(async ({ data }): Promise<{ ok: boolean }> => {

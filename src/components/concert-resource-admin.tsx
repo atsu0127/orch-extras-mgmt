@@ -1,5 +1,5 @@
 import { Text } from '@mantine/core'
-import { createServerFn, useServerFn } from '@tanstack/react-start'
+import { useServerFn } from '@tanstack/react-start'
 import { useId, useState } from 'react'
 import { z } from 'zod'
 import { requireAdmin } from '../auth/middleware'
@@ -18,6 +18,7 @@ import {
 } from '../lib/limits'
 import { DIRECTIONS } from '../lib/ordering'
 import { idValue, requiredText, requiredUrl } from '../lib/validation'
+import { loggedServerFn } from '../observability/logged-server-fn'
 import { AdminForm, Field, useAdminAction, useAdminForm } from './admin-form'
 import { AdminManagedLinkRow, AdminRowActions } from './admin-row-actions'
 import { ControlRow, MediaList, SecondaryButton } from './control-row'
@@ -31,7 +32,7 @@ const resourceInput = z.object({
 
 type ResourceActionResult = { ok: true } | { ok: false; reason: 'limit' }
 
-const addResource = createServerFn({ method: 'POST' })
+const addResource = loggedServerFn('addResource', { method: 'POST' })
   .middleware([requireAdmin])
   .validator(resourceInput.extend({ concertId: idValue }))
   .handler(
@@ -53,7 +54,7 @@ const addResource = createServerFn({ method: 'POST' })
     },
   )
 
-const editResource = createServerFn({ method: 'POST' })
+const editResource = loggedServerFn('editResource', { method: 'POST' })
   .middleware([requireAdmin])
   .validator(resourceInput.extend({ id: idValue }))
   .handler(
@@ -63,12 +64,12 @@ const editResource = createServerFn({ method: 'POST' })
     },
   )
 
-const moveResource = createServerFn({ method: 'POST' })
+const moveResource = loggedServerFn('moveResource', { method: 'POST' })
   .middleware([requireAdmin])
   .validator(z.object({ id: idValue, direction: z.enum(DIRECTIONS) }))
   .handler(({ data }) => moveConcertResource(getDb(), data.id, data.direction))
 
-const removeResource = createServerFn({ method: 'POST' })
+const removeResource = loggedServerFn('removeResource', { method: 'POST' })
   .middleware([requireAdmin])
   .validator(z.object({ id: idValue }))
   .handler(({ data }) => deleteConcertResource(getDb(), data.id))

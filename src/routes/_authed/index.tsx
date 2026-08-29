@@ -1,6 +1,5 @@
 import { Stack, Text, Title } from '@mantine/core'
 import { createFileRoute } from '@tanstack/react-router'
-import { createServerFn } from '@tanstack/react-start'
 import { z } from 'zod'
 import { listAnnouncementsForConcert } from '../../announcements/queries'
 import { requireAuth } from '../../auth/middleware'
@@ -26,10 +25,11 @@ import {
   buildPerformanceCalendarUrl,
   buildPracticeCalendarUrl,
 } from '../../lib/external-urls'
+import { loggedServerFn } from '../../observability/logged-server-fn'
 import { getNextPractice, type PracticeEntry } from '../../practices/queries'
 import { type AppSettingsView, getAppSettings } from '../../settings/queries'
 
-const getDashboard = createServerFn({ method: 'GET' })
+const getDashboard = loggedServerFn('getDashboard', { method: 'GET' })
   .middleware([requireAuth])
   .validator(z.object({ concertId: z.number().int().positive() }))
   .handler(async ({ data }) => {

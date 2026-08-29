@@ -1,6 +1,6 @@
 import { Stack, Text } from '@mantine/core'
 import { createFileRoute } from '@tanstack/react-router'
-import { createServerFn, useServerFn } from '@tanstack/react-start'
+import { useServerFn } from '@tanstack/react-start'
 import { useId, useState } from 'react'
 import { z } from 'zod'
 import { requireAdmin } from '../../../auth/middleware'
@@ -22,6 +22,7 @@ import { EmptyState, PageSection } from '../../../components/states'
 import { getDb } from '../../../db/client'
 import { MAX_LENGTH } from '../../../lib/limits'
 import { idValue, optionalText, requiredText } from '../../../lib/validation'
+import { loggedServerFn } from '../../../observability/logged-server-fn'
 import {
   createVenue,
   deleteVenue,
@@ -35,23 +36,23 @@ const venueInput = z.object({
   note: optionalText(MAX_LENGTH.venueNote),
 })
 
-const getVenues = createServerFn({ method: 'GET' })
+const getVenues = loggedServerFn('getVenues', { method: 'GET' })
   .middleware([requireAdmin])
   .handler(() => listVenues(getDb()))
 
-const addVenue = createServerFn({ method: 'POST' })
+const addVenue = loggedServerFn('addVenue', { method: 'POST' })
   .middleware([requireAdmin])
   .validator(venueInput)
   .handler(async ({ data }) => {
     await createVenue(getDb(), data)
   })
 
-const editVenue = createServerFn({ method: 'POST' })
+const editVenue = loggedServerFn('editVenue', { method: 'POST' })
   .middleware([requireAdmin])
   .validator(venueInput.extend({ id: idValue }))
   .handler(({ data: { id, ...input } }) => updateVenue(getDb(), id, input))
 
-const removeVenue = createServerFn({ method: 'POST' })
+const removeVenue = loggedServerFn('removeVenue', { method: 'POST' })
   .middleware([requireAdmin])
   .validator(z.object({ id: idValue }))
   .handler(({ data }) => deleteVenue(getDb(), data.id))

@@ -1,6 +1,6 @@
 import { Badge, Group, Stack, Text } from '@mantine/core'
 import { createFileRoute } from '@tanstack/react-router'
-import { createServerFn, useServerFn } from '@tanstack/react-start'
+import { useServerFn } from '@tanstack/react-start'
 import { useId, useState } from 'react'
 import { z } from 'zod'
 import { requireAdmin } from '../../../auth/middleware'
@@ -36,9 +36,10 @@ import { getDb } from '../../../db/client'
 import { CONCERT_STATUSES } from '../../../db/schema'
 import { formatFullDate } from '../../../lib/date'
 import { idValue, toOptionalId } from '../../../lib/validation'
+import { loggedServerFn } from '../../../observability/logged-server-fn'
 import { listVenueOptions, type VenueOption } from '../../../venues/queries'
 
-const getConcertsPage = createServerFn({ method: 'GET' })
+const getConcertsPage = loggedServerFn('getConcertsPage', { method: 'GET' })
   .middleware([requireAdmin])
   .handler(async () => {
     const db = getDb()
@@ -48,22 +49,24 @@ const getConcertsPage = createServerFn({ method: 'GET' })
     }
   })
 
-const addConcert = createServerFn({ method: 'POST' })
+const addConcert = loggedServerFn('addConcert', { method: 'POST' })
   .middleware([requireAdmin])
   .validator(concertInput)
   .handler(({ data }) => createConcert(getDb(), data))
 
-const editConcert = createServerFn({ method: 'POST' })
+const editConcert = loggedServerFn('editConcert', { method: 'POST' })
   .middleware([requireAdmin])
   .validator(concertInput.extend({ id: idValue }))
   .handler(({ data: { id, ...input } }) => updateConcert(getDb(), id, input))
 
-const changeConcertStatus = createServerFn({ method: 'POST' })
+const changeConcertStatus = loggedServerFn('changeConcertStatus', {
+  method: 'POST',
+})
   .middleware([requireAdmin])
   .validator(z.object({ id: idValue, status: z.enum(CONCERT_STATUSES) }))
   .handler(({ data }) => setConcertStatus(getDb(), data.id, data.status))
 
-const removeConcert = createServerFn({ method: 'POST' })
+const removeConcert = loggedServerFn('removeConcert', { method: 'POST' })
   .middleware([requireAdmin])
   .validator(z.object({ id: idValue }))
   .handler(({ data }) => deleteConcert(getDb(), data.id))

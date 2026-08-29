@@ -1,6 +1,6 @@
 import { Group, Stack, Text } from '@mantine/core'
 import { createFileRoute } from '@tanstack/react-router'
-import { createServerFn, useServerFn } from '@tanstack/react-start'
+import { useServerFn } from '@tanstack/react-start'
 import { useId, useState } from 'react'
 import { z } from 'zod'
 import { requireAdmin } from '../../../auth/middleware'
@@ -29,6 +29,7 @@ import {
   optionalUrl,
   requiredText,
 } from '../../../lib/validation'
+import { loggedServerFn } from '../../../observability/logged-server-fn'
 import {
   createPiece,
   deletePiece,
@@ -44,29 +45,29 @@ const pieceInput = z.object({
   scoreWithoutBowingUrl: optionalUrl,
 })
 
-const getPieces = createServerFn({ method: 'GET' })
+const getPieces = loggedServerFn('getPieces', { method: 'GET' })
   .middleware([requireAdmin])
   .validator(z.object({ concertId: idValue }))
   .handler(({ data }) => listPiecesForConcert(getDb(), data.concertId))
 
-const addPiece = createServerFn({ method: 'POST' })
+const addPiece = loggedServerFn('addPiece', { method: 'POST' })
   .middleware([requireAdmin])
   .validator(pieceInput.extend({ concertId: idValue }))
   .handler(({ data: { concertId, ...fields } }) =>
     createPiece(getDb(), concertId, fields),
   )
 
-const editPiece = createServerFn({ method: 'POST' })
+const editPiece = loggedServerFn('editPiece', { method: 'POST' })
   .middleware([requireAdmin])
   .validator(pieceInput.extend({ id: idValue }))
   .handler(({ data: { id, ...fields } }) => updatePiece(getDb(), id, fields))
 
-const reorderPiece = createServerFn({ method: 'POST' })
+const reorderPiece = loggedServerFn('reorderPiece', { method: 'POST' })
   .middleware([requireAdmin])
   .validator(z.object({ id: idValue, direction: z.enum(DIRECTIONS) }))
   .handler(({ data }) => movePiece(getDb(), data.id, data.direction))
 
-const removePiece = createServerFn({ method: 'POST' })
+const removePiece = loggedServerFn('removePiece', { method: 'POST' })
   .middleware([requireAdmin])
   .validator(z.object({ id: idValue }))
   .handler(({ data }) => deletePiece(getDb(), data.id))

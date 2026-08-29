@@ -1,6 +1,5 @@
 import { Stack } from '@mantine/core'
 import { createFileRoute, Link } from '@tanstack/react-router'
-import { createServerFn } from '@tanstack/react-start'
 import { z } from 'zod'
 import { requireAuth } from '../../auth/middleware'
 import { PracticeItem } from '../../components/practice-item'
@@ -11,10 +10,11 @@ import {
 } from '../../components/states'
 import { getDb } from '../../db/client'
 import { todayInJst } from '../../lib/date'
+import { loggedServerFn } from '../../observability/logged-server-fn'
 import { listPracticesWithMedia } from '../../practices/queries'
 import { PRACTICE_VIEWS, splitPractices } from '../../practices/schedule'
 
-const listPractices = createServerFn({ method: 'GET' })
+const listPractices = loggedServerFn('listPractices', { method: 'GET' })
   .middleware([requireAuth])
   .validator(z.object({ concertId: z.number().int().positive() }))
   .handler(async ({ data }) => ({

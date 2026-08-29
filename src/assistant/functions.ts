@@ -1,4 +1,3 @@
-import { createServerFn } from '@tanstack/react-start'
 import { getClientIp } from '../auth/client-ip'
 import { requireAuth } from '../auth/middleware'
 import { getDb } from '../db/client'
@@ -6,6 +5,7 @@ import {
   type AskAssistantResult,
   askAssistantInputSchema,
 } from '../lib/assistant'
+import { loggedServerFn } from '../observability/logged-server-fn'
 import {
   isAssistantStub,
   readAnthropicApiKey,
@@ -14,7 +14,7 @@ import {
 import { answerQuestion } from './loop'
 import { createStubClient } from './stub-client'
 
-export const askAssistant = createServerFn({ method: 'POST' })
+export const askAssistant = loggedServerFn('askAssistant', { method: 'POST' })
   .middleware([requireAuth])
   .validator(askAssistantInputSchema)
   .handler(async ({ data }): Promise<AskAssistantResult> => {

@@ -24,6 +24,9 @@ vi.mock('@tanstack/react-start', () => ({
     }
     return builder
   },
+  createMiddleware: () => ({
+    server: () => ({}),
+  }),
 }))
 
 vi.mock('../db/client', () => ({ getDb: mocks.getDb }))
