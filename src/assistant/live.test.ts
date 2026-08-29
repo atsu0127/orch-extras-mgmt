@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { concerts, practices } from '../db/schema'
 import { ASSISTANT_MODEL } from '../lib/assistant'
+import { todayInJst } from '../lib/date'
 import { createTestDb } from '../test/db'
 import { createAnthropicClient } from './anthropic-client'
 import { answerQuestion } from './loop'
@@ -8,6 +9,16 @@ import { listDailyUsage } from './usage'
 
 const live =
   process.env.ASSISTANT_LIVE === '1' && Boolean(process.env.ANTHROPIC_API_KEY)
+
+function addIsoDays(date: string, days: number): string {
+  const [year, month, day] = date.split('-').map(Number)
+  if (year === undefined || month === undefined || day === undefined) {
+    throw new Error(`invalid date: ${date}`)
+  }
+  return new Date(Date.UTC(year, month - 1, day + days))
+    .toISOString()
+    .slice(0, 10)
+}
 
 describe.skipIf(!live)('実 Claude API', () => {
   it('代表質問・別演奏会・登録なしを回答し、利用量を残す', async () => {
@@ -26,10 +37,11 @@ describe.skipIf(!live)('実 Claude API', () => {
         attendanceUrl: 'https://example.com/chamber',
       },
     ])
+    const upcoming = addIsoDays(todayInJst(), 14)
     await db.insert(practices).values({
       id: 1,
       concertId: 1,
-      date: '2026-08-10',
+      date: upcoming,
       detail: '弦分奏',
     })
 
@@ -46,7 +58,11 @@ describe.skipIf(!live)('実 Claude API', () => {
     })
     expect(representative.ok).toBe(true)
     if (representative.ok) {
-      expect(representative.answer).toMatch(/8月10日|08-10|弦分奏/)
+      expect(representative.answer).toMatch(
+        new RegExp(
+          `${Number(upcoming.slice(5, 7))}月${Number(upcoming.slice(8, 10))}日|${upcoming.slice(5)}|弦分奏`,
+        ),
+      )
       expect(representative.links.length).toBeGreaterThan(0)
     }
 

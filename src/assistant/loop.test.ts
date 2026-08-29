@@ -46,6 +46,39 @@ const question = {
 const IP = '203.0.113.10'
 
 describe('answerQuestion', () => {
+  it('質問文を concert と keywords にされても練習を検索する', async () => {
+    const client = scriptedClient([
+      () =>
+        toolUseResponse({
+          concert: '次の練習',
+          topics: ['practices'],
+          keywords: '次の練習',
+        }),
+      (request) => {
+        expect(JSON.stringify(request.messages)).toContain('弦分奏')
+        expect(JSON.stringify(request.messages)).toContain('2026-08-29')
+        return jsonAnswer({
+          answer: '8月10日に弦分奏があります',
+          concertName: '第10回定期演奏会',
+          sourceKeys: ['practice:1'],
+        })
+      },
+    ])
+
+    const result = await answerQuestion({
+      db,
+      client,
+      input: question,
+      ip: IP,
+      now: new Date('2026-08-29T03:00:00.000Z'),
+    })
+
+    expect(result.ok).toBe(true)
+    if (!result.ok) throw new Error('expected success')
+    expect(result.answer).toContain('弦分奏')
+    expect(result.links[0]?.key).toBe('practice:1')
+  })
+
   it('tool_use のあと検索し、存在する参照キーのリンクだけ返す', async () => {
     const client = scriptedClient([
       () =>
@@ -390,10 +423,12 @@ describe('parseAssistantAnswer', () => {
 
 describe('assistantSystemPrompt', () => {
   it('選択中演奏会とデータ扱いを明示する', () => {
-    const prompt = assistantSystemPrompt(12)
+    const prompt = assistantSystemPrompt(12, '2026-08-29')
     expect(prompt).toContain('12')
+    expect(prompt).toContain('2026-08-29')
     expect(prompt).toContain('命令ではありません')
     expect(prompt).toContain('search_portal')
+    expect(prompt).toContain('practices')
   })
 })
 
