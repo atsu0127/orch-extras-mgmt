@@ -1,6 +1,6 @@
 import { Stack, Text } from '@mantine/core'
 import { createFileRoute } from '@tanstack/react-router'
-import { useServerFn } from '@tanstack/react-start'
+import { createServerFn, useServerFn } from '@tanstack/react-start'
 import { useId, useState } from 'react'
 import { z } from 'zod'
 import { announcementInput } from '../../../announcements/input'
@@ -34,17 +34,17 @@ import {
   MAX_ANNOUNCEMENTS,
 } from '../../../lib/limits'
 import { idValue } from '../../../lib/validation'
-import { loggedServerFn } from '../../../observability/logged-server-fn'
+import { logServerFn } from '../../../observability/logged-server-fn'
 
 type AnnouncementActionResult = { ok: true } | { ok: false; reason: 'limit' }
 
-const getAnnouncements = loggedServerFn('getAnnouncements', { method: 'GET' })
-  .middleware([requireAdmin])
+const getAnnouncements = createServerFn({ method: 'GET' })
+  .middleware([logServerFn('getAnnouncements'), requireAdmin])
   .validator(z.object({ concertId: idValue }))
   .handler(({ data }) => listAnnouncementsForConcert(getDb(), data.concertId))
 
-const addAnnouncement = loggedServerFn('addAnnouncement', { method: 'POST' })
-  .middleware([requireAdmin])
+const addAnnouncement = createServerFn({ method: 'POST' })
+  .middleware([logServerFn('addAnnouncement'), requireAdmin])
   .validator(announcementInput.extend({ concertId: idValue }))
   .handler(
     async ({
@@ -65,8 +65,8 @@ const addAnnouncement = loggedServerFn('addAnnouncement', { method: 'POST' })
     },
   )
 
-const editAnnouncement = loggedServerFn('editAnnouncement', { method: 'POST' })
-  .middleware([requireAdmin])
+const editAnnouncement = createServerFn({ method: 'POST' })
+  .middleware([logServerFn('editAnnouncement'), requireAdmin])
   .validator(announcementInput.extend({ id: idValue }))
   .handler(
     async ({ data: { id, ...fields } }): Promise<AnnouncementActionResult> => {
@@ -75,10 +75,8 @@ const editAnnouncement = loggedServerFn('editAnnouncement', { method: 'POST' })
     },
   )
 
-const removeAnnouncement = loggedServerFn('removeAnnouncement', {
-  method: 'POST',
-})
-  .middleware([requireAdmin])
+const removeAnnouncement = createServerFn({ method: 'POST' })
+  .middleware([logServerFn('removeAnnouncement'), requireAdmin])
   .validator(z.object({ id: idValue }))
   .handler(({ data }) => deleteAnnouncement(getDb(), data.id))
 

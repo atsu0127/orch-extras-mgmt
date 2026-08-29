@@ -187,8 +187,8 @@ pnpm exec wrangler d1 execute DB --local --command "SELECT 1"  # 中身を見る
 - `src/start.ts` — 全サーバ関数への CSRF 対策と、Worker が返すレスポンスへのセキュリティヘッダ
 - `public/_headers` — 静的ファイルへのセキュリティヘッダ（assets binding は Worker を通らない）
 
-**新しくサーバ関数を書くときは `loggedServerFn` を使い、`requireAuth` か `requireAdmin` を通すこと**。SPA モードなので
-画面側のガードには強制力がない。`getCurrentSession` だけはログ対象外。CSRF 対策は `src/start.ts` で全体に掛かっているので個別の対応は要らない。
+**新しくサーバ関数を書くときは `createServerFn` をファイル内で呼び、`logServerFn('名前')` と `requireAuth` か `requireAdmin` を通すこと**。SPA モードなので
+画面側のガードには強制力がない。`getCurrentSession` だけはログ対象外。`createServerFn` をヘルパで包むとクライアントへサーバ専用モジュールが載る。CSRF 対策は `src/start.ts` で全体に掛かっているので個別の対応は要らない。
 
 観測（Workers Logs の `server_fn` / AI案内の `assistant_ask`、本番 Claude の AI Gateway）は [観測](docs/observability/) を参照。ローカル既定はスタブのまま Gateway 不要。
 

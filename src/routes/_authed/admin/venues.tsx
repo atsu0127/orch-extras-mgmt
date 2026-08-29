@@ -1,6 +1,6 @@
 import { Stack, Text } from '@mantine/core'
 import { createFileRoute } from '@tanstack/react-router'
-import { useServerFn } from '@tanstack/react-start'
+import { createServerFn, useServerFn } from '@tanstack/react-start'
 import { useId, useState } from 'react'
 import { z } from 'zod'
 import { requireAdmin } from '../../../auth/middleware'
@@ -22,7 +22,7 @@ import { EmptyState, PageSection } from '../../../components/states'
 import { getDb } from '../../../db/client'
 import { MAX_LENGTH } from '../../../lib/limits'
 import { idValue, optionalText, requiredText } from '../../../lib/validation'
-import { loggedServerFn } from '../../../observability/logged-server-fn'
+import { logServerFn } from '../../../observability/logged-server-fn'
 import {
   createVenue,
   deleteVenue,
@@ -36,24 +36,24 @@ const venueInput = z.object({
   note: optionalText(MAX_LENGTH.venueNote),
 })
 
-const getVenues = loggedServerFn('getVenues', { method: 'GET' })
-  .middleware([requireAdmin])
+const getVenues = createServerFn({ method: 'GET' })
+  .middleware([logServerFn('getVenues'), requireAdmin])
   .handler(() => listVenues(getDb()))
 
-const addVenue = loggedServerFn('addVenue', { method: 'POST' })
-  .middleware([requireAdmin])
+const addVenue = createServerFn({ method: 'POST' })
+  .middleware([logServerFn('addVenue'), requireAdmin])
   .validator(venueInput)
   .handler(async ({ data }) => {
     await createVenue(getDb(), data)
   })
 
-const editVenue = loggedServerFn('editVenue', { method: 'POST' })
-  .middleware([requireAdmin])
+const editVenue = createServerFn({ method: 'POST' })
+  .middleware([logServerFn('editVenue'), requireAdmin])
   .validator(venueInput.extend({ id: idValue }))
   .handler(({ data: { id, ...input } }) => updateVenue(getDb(), id, input))
 
-const removeVenue = loggedServerFn('removeVenue', { method: 'POST' })
-  .middleware([requireAdmin])
+const removeVenue = createServerFn({ method: 'POST' })
+  .middleware([logServerFn('removeVenue'), requireAdmin])
   .validator(z.object({ id: idValue }))
   .handler(({ data }) => deleteVenue(getDb(), data.id))
 

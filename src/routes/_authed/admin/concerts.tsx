@@ -1,6 +1,6 @@
 import { Badge, Group, Stack, Text } from '@mantine/core'
 import { createFileRoute } from '@tanstack/react-router'
-import { useServerFn } from '@tanstack/react-start'
+import { createServerFn, useServerFn } from '@tanstack/react-start'
 import { useId, useState } from 'react'
 import { z } from 'zod'
 import { requireAdmin } from '../../../auth/middleware'
@@ -36,11 +36,11 @@ import { getDb } from '../../../db/client'
 import { CONCERT_STATUSES } from '../../../db/schema'
 import { formatFullDate } from '../../../lib/date'
 import { idValue, toOptionalId } from '../../../lib/validation'
-import { loggedServerFn } from '../../../observability/logged-server-fn'
+import { logServerFn } from '../../../observability/logged-server-fn'
 import { listVenueOptions, type VenueOption } from '../../../venues/queries'
 
-const getConcertsPage = loggedServerFn('getConcertsPage', { method: 'GET' })
-  .middleware([requireAdmin])
+const getConcertsPage = createServerFn({ method: 'GET' })
+  .middleware([logServerFn('getConcertsPage'), requireAdmin])
   .handler(async () => {
     const db = getDb()
     return {
@@ -49,25 +49,23 @@ const getConcertsPage = loggedServerFn('getConcertsPage', { method: 'GET' })
     }
   })
 
-const addConcert = loggedServerFn('addConcert', { method: 'POST' })
-  .middleware([requireAdmin])
+const addConcert = createServerFn({ method: 'POST' })
+  .middleware([logServerFn('addConcert'), requireAdmin])
   .validator(concertInput)
   .handler(({ data }) => createConcert(getDb(), data))
 
-const editConcert = loggedServerFn('editConcert', { method: 'POST' })
-  .middleware([requireAdmin])
+const editConcert = createServerFn({ method: 'POST' })
+  .middleware([logServerFn('editConcert'), requireAdmin])
   .validator(concertInput.extend({ id: idValue }))
   .handler(({ data: { id, ...input } }) => updateConcert(getDb(), id, input))
 
-const changeConcertStatus = loggedServerFn('changeConcertStatus', {
-  method: 'POST',
-})
-  .middleware([requireAdmin])
+const changeConcertStatus = createServerFn({ method: 'POST' })
+  .middleware([logServerFn('changeConcertStatus'), requireAdmin])
   .validator(z.object({ id: idValue, status: z.enum(CONCERT_STATUSES) }))
   .handler(({ data }) => setConcertStatus(getDb(), data.id, data.status))
 
-const removeConcert = loggedServerFn('removeConcert', { method: 'POST' })
-  .middleware([requireAdmin])
+const removeConcert = createServerFn({ method: 'POST' })
+  .middleware([logServerFn('removeConcert'), requireAdmin])
   .validator(z.object({ id: idValue }))
   .handler(({ data }) => deleteConcert(getDb(), data.id))
 

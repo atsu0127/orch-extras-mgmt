@@ -1,4 +1,4 @@
-import { createMiddleware, createServerFn } from '@tanstack/react-start'
+import { createMiddleware } from '@tanstack/react-start'
 import { emitAppLog } from '../lib/app-log'
 import {
   buildServerFnLog,
@@ -7,12 +7,14 @@ import {
   roleFromContextAndResult,
 } from '../lib/server-fn-log'
 
-type ServerFnMethod = 'GET' | 'POST'
-
 /**
  * `requireAuth` の外側に置く。ログのためだけにセッションを D1 へ再照会しない
  * （docs/observability/design.md 4.1）。CSRF 拒否は request middleware で
  * 終わるため、この関数 middleware には届かない。
+ *
+ * `createServerFn` 自体は包まない。Start のコンパイラは呼び出し箇所を
+ * ファイル内で見つけるので、ヘルパで包むとクライアントへサーバ専用
+ * モジュールが載る。
  */
 export function logServerFn(fn: string) {
   return createMiddleware({ type: 'function' }).server(
@@ -50,16 +52,6 @@ export function logServerFn(fn: string) {
       }
     },
   )
-}
-
-/** `getCurrentSession` 以外のサーバ関数はこれを通す */
-export function loggedServerFn(
-  fn: string,
-  options: { method: ServerFnMethod },
-) {
-  return createServerFn({ method: options.method }).middleware([
-    logServerFn(fn),
-  ])
 }
 
 function elapsedMs(started: number): number {

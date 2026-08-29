@@ -1,6 +1,6 @@
 import { Group, Stack, Text } from '@mantine/core'
 import { createFileRoute } from '@tanstack/react-router'
-import { useServerFn } from '@tanstack/react-start'
+import { createServerFn, useServerFn } from '@tanstack/react-start'
 import { useEffect, useId, useRef, useState } from 'react'
 import { z } from 'zod'
 import { requireAdmin } from '../../../auth/middleware'
@@ -42,7 +42,7 @@ import {
   requiredUrl,
   toOptionalId,
 } from '../../../lib/validation'
-import { loggedServerFn } from '../../../observability/logged-server-fn'
+import { logServerFn } from '../../../observability/logged-server-fn'
 import { bulkPracticeCreateFormKey } from '../../../practices/bulk-form-state'
 import {
   createDuplicatePracticeState,
@@ -65,8 +65,8 @@ import {
 } from '../../../practices/queries'
 import { listVenueOptions, type VenueOption } from '../../../venues/queries'
 
-const getPracticesPage = loggedServerFn('getPracticesPage', { method: 'GET' })
-  .middleware([requireAdmin])
+const getPracticesPage = createServerFn({ method: 'GET' })
+  .middleware([logServerFn('getPracticesPage'), requireAdmin])
   .validator(z.object({ concertId: idValue }))
   .handler(async ({ data }) => {
     const db = getDb()
@@ -76,20 +76,20 @@ const getPracticesPage = loggedServerFn('getPracticesPage', { method: 'GET' })
     }
   })
 
-const addPractice = loggedServerFn('addPractice', { method: 'POST' })
-  .middleware([requireAdmin])
+const addPractice = createServerFn({ method: 'POST' })
+  .middleware([logServerFn('addPractice'), requireAdmin])
   .validator(practiceInput.extend({ concertId: idValue }))
   .handler(({ data: { concertId, ...fields } }) =>
     createPractice(getDb(), concertId, fields),
   )
 
-const editPractice = loggedServerFn('editPractice', { method: 'POST' })
-  .middleware([requireAdmin])
+const editPractice = createServerFn({ method: 'POST' })
+  .middleware([logServerFn('editPractice'), requireAdmin])
   .validator(practiceInput.extend({ id: idValue }))
   .handler(({ data: { id, ...fields } }) => updatePractice(getDb(), id, fields))
 
-const removePractice = loggedServerFn('removePractice', { method: 'POST' })
-  .middleware([requireAdmin])
+const removePractice = createServerFn({ method: 'POST' })
+  .middleware([logServerFn('removePractice'), requireAdmin])
   .validator(z.object({ id: idValue }))
   .handler(({ data }) => deletePractice(getDb(), data.id))
 
@@ -98,20 +98,20 @@ const mediaInput = z.object({
   url: requiredUrl,
 })
 
-const addMedia = loggedServerFn('addMedia', { method: 'POST' })
-  .middleware([requireAdmin])
+const addMedia = createServerFn({ method: 'POST' })
+  .middleware([logServerFn('addMedia'), requireAdmin])
   .validator(mediaInput.extend({ practiceId: idValue }))
   .handler(({ data: { practiceId, ...fields } }) =>
     createPracticeMedia(getDb(), practiceId, fields),
   )
 
-const moveMedia = loggedServerFn('moveMedia', { method: 'POST' })
-  .middleware([requireAdmin])
+const moveMedia = createServerFn({ method: 'POST' })
+  .middleware([logServerFn('moveMedia'), requireAdmin])
   .validator(z.object({ id: idValue, direction: z.enum(DIRECTIONS) }))
   .handler(({ data }) => movePracticeMedia(getDb(), data.id, data.direction))
 
-const removeMedia = loggedServerFn('removeMedia', { method: 'POST' })
-  .middleware([requireAdmin])
+const removeMedia = createServerFn({ method: 'POST' })
+  .middleware([logServerFn('removeMedia'), requireAdmin])
   .validator(z.object({ id: idValue }))
   .handler(({ data }) => deletePracticeMedia(getDb(), data.id))
 

@@ -1,5 +1,5 @@
 import { Button, Group, Stack, Text, Title } from '@mantine/core'
-import { useServerFn } from '@tanstack/react-start'
+import { createServerFn, useServerFn } from '@tanstack/react-start'
 import { useEffect, useId, useRef, useState } from 'react'
 import { z } from 'zod'
 import { requireAdmin } from '../auth/middleware'
@@ -12,7 +12,7 @@ import {
   MAX_LENGTH,
 } from '../lib/limits'
 import { optionalText, requiredText } from '../lib/validation'
-import { loggedServerFn } from '../observability/logged-server-fn'
+import { logServerFn } from '../observability/logged-server-fn'
 import { createPracticesBulk } from '../practices/bulk'
 import {
   type BulkPracticeRowDraft,
@@ -45,13 +45,13 @@ const venueInput = z.object({
   note: optionalText(MAX_LENGTH.venueNote),
 })
 
-const addVenueFromBulk = loggedServerFn('addVenueFromBulk', { method: 'POST' })
-  .middleware([requireAdmin])
+const addVenueFromBulk = createServerFn({ method: 'POST' })
+  .middleware([logServerFn('addVenueFromBulk'), requireAdmin])
   .validator(venueInput)
   .handler(({ data }) => createVenue(getDb(), data))
 
-const addPracticesBulk = loggedServerFn('addPracticesBulk', { method: 'POST' })
-  .middleware([requireAdmin])
+const addPracticesBulk = createServerFn({ method: 'POST' })
+  .middleware([logServerFn('addPracticesBulk'), requireAdmin])
   .validator(bulkPracticesInput)
   .handler(async ({ data }): Promise<BulkAddResult> => {
     try {

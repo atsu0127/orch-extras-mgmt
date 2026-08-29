@@ -1,6 +1,7 @@
 import { Text } from '@mantine/core'
 import { IconExternalLink } from '@tabler/icons-react'
 import { createFileRoute } from '@tanstack/react-router'
+import { createServerFn } from '@tanstack/react-start'
 import { z } from 'zod'
 import { requireAuth } from '../../auth/middleware'
 import {
@@ -9,11 +10,11 @@ import {
   PageSection,
 } from '../../components/states'
 import { getDb } from '../../db/client'
-import { loggedServerFn } from '../../observability/logged-server-fn'
+import { logServerFn } from '../../observability/logged-server-fn'
 import { listPiecesForConcert, type PieceEntry } from '../../pieces/queries'
 
-const listPieces = loggedServerFn('listPieces', { method: 'GET' })
-  .middleware([requireAuth])
+const listPieces = createServerFn({ method: 'GET' })
+  .middleware([logServerFn('listPieces'), requireAuth])
   .validator(z.object({ concertId: z.number().int().positive() }))
   .handler(({ data }) => listPiecesForConcert(getDb(), data.concertId))
 

@@ -1,6 +1,6 @@
 import { Anchor, Paper, PasswordInput, Stack, Text, Title } from '@mantine/core'
 import { createFileRoute, Link, useRouter } from '@tanstack/react-router'
-import { useServerFn } from '@tanstack/react-start'
+import { createServerFn, useServerFn } from '@tanstack/react-start'
 import { type FormEvent, useId, useState } from 'react'
 import { z } from 'zod'
 import {
@@ -25,14 +25,14 @@ import {
   fieldErrors,
   optionalEmail,
 } from '../../../lib/validation'
-import { loggedServerFn } from '../../../observability/logged-server-fn'
+import { logServerFn } from '../../../observability/logged-server-fn'
 import { updateAdminEmail } from '../../../settings/mutations'
 import { getAppSettings } from '../../../settings/queries'
 
 const adminEmailInput = z.object({ adminEmail: optionalEmail })
 
-const getSettings = loggedServerFn('getSettings', { method: 'GET' })
-  .middleware([requireAdmin])
+const getSettings = createServerFn({ method: 'GET' })
+  .middleware([logServerFn('getSettings'), requireAdmin])
   .handler(async () => {
     const db = getDb()
     const [credentials, appSettings] = await Promise.all([
@@ -42,8 +42,8 @@ const getSettings = loggedServerFn('getSettings', { method: 'GET' })
     return { credentials, appSettings }
   })
 
-const submitAdminEmail = loggedServerFn('submitAdminEmail', { method: 'POST' })
-  .middleware([requireAdmin])
+const submitAdminEmail = createServerFn({ method: 'POST' })
+  .middleware([logServerFn('submitAdminEmail'), requireAdmin])
   .validator(adminEmailInput)
   .handler(({ data }) => updateAdminEmail(getDb(), data.adminEmail))
 
@@ -51,10 +51,8 @@ const submitAdminEmail = loggedServerFn('submitAdminEmail', { method: 'POST' })
  * 変更できるのは管理者だけなので、確かめるのも常に管理者のパスワード。
  * 端末を離席中に触られた場合に、そこで止めるための一手間である。
  */
-const submitPasswordChange = loggedServerFn('submitPasswordChange', {
-  method: 'POST',
-})
-  .middleware([requireAdmin])
+const submitPasswordChange = createServerFn({ method: 'POST' })
+  .middleware([logServerFn('submitPasswordChange'), requireAdmin])
   .validator(passwordChangeInput.extend({ role: z.enum(ROLES) }))
   .handler(async ({ data }): Promise<{ ok: boolean }> => {
     const db = getDb()

@@ -5,7 +5,7 @@ import type { Db } from '../db/client'
 import { getDb } from '../db/client'
 import { credentials } from '../db/schema'
 import { ROLES, type Role } from '../lib/roles'
-import { loggedServerFn } from '../observability/logged-server-fn'
+import { logServerFn } from '../observability/logged-server-fn'
 import { cleanupAuthData } from './cleanup'
 import { getClientIp } from './client-ip'
 import {
@@ -48,7 +48,8 @@ export const getCurrentSession = createServerFn({ method: 'GET' }).handler(
   },
 )
 
-export const login = loggedServerFn('login', { method: 'POST' })
+export const login = createServerFn({ method: 'POST' })
+  .middleware([logServerFn('login')])
   .validator(loginInput)
   .handler(async ({ data }): Promise<LoginResult> => {
     const db = getDb()
@@ -69,8 +70,8 @@ export const login = loggedServerFn('login', { method: 'POST' })
     return { ok: true, role }
   })
 
-export const logout = loggedServerFn('logout', { method: 'POST' })
-  .middleware([requireAuth])
+export const logout = createServerFn({ method: 'POST' })
+  .middleware([logServerFn('logout'), requireAuth])
   .handler(async ({ context }) => {
     await revokeSession(getDb(), context.session.id)
     clearSessionCookie()

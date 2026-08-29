@@ -1,6 +1,6 @@
 import { Group, Stack, Text } from '@mantine/core'
 import { createFileRoute } from '@tanstack/react-router'
-import { useServerFn } from '@tanstack/react-start'
+import { createServerFn, useServerFn } from '@tanstack/react-start'
 import { useId, useState } from 'react'
 import { z } from 'zod'
 import { requireAdmin } from '../../../auth/middleware'
@@ -29,7 +29,7 @@ import {
   optionalUrl,
   requiredText,
 } from '../../../lib/validation'
-import { loggedServerFn } from '../../../observability/logged-server-fn'
+import { logServerFn } from '../../../observability/logged-server-fn'
 import {
   createPiece,
   deletePiece,
@@ -45,30 +45,30 @@ const pieceInput = z.object({
   scoreWithoutBowingUrl: optionalUrl,
 })
 
-const getPieces = loggedServerFn('getPieces', { method: 'GET' })
-  .middleware([requireAdmin])
+const getPieces = createServerFn({ method: 'GET' })
+  .middleware([logServerFn('getPieces'), requireAdmin])
   .validator(z.object({ concertId: idValue }))
   .handler(({ data }) => listPiecesForConcert(getDb(), data.concertId))
 
-const addPiece = loggedServerFn('addPiece', { method: 'POST' })
-  .middleware([requireAdmin])
+const addPiece = createServerFn({ method: 'POST' })
+  .middleware([logServerFn('addPiece'), requireAdmin])
   .validator(pieceInput.extend({ concertId: idValue }))
   .handler(({ data: { concertId, ...fields } }) =>
     createPiece(getDb(), concertId, fields),
   )
 
-const editPiece = loggedServerFn('editPiece', { method: 'POST' })
-  .middleware([requireAdmin])
+const editPiece = createServerFn({ method: 'POST' })
+  .middleware([logServerFn('editPiece'), requireAdmin])
   .validator(pieceInput.extend({ id: idValue }))
   .handler(({ data: { id, ...fields } }) => updatePiece(getDb(), id, fields))
 
-const reorderPiece = loggedServerFn('reorderPiece', { method: 'POST' })
-  .middleware([requireAdmin])
+const reorderPiece = createServerFn({ method: 'POST' })
+  .middleware([logServerFn('reorderPiece'), requireAdmin])
   .validator(z.object({ id: idValue, direction: z.enum(DIRECTIONS) }))
   .handler(({ data }) => movePiece(getDb(), data.id, data.direction))
 
-const removePiece = loggedServerFn('removePiece', { method: 'POST' })
-  .middleware([requireAdmin])
+const removePiece = createServerFn({ method: 'POST' })
+  .middleware([logServerFn('removePiece'), requireAdmin])
   .validator(z.object({ id: idValue }))
   .handler(({ data }) => deletePiece(getDb(), data.id))
 
