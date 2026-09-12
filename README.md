@@ -2,7 +2,7 @@
 
 オーケストラのエキストラ（客演奏者）向け情報ポータル。練習日程、出欠の回答先、演奏会資料、地図、カレンダー、ボウイング、練習の録音を1か所にまとめて公開し、管理者がブラウザから更新できるようにする。
 
-現在の状態: **Phase 10 実装済み**。演奏会ごとのお知らせを管理・閲覧できる。練習の一括追加（[practice-bulk-create](docs/practice-bulk-create/)、[ADR-0024](docs/adr/0024-prefer-bulk-practice-create-over-circle-square-sync.md)）と、登録情報を自然文で探す [AI案内](docs/ai-assistant/) も利用できる。
+現在の状態: **Phase 10 実装済み**。演奏会ごとのお知らせを管理・閲覧できる。練習の一括追加（[practice-bulk-create](docs/practice-bulk-create/)、[ADR-0024](docs/adr/0024-prefer-bulk-practice-create-over-circle-square-sync.md)）と、管理者が登録情報を自然文で探す [AI案内](docs/ai-assistant/) も利用できる。
 
 本番: <https://orch-extras-mgmt.atsu-dq9.workers.dev>
 
@@ -31,7 +31,7 @@
 - 本番・練習会場の Google Maps と Google カレンダー導線
 - 練習の複製入力
 - 練習の一括追加（トグル表示・行複製・会場は modal で即追加）
-- AI案内（登録情報の検索。候補質問と会話履歴）
+- AI案内（登録情報の検索。候補質問と会話履歴。当面は管理者のみ）
 - 演奏会単位の管理と切り替え
 - 管理者は更新可、エキストラは参照のみ。個人情報は保持せず、ロールごとの共有パスワードで認証する
 

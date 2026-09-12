@@ -8,6 +8,7 @@ function assistantDialog(page: Page) {
 
 const extraPassword = process.env.E2E_EXTRA_PASSWORD
 const adminPassword = process.env.E2E_ADMIN_PASSWORD
+const TOP_URL = /\/(\?concert=\d+)?$/
 
 test('未ログインでAI案内を開くとログイン画面へ誘導される', async ({ page }) => {
   await page.goto('/assistant')
@@ -21,6 +22,67 @@ test.describe('エキストラのAI案内', () => {
     await page.goto('/login')
     await signIn(page, extraPassword as string)
     await expect(page.getByText('エキストラとしてログイン中')).toBeVisible()
+  })
+
+  test('入口が表示されず、専用ページも開けない', async ({ page }) => {
+    await expect(page.getByRole('button', { name: 'AIに聞く' })).toHaveCount(0)
+    await expect(page.getByRole('link', { name: 'AI案内' })).toHaveCount(0)
+
+    await page.goto('/assistant')
+    await expect(page).toHaveURL(TOP_URL)
+    await expect(
+      page.getByRole('heading', { name: 'AI案内', level: 1 }),
+    ).toHaveCount(0)
+  })
+})
+
+test.describe('PC幅のエキストラ', () => {
+  test.skip(!extraPassword, 'E2E_EXTRA_PASSWORD が未設定')
+  test.use({ viewport: { width: 1280, height: 800 } })
+
+  test('ナビとボタンにAI案内が出ない', async ({ page }) => {
+    await page.goto('/login')
+    await signIn(page, extraPassword as string)
+    await expect(page.getByRole('button', { name: 'AIに聞く' })).toHaveCount(0)
+    await expect(page.getByRole('link', { name: 'AI案内' })).toHaveCount(0)
+  })
+})
+
+test.describe('PC幅のAI案内', () => {
+  test.skip(!adminPassword, 'E2E_ADMIN_PASSWORD が未設定')
+  test.use({ viewport: { width: 1280, height: 800 } })
+
+  test('右側パネルが開き、ナビから専用ページへ行ける', async ({ page }) => {
+    await page.goto('/login')
+    await signIn(page, adminPassword as string)
+    await page.getByRole('button', { name: 'AIに聞く' }).click()
+    const panel = assistantDialog(page)
+    await expect(panel).toBeVisible()
+    await expect(
+      panel.locator('[data-assistant-placement="right"]'),
+    ).toBeVisible()
+    await panel.getByRole('link', { name: '専用ページで開く' }).click()
+    await expect(page).toHaveURL(/\/assistant(\?concert=\d+)?$/)
+    await expect(assistantDialog(page)).toHaveCount(0)
+    await expect(
+      page.getByRole('heading', { name: 'AI案内', level: 1 }),
+    ).toBeVisible()
+    await expect(page.getByLabel('会話履歴')).toBeVisible()
+    await expect(page.getByRole('button', { name: '履歴' })).toHaveCount(0)
+    await expect(page.getByRole('link', { name: 'AI案内' })).toHaveAttribute(
+      'aria-current',
+      'page',
+    )
+  })
+})
+
+test.describe('管理者のAI案内', () => {
+  test.skip(!adminPassword, 'E2E_ADMIN_PASSWORD が未設定')
+
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/login')
+    await signIn(page, adminPassword as string)
+    await expect(page.getByText('管理者としてログイン中')).toBeVisible()
   })
 
   test('下部シートで質問し、専用ページへ同じ会話を引き継ぐ', async ({
@@ -118,53 +180,5 @@ test.describe('エキストラのAI案内', () => {
     ).toBeVisible()
     await page.getByRole('link', { name: '練習日程' }).click()
     await expect(page.getByRole('heading', { name: '練習日程' })).toBeVisible()
-  })
-})
-
-test.describe('PC幅のAI案内', () => {
-  test.skip(!extraPassword, 'E2E_EXTRA_PASSWORD が未設定')
-  test.use({ viewport: { width: 1280, height: 800 } })
-
-  test('右側パネルが開き、ナビから専用ページへ行ける', async ({ page }) => {
-    await page.goto('/login')
-    await signIn(page, extraPassword as string)
-    await page.getByRole('button', { name: 'AIに聞く' }).click()
-    const panel = assistantDialog(page)
-    await expect(panel).toBeVisible()
-    await expect(
-      panel.locator('[data-assistant-placement="right"]'),
-    ).toBeVisible()
-    await panel.getByRole('link', { name: '専用ページで開く' }).click()
-    await expect(page).toHaveURL(/\/assistant(\?concert=\d+)?$/)
-    await expect(assistantDialog(page)).toHaveCount(0)
-    await expect(
-      page.getByRole('heading', { name: 'AI案内', level: 1 }),
-    ).toBeVisible()
-    await expect(page.getByLabel('会話履歴')).toBeVisible()
-    await expect(page.getByRole('button', { name: '履歴' })).toHaveCount(0)
-    await expect(page.getByRole('link', { name: 'AI案内' })).toHaveAttribute(
-      'aria-current',
-      'page',
-    )
-  })
-})
-
-test.describe('管理者のAI案内', () => {
-  test.skip(!adminPassword, 'E2E_ADMIN_PASSWORD が未設定')
-
-  test('管理者でも質問できる', async ({ page }) => {
-    await page.goto('/login')
-    await signIn(page, adminPassword as string)
-    await page.getByRole('button', { name: 'AIに聞く' }).click()
-    const sheet = assistantDialog(page)
-    await sheet
-      .getByRole('button', { name: '出欠の回答先はどこですか？' })
-      .click()
-    await expect(sheet.getByText(/登録情報です/)).toBeVisible({
-      timeout: 15_000,
-    })
-    await expect(
-      sheet.getByRole('link', { name: '出欠を回答する' }),
-    ).toHaveAttribute('href', E2E_FIXTURE.attendanceUrl)
   })
 })

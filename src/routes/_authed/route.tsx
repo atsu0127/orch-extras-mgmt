@@ -131,7 +131,7 @@ function AuthedLayout() {
                 </DesktopLink>
                 <DesktopLink to="/practices">練習</DesktopLink>
                 <DesktopLink to="/pieces">曲</DesktopLink>
-                <DesktopLink to="/assistant">AI案内</DesktopLink>
+                {showAdmin && <DesktopLink to="/assistant">AI案内</DesktopLink>}
                 {showAdmin && (
                   <AdminEntryLink variant="desktop">管理</AdminEntryLink>
                 )}
@@ -158,7 +158,7 @@ function AuthedLayout() {
         <Outlet />
       </Box>
 
-      <AssistantQuick selectedConcertId={concert?.id ?? null} />
+      {showAdmin && <AssistantQuick selectedConcertId={concert?.id ?? null} />}
 
       <nav className="app-bottom-nav" aria-label="メイン">
         <BottomLink to="/" exact label="ホーム" ariaLabel="ホーム">
@@ -170,9 +170,11 @@ function AuthedLayout() {
         <BottomLink to="/pieces" label="曲" ariaLabel="曲・ボウイング">
           <MusicIcon />
         </BottomLink>
-        <BottomLink to="/assistant" label="AI案内" ariaLabel="AI案内">
-          <AssistantIcon />
-        </BottomLink>
+        {showAdmin && (
+          <BottomLink to="/assistant" label="AI案内" ariaLabel="AI案内">
+            <AssistantIcon />
+          </BottomLink>
+        )}
         {showAdmin && (
           <AdminEntryLink variant="bottom">
             <AdminIcon />

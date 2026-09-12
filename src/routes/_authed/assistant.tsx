@@ -1,12 +1,15 @@
 import { Button, Drawer, Group } from '@mantine/core'
 import { useMediaQuery } from '@mantine/hooks'
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, redirect } from '@tanstack/react-router'
 import { useState } from 'react'
 import { AssistantHistoryList } from '../../assistant/history-list'
 import { AssistantThread } from '../../assistant/thread'
 import { NoConcertState, PageSection } from '../../components/states'
 
 export const Route = createFileRoute('/_authed/assistant')({
+  beforeLoad: ({ context }) => {
+    if (context.session.role !== 'admin') throw redirect({ to: '/' })
+  },
   component: AssistantPage,
 })
 
