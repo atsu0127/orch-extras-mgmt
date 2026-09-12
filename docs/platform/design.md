@@ -177,3 +177,4 @@
 | 次の練習検索は質問語句を無視し今日を明示する | 1回の tool use で候補質問が空にならないようにする | [ADR-0027](../adr/0027-assistant-next-practice-search.md) |
 | アプリログは Workers Logs、LLM 本文は AI Gateway | 無料枠内で失敗と品質を分けて追う。Langfuse と Traces は見送り | [ADR-0028](../adr/0028-workers-logs-and-ai-gateway-observability.md) |
 | AI案内は当面管理者のみ | 試用中の残高と日次枠を管理者の確認に使う。extra は入口も呼び出しも不可 | [ADR-0029](../adr/0029-limit-ai-assistant-to-admin.md) |
+| ホームお知らせは最新・過去とも同じ左寄せ | 件数で見出しと本文幅が食い違わないようにする | [ADR-0030](../adr/0030-unify-home-announcement-layout.md) |

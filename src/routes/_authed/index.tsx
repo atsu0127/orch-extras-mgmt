@@ -100,8 +100,6 @@ export function DashboardContent({
       })
     : null
 
-  const [latestAnnouncement, ...olderAnnouncements] = announcements
-
   return (
     <div className="pamphlet">
       <div className="pamphlet-board">
@@ -126,7 +124,7 @@ export function DashboardContent({
             </section>
           )}
 
-          {latestAnnouncement && (
+          {announcements.length > 0 && (
             <section
               className="pamphlet-section pamphlet-announcements"
               aria-labelledby="announcements-title"
@@ -134,49 +132,11 @@ export function DashboardContent({
               <p className="pamphlet-kicker" id="announcements-title">
                 お知らせ
               </p>
-              <article className="pamphlet-announcement pamphlet-announcement--latest">
-                <p className="pamphlet-announcement-date">
-                  {formatDate(
-                    jstDateOf(new Date(latestAnnouncement.createdAt)),
-                  )}
-                </p>
-                <Title
-                  order={2}
-                  className="pamphlet-heading pamphlet-announcement-title"
-                >
-                  {latestAnnouncement.title}
-                </Title>
-                <p className="detail pamphlet-note">
-                  {latestAnnouncement.body}
-                </p>
-                {latestAnnouncement.url && (
-                  <div className="pamphlet-links">
-                    <ExternalLink href={latestAnnouncement.url}>
-                      関連リンクを開く
-                    </ExternalLink>
-                  </div>
-                )}
-              </article>
-              {olderAnnouncements.length > 0 && (
-                <Stack gap="md" mt="md" className="pamphlet-announcement-list">
-                  {olderAnnouncements.map((item) => (
-                    <article key={item.id} className="pamphlet-announcement">
-                      <p className="pamphlet-announcement-date">
-                        {formatDate(jstDateOf(new Date(item.createdAt)))}
-                      </p>
-                      <Text fw={600}>{item.title}</Text>
-                      <p className="detail pamphlet-note">{item.body}</p>
-                      {item.url && (
-                        <div className="pamphlet-links">
-                          <ExternalLink href={item.url}>
-                            関連リンクを開く
-                          </ExternalLink>
-                        </div>
-                      )}
-                    </article>
-                  ))}
-                </Stack>
-              )}
+              <Stack gap="md" className="pamphlet-announcement-list">
+                {announcements.map((item) => (
+                  <AnnouncementArticle key={item.id} announcement={item} />
+                ))}
+              </Stack>
             </section>
           )}
         </div>
@@ -285,6 +245,29 @@ export function DashboardContent({
         </section>
       )}
     </div>
+  )
+}
+
+type AnnouncementArticleProps = {
+  announcement: DashboardContentProps['announcements'][number]
+}
+
+function AnnouncementArticle({ announcement }: AnnouncementArticleProps) {
+  return (
+    <article className="pamphlet-announcement">
+      <p className="pamphlet-announcement-date">
+        {formatDate(jstDateOf(new Date(announcement.createdAt)))}
+      </p>
+      <Text fw={600} className="pamphlet-announcement-title">
+        {announcement.title}
+      </Text>
+      <p className="detail pamphlet-note">{announcement.body}</p>
+      {announcement.url && (
+        <div className="pamphlet-links">
+          <ExternalLink href={announcement.url}>関連リンクを開く</ExternalLink>
+        </div>
+      )}
+    </article>
   )
 }
 

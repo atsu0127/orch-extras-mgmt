@@ -462,6 +462,7 @@ body {
 .pamphlet-aside {
   display: flex;
   flex-direction: column;
+  min-width: 0;
 }
 
 .pamphlet-announcement-date {
@@ -470,19 +471,26 @@ body {
   font-size: 0.8125rem;
 }
 
-.pamphlet-announcement--latest .pamphlet-announcement-title {
-  font-size: 1.25rem;
-}
-
 .pamphlet-announcement-list {
   text-align: left;
   max-width: 24rem;
+  width: 100%;
+  min-width: 0;
   margin-inline: auto;
 }
 
-.pamphlet-announcement-list .pamphlet-announcement {
+.pamphlet-announcement {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.pamphlet-announcement-list .pamphlet-announcement:not(:first-child) {
   padding-top: 0.75rem;
   border-top: 1px solid var(--app-border);
+}
+
+.pamphlet-announcement-title {
+  overflow-wrap: anywhere;
 }
 
 .pamphlet-hero,
@@ -548,6 +556,10 @@ body {
   margin-top: 1rem;
 }
 
+.pamphlet-announcement .pamphlet-links {
+  justify-content: flex-start;
+}
+
 .pamphlet-details {
   margin-top: 1rem;
   text-align: left;
@@ -558,8 +570,11 @@ body {
 .pamphlet-note {
   text-align: left;
   max-width: 24rem;
+  width: 100%;
+  min-width: 0;
   margin-inline: auto;
   line-height: 1.7;
+  overflow-wrap: anywhere;
 }
 
 /* PC: プログラム表の見開き（次の練習 | 本番＋出欠） */
