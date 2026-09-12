@@ -1,6 +1,6 @@
 import { createServerFn } from '@tanstack/react-start'
 import { getClientIp } from '../auth/client-ip'
-import { requireAuth } from '../auth/middleware'
+import { requireAdmin } from '../auth/middleware'
 import { getDb } from '../db/client'
 import {
   type AskAssistantResult,
@@ -15,7 +15,7 @@ import { answerQuestion } from './loop'
 import { createStubClient } from './stub-client'
 
 export const askAssistant = createServerFn({ method: 'POST' })
-  .middleware([requireAuth])
+  .middleware([requireAdmin])
   .validator(askAssistantInputSchema)
   .handler(async ({ data }): Promise<AskAssistantResult> => {
     if (!shouldReserveAssistantQuota()) {

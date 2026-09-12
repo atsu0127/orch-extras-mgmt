@@ -1,6 +1,6 @@
 # プラットフォーム設計書
 
-最終更新: 2026-08-29
+最終更新: 2026-09-12
 
 横断仕様（技術基盤・認証・運用・決定索引）の正。機能固有の仕様は `docs/<feature>/design.md` を正とする。文書の置き方は [docs/README.md](../README.md) を参照。
 
@@ -176,3 +176,4 @@
 | 練習一括はトグル・行複製・会場 modal 即保存 | 普段は隠し、似た行をコピーし、会場はマスタとして即確定する | [ADR-0026](../adr/0026-bulk-practice-toggle-duplicate-and-venue-modal.md) |
 | 次の練習検索は質問語句を無視し今日を明示する | 1回の tool use で候補質問が空にならないようにする | [ADR-0027](../adr/0027-assistant-next-practice-search.md) |
 | アプリログは Workers Logs、LLM 本文は AI Gateway | 無料枠内で失敗と品質を分けて追う。Langfuse と Traces は見送り | [ADR-0028](../adr/0028-workers-logs-and-ai-gateway-observability.md) |
+| AI案内は当面管理者のみ | 試用中の残高と日次枠を管理者の確認に使う。extra は入口も呼び出しも不可 | [ADR-0029](../adr/0029-limit-ai-assistant-to-admin.md) |
