@@ -176,6 +176,13 @@ describe('DashboardContent', () => {
     expect(html.indexOf('新しいお知らせ')).toBeLessThan(
       html.indexOf('古いお知らせ'),
     )
+    const announcementArticles = html.match(
+      /<article class="pamphlet-announcement">/g,
+    )
+    expect(announcementArticles).toHaveLength(2)
+    expect(html).not.toContain('pamphlet-announcement--latest')
+    expect(html).toContain('pamphlet-announcement-title')
+    expect(html).not.toContain('pamphlet-heading pamphlet-announcement-title')
     expect(html.indexOf('本番')).toBeLessThan(html.indexOf('出欠の回答'))
     expect(html.indexOf('出欠の回答')).toBeLessThan(html.indexOf('備考'))
     expect(html.indexOf('備考')).toBeLessThan(html.indexOf('資料'))
@@ -215,6 +222,31 @@ describe('DashboardContent', () => {
 
     expect(html).not.toContain('>資料<')
     expect(html).not.toContain('演奏会のしおり')
+  })
+
+  it('お知らせ1件でも過去分と同じ左寄せリストで表示する', () => {
+    const html = renderMarkup(
+      createElement(DashboardContent, {
+        appSettings: { adminEmail: null },
+        concert,
+        nextPractice,
+        resources: [],
+        announcements: [
+          {
+            id: 1,
+            title: 'まずやっていただきたいこと',
+            body: 'エキストラのご参加ありがとうございます！\nお手数ですが以下のご対応をお願いいたします。\n- 出欠の入力: リンク先の調整さんで回答お願いいたします。\n- 楽譜の準備: 「曲」タブから楽譜を参照いただけます。',
+            url: null,
+            createdAt: '2026-09-12T12:00:00.000Z',
+          },
+        ],
+      }),
+    )
+
+    expect(html).toContain('pamphlet-announcement-list')
+    expect(html).toContain('pamphlet-announcement-title')
+    expect(html).toContain('class="detail pamphlet-note"')
+    expect(html).not.toContain('pamphlet-announcement--latest')
   })
 
   it('お知らせが空ならお知らせセクションを表示しない', () => {
